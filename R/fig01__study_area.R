@@ -2,6 +2,8 @@
 
 # packages
 library(Rsenal)
+library(plotrix)
+library(latticeExtra)
 library(gridExtra)
 
 # path for output storage
@@ -51,6 +53,17 @@ num_ylim <- c(num_ymin, num_ymax)
 # label placement
 mat_crd <- coordinates(spp_plt_amp_sls)
 int_loc_lbl <- thigmophobe(mat_crd)
+ch_loc_lbl <- sapply(int_loc_lbl, function(tmp_cnt) {
+  if (tmp_cnt == 1) {
+    return("top")
+  } else if (tmp_cnt == 2) {
+    return("right")
+  } else if (tmp_cnt == 3) {
+    return("bottom")
+  } else {
+    return("left")
+  }
+})
 
 # relative label placement
 num_rng_x <- num_xmax - num_xmin
@@ -64,18 +77,15 @@ mat_crd_rel <- matrix(c(num_crd_x_rel, num_crd_y_rel), ncol = 2)
 
 # bing aerial including point locations
 p_bing <- spplot(spp_plt_amp_sls, zcol = "PlotID", scales = list(draw = TRUE), 
-                 col.regions = "grey65", cex = 1.5, pch = 20,
+                 col.regions = "white", cex = 1.75, pch = 20,
                  auto.key = FALSE, xlim = num_xlim, ylim = num_ylim, 
-                 sp.layout = spl_kili)
+                 sp.layout = spl_kili) + 
+  layer(sp.points(spp_plt_amp_sls, cex = 1.25, pch = 20, col = "black"))
 
 # text annotations
 # p_text <- layer(sp.text(loc = mat_crd, 
 #                         txt = spp_plt_amp_sls@data$PlotID, 
 #                         col = "grey65", cex = 2, pos = int_loc_lbl, offset = .5))
-
-p_stext <- layer(stextGrob(spp_plt_amp_sls@data$PlotID, 
-                           gp = gpar(fontsize = 25, col = "red"), 
-                           x = unit(mat_crd[, 1], "native"), y = unit(mat_crd[, 2], "native")))
 
 # output filename
 ch_fls_out <- paste0(ch_dir_ppr, "fig/fig01__study_area.png")
@@ -88,7 +98,25 @@ print(p_bing)
 downViewport(trellis.vpname(name = "figure"))
 # grid.rect(gp = gpar(fill = "grey65"))
 # grid.stext("TEST", x = unit(.5, "npc"), y = unit(.75, "npc"), gp = gpar(fontsize = 20))
-grid.stext(spp_plt_amp_sls@data$PlotID, x = unit(mat_crd_rel[, 1], "npc"), 
-           y = unit(mat_crd_rel[, 2], "npc"), gp = gpar(fontsize = 20))
+# grid.stext(spp_plt_amp_sls@data$PlotID, x = unit(mat_crd_rel[, 1], "npc"), 
+#            y = unit(mat_crd_rel[, 2], "npc"), gp = gpar(fontsize = 20), 
+#            just = ch_loc_lbl)
+
+for (tmp_cnt in 1:nrow(mat_crd_rel)) {
+  x <- unit(mat_crd_rel[tmp_cnt, 1], "npc")
+  y <- unit(mat_crd_rel[tmp_cnt, 2], "npc")
+  
+  ch_jst <- ch_loc_lbl[tmp_cnt]
+  
+  if (ch_jst %in% c("left", "right")) {
+    if (ch_jst == "left") {x <- x+unit(.02, "npc")} else {x <- x-unit(.02, "npc")}
+  } else {
+    if (ch_jst == "top") {y <- y-unit(.02, "npc")} else {y <- y+unit(.02, "npc")}
+  }
+  
+  grid.stext(spp_plt_amp_sls@data$PlotID[tmp_cnt], 
+             x = x, y = y, 
+             gp = gpar(fontsize = 20), just = ch_loc_lbl[tmp_cnt])
+}
 
 dev.off()
