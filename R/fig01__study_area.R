@@ -27,7 +27,7 @@ ch_plt_sls <- c("sav5", "sav4",
 # bing aerial image
 osm_kili <- kiliAerial(minNumTiles = 40)
 rst_kili <- raster(osm_kili)
-spl_kili <- rgb2spLayout(rst_kili)
+spl_kili <- rgb2spLayout(rst_kili, alpha = .8)
 
 # research plots
 spp_plt <- readOGR(dsn = ch_dir_crd, layer = ch_fls_crd)
@@ -76,31 +76,24 @@ mat_crd_rel <- matrix(c(num_crd_x_rel, num_crd_y_rel), ncol = 2)
 
 
 # bing aerial including point locations
-p_bing <- spplot(spp_plt_amp_sls, zcol = "PlotID", scales = list(draw = TRUE), 
+p_bing <- spplot(spp_plt_amp_sls, zcol = "PlotID", 
+                 scales = list(draw = TRUE, cex = 1.25), 
                  col.regions = "white", cex = 1.75, pch = 20,
                  auto.key = FALSE, xlim = num_xlim, ylim = num_ylim, 
                  sp.layout = spl_kili) + 
   layer(sp.points(spp_plt_amp_sls, cex = 1.25, pch = 20, col = "black"))
 
-# text annotations
-# p_text <- layer(sp.text(loc = mat_crd, 
-#                         txt = spp_plt_amp_sls@data$PlotID, 
-#                         col = "grey65", cex = 2, pos = int_loc_lbl, offset = .5))
-
 # output filename
 ch_fls_out <- paste0(ch_dir_ppr, "fig/fig01__study_area.png")
 
 # figure
-png(ch_fls_out, width = 30, height = 28, units = "cm", pointsize = 18, res = 600)
+png(ch_fls_out, width = 30, height = 28, units = "cm", pointsize = 18, res = 300)
 
+# bing image incl point locations
 print(p_bing)
 
+# insertion of shadow text
 downViewport(trellis.vpname(name = "figure"))
-# grid.rect(gp = gpar(fill = "grey65"))
-# grid.stext("TEST", x = unit(.5, "npc"), y = unit(.75, "npc"), gp = gpar(fontsize = 20))
-# grid.stext(spp_plt_amp_sls@data$PlotID, x = unit(mat_crd_rel[, 1], "npc"), 
-#            y = unit(mat_crd_rel[, 2], "npc"), gp = gpar(fontsize = 20), 
-#            just = ch_loc_lbl)
 
 for (tmp_cnt in 1:nrow(mat_crd_rel)) {
   x <- unit(mat_crd_rel[tmp_cnt, 1], "npc")
@@ -116,7 +109,8 @@ for (tmp_cnt in 1:nrow(mat_crd_rel)) {
   
   grid.stext(spp_plt_amp_sls@data$PlotID[tmp_cnt], 
              x = x, y = y, 
-             gp = gpar(fontsize = 20), just = ch_loc_lbl[tmp_cnt])
+             gp = gpar(fontsize = 25, fontfamily = "Bookman Old Style"), 
+             just = ch_loc_lbl[tmp_cnt])
 }
 
 dev.off()
