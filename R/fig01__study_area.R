@@ -2,12 +2,7 @@
 
 # packages
 library(Rsenal)
-library(plotrix)
 library(latticeExtra)
-library(gridExtra)
-
-# functions
-source("R/offsetGridText.R")
 
 # path for output storage
 ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
@@ -28,8 +23,7 @@ ch_plt_sls <- c("sav5", "sav4",
                 "hel1")
 
 # bing aerial image
-osm_kili <- kiliAerial(minNumTiles = 20)
-rst_kili <- raster(osm_kili)
+rst_kili <- kiliAerial(minNumTiles = 20, rasterize = TRUE)
 spl_kili <- rgb2spLayout(rst_kili, alpha = .8)
 
 # research plots
@@ -76,7 +70,8 @@ print(p_bing)
 # insertion of shadow text
 downViewport(trellis.vpname(name = "figure"))
 
-offsetGridText(x = mat_crd, xlim = num_xlim, ylim = num_ylim, stext = TRUE, 
-               offset = .0175)
+offsetGridText(x = mat_crd, labels = spp_plt_amp_sls$PlotID, stext = TRUE,
+               xlim = num_xlim, ylim = num_ylim, offset = .0175, 
+               gp = gpar(fontsize = 25, fontfamily = "Bookman Old Style"))
 
 dev.off()
