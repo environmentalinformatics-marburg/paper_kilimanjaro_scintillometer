@@ -6,6 +6,9 @@ library(plotrix)
 library(latticeExtra)
 library(gridExtra)
 
+# functions
+source("R/offsetGridText.R")
+
 # path for output storage
 ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
@@ -25,7 +28,7 @@ ch_plt_sls <- c("sav5", "sav4",
                 "hel1")
 
 # bing aerial image
-osm_kili <- kiliAerial(minNumTiles = 40)
+osm_kili <- kiliAerial(minNumTiles = 20)
 rst_kili <- raster(osm_kili)
 spl_kili <- rgb2spLayout(rst_kili, alpha = .8)
 
@@ -50,30 +53,8 @@ num_ymin <- ymin(ext_plt_amp_sls) - 5000
 num_ymax <- ymax(ext_plt_amp_sls) + 10000
 num_ylim <- c(num_ymin, num_ymax)
 
-# label placement
+# point coordinates
 mat_crd <- coordinates(spp_plt_amp_sls)
-int_loc_lbl <- thigmophobe(mat_crd)
-ch_loc_lbl <- sapply(int_loc_lbl, function(tmp_cnt) {
-  if (tmp_cnt == 1) {
-    return("top")
-  } else if (tmp_cnt == 2) {
-    return("right")
-  } else if (tmp_cnt == 3) {
-    return("bottom")
-  } else {
-    return("left")
-  }
-})
-
-# relative label placement
-num_rng_x <- num_xmax - num_xmin
-num_crd_x_rel <- (mat_crd[, 1]-num_xmin) / num_rng_x
-
-num_rng_y <- num_ymax - num_ymin
-num_crd_y_rel <- (mat_crd[, 2]-num_ymin) / num_rng_y
-
-mat_crd_rel <- matrix(c(num_crd_x_rel, num_crd_y_rel), ncol = 2)
-
 
 # bing aerial including point locations
 p_bing <- spplot(spp_plt_amp_sls, zcol = "PlotID", 
@@ -95,22 +76,7 @@ print(p_bing)
 # insertion of shadow text
 downViewport(trellis.vpname(name = "figure"))
 
-for (tmp_cnt in 1:nrow(mat_crd_rel)) {
-  x <- unit(mat_crd_rel[tmp_cnt, 1], "npc")
-  y <- unit(mat_crd_rel[tmp_cnt, 2], "npc")
-  
-  ch_jst <- ch_loc_lbl[tmp_cnt]
-  
-  if (ch_jst %in% c("left", "right")) {
-    if (ch_jst == "left") {x <- x+unit(.02, "npc")} else {x <- x-unit(.02, "npc")}
-  } else {
-    if (ch_jst == "top") {y <- y-unit(.02, "npc")} else {y <- y+unit(.02, "npc")}
-  }
-  
-  grid.stext(spp_plt_amp_sls@data$PlotID[tmp_cnt], 
-             x = x, y = y, 
-             gp = gpar(fontsize = 25, fontfamily = "Bookman Old Style"), 
-             just = ch_loc_lbl[tmp_cnt])
-}
+offsetGridText(x = mat_crd, xlim = num_xlim, ylim = num_ylim, stext = TRUE, 
+               offset = .0175)
 
 dev.off()
