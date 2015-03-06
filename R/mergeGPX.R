@@ -32,6 +32,12 @@ mergeGPX <- function(...) {
       
       tmp_int_id_gps2_t <- grep("-T$", tmp_df_gps$cmt)
       tmp_int_id_gps2_r <- grep("-R$", tmp_df_gps$cmt)
+
+      tmp_int_id_gps2_td <- grep("-T-D$", tmp_df_gps$cmt)
+      tmp_int_id_gps2_rd <- grep("-R-D$", tmp_df_gps$cmt)
+      
+      tmp_int_id_gps2_t <- c(tmp_int_id_gps2_t, tmp_int_id_gps2_td)
+      tmp_int_id_gps2_r <- c(tmp_int_id_gps2_r, tmp_int_id_gps2_rd)
       
       tmp_ls_gps2_tr <- lapply(c(tmp_int_id_gps2_t, tmp_int_id_gps2_r), function(i) {
         tmp_df_gps[i, ]
