@@ -17,6 +17,12 @@ mergeGPX <- function(...) {
   })
   df_gps1_tr <- do.call("rbind", ls_gps1_tr)
   
+  ch_plt_tr <- df_gps1_tr$name
+  ch_plt <- substr(ch_plt_tr, 1, 4)
+  ch_tr <- substr(ch_plt_tr, 6, 6)
+  
+  df_gps1_tr$plot <- ch_plt
+  df_gps1_tr$unit <- ch_tr
   
   ## file #2
   ch_dir2 <- "/media/permanent/phd/gps/waypoints"
@@ -43,6 +49,19 @@ mergeGPX <- function(...) {
         tmp_df_gps[i, ]
       })
       tmp_df_gps2_tr <- do.call("rbind", tmp_ls_gps2_tr)
+      
+      tmp_ch_plt_tr <- tmp_df_gps2_tr$cmt
+      ch_plt <- substr(tmp_ch_plt_tr, 1, 4)
+      ch_tr <- substr(tmp_ch_plt_tr, 6, 6)
+      
+      ch_ssn <- sapply(tmp_ch_plt_tr, function(j) {
+        if (nchar(j) > 6) tmp_ch_ssn <- substr(j, 8, 8) else tmp_ch_ssn <- NA
+        return(tmp_ch_ssn)
+      })
+      
+      tmp_df_gps2_tr$plot <- ch_plt
+      tmp_df_gps2_tr$unit <- ch_tr
+      tmp_df_gps2_tr$season <- ch_ssn
       
       return(tmp_df_gps2_tr)
     }
