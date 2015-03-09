@@ -108,5 +108,11 @@ mergeGPX <- function(...) {
   
   ## merge gpx data
   df_gps <- rbind.fill(df_gps1_tr, df_gps2_tr, df_gps3_tr)
+  
+  
+  ## no dry season -> wet season
+  bool_isna_ssn <- is.na(df_gps$season)
+  df_gps$season[bool_isna_ssn] <- "W"
+  
   return(df_gps)
 }
