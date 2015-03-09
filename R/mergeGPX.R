@@ -84,8 +84,29 @@ mergeGPX <- function(...) {
   ls_gps2_tr <- ls_gps2_tr[!bool_navl]
   df_gps2_tr <- do.call("rbind", ls_gps2_tr)
  
+  ## file #3
+  ch_dir3 <- "/media/permanent/phd/gps/waypoints/"
+  ch_fls3 <- "Waypoints_01-DEC-14.gpx"
+  ls_gps3 <- readGPX(paste0(ch_dir3, ch_fls3))
+  df_gps3 <- ls_gps3$waypoints
+  
+  int_id_gps3_t <- grep("-T$", df_gps3$name)
+  int_id_gps3_r <- grep("-R$", df_gps3$name)
+  
+  ls_gps3_tr <- lapply(c(int_id_gps3_t, int_id_gps3_r), function(i) {
+    df_gps3[i, ]
+  })
+  df_gps3_tr <- do.call("rbind", ls_gps3_tr)
+  
+  ch_plt_tr <- df_gps3_tr$name
+  ch_plt <- substr(ch_plt_tr, 1, 4)
+  ch_tr <- substr(ch_plt_tr, 6, 6)
+  
+  df_gps3_tr$plot <- ch_plt
+  df_gps3_tr$unit <- ch_tr
+  
   
   ## merge gpx data
-  df_gps <- rbind.fill(df_gps1_tr, df_gps2_tr)
+  df_gps <- rbind.fill(df_gps1_tr, df_gps2_tr, df_gps3_tr)
   return(df_gps)
 }
