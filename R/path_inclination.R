@@ -6,6 +6,7 @@ library(plotKML)
 # functions
 source("R/mergeGPX.R")
 source("R/spatialPointsToLines.R")
+source("R/slsPathSlope.R")
 
 # gps data path and files
 ch_dir_gps <- "/media/permanent/phd/gps/waypoints"
@@ -57,4 +58,20 @@ ls_slp <- lapply(ch_plt, function(i) {
 df_slp <- do.call("rbind", ls_slp)
 
 
+
+
 ## propagation path inclination
+
+df_slp <- slsPathSlope(df_gps, sp_gps_clrk, rst_dem)
+df_slp$beam_slope <- round(df_slp$beam_slope)
+df_slp$dem_slope <- round(df_slp$dem_slope)
+
+# correction of false inclinations
+int_id_sav0 <- grep("SAV0", df_slp$plot)
+df_slp$beam_slope[int_id_sav0[2]] <- df_slp$beam_slope[int_id_sav0[1]]
+
+int_id_mai4 <- grep("MAI4", df_slp$plot)
+df_slp$beam_slope[int_id_mai4] <- df_slp$dem_slope[int_id_mai4]
+
+int_id_gra2 <- grep("GRA2", df_slp$plot)
+df_slp$beam_slope[int_id_gra2] <- df_slp$dem_slope[int_id_gra2]
