@@ -39,7 +39,7 @@ rst_dem <- raster(paste0(ch_dir_crd, ch_fls_dem))
 rst_slp <- terrain(rst_dem, unit = "degrees")
 
 
-## slopes
+## terrain slopes
 
 ch_plt <- unique(sp_gps_clrk$plot)
 
@@ -50,7 +50,7 @@ ls_slp <- lapply(ch_plt, function(i) {
   # lines(sl_gps_clrk_sub, lty = 2, col = "grey50")
   
   tmp_num_slp <- extract(rst_slp, sl_gps_clrk_sub, fun = mean)
-  tmp_df_slp <- data.frame(plot = i, slope = tmp_num_slp)
+  tmp_df_slp <- data.frame(plot = i, terrain_slope = tmp_num_slp)
   
   return(tmp_df_slp)
 })
@@ -58,20 +58,25 @@ ls_slp <- lapply(ch_plt, function(i) {
 df_slp <- do.call("rbind", ls_slp)
 
 
+## beam path inclination
 
-
-## propagation path inclination
-
-df_slp <- slsPathSlope(df_gps, sp_gps_clrk, rst_dem)
-df_slp$beam_slope <- round(df_slp$beam_slope)
-df_slp$dem_slope <- round(df_slp$dem_slope)
+df_slp_bp <- slsPathSlope(df_gps, sp_gps_clrk, rst_dem)
+df_slp_bp$beam_slope <- round(df_slp_bp$beam_slope, 1)
+df_slp_bp$dem_slope <- round(df_slp_bp$dem_slope, 1)
 
 # correction of false inclinations
-int_id_sav0 <- grep("SAV0", df_slp$plot)
-df_slp$beam_slope[int_id_sav0[2]] <- df_slp$beam_slope[int_id_sav0[1]]
+int_id_sav0 <- grep("SAV0", df_slp_bp$plot)
+df_slp_bp$beam_slope[int_id_sav0[2]] <- df_slp_bp$beam_slope[int_id_sav0[1]]
 
-int_id_mai4 <- grep("MAI4", df_slp$plot)
-df_slp$beam_slope[int_id_mai4] <- df_slp$dem_slope[int_id_mai4]
+int_id_mai4 <- grep("MAI4", df_slp_bp$plot)
+df_slp_bp$beam_slope[int_id_mai4] <- df_slp_bp$dem_slope[int_id_mai4]
 
-int_id_gra2 <- grep("GRA2", df_slp$plot)
-df_slp$beam_slope[int_id_gra2] <- df_slp$dem_slope[int_id_gra2]
+int_id_gra2 <- grep("GRA2", df_slp_bp$plot)
+df_slp_bp$beam_slope[int_id_gra2] <- df_slp_bp$dem_slope[int_id_gra2]
+
+
+## merge data
+
+ls_slp_terr_bp <- list(df_slp, df_slp_bp)
+df_slp_terr_bp <- do.call(function(...) merge(..., by = "plot", all = TRUE), 
+                          ls_slp_terr_bp)
