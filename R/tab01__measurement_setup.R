@@ -1,5 +1,8 @@
 ## environmental stuff
 
+# packages
+library(foreach)
+
 # functions
 source("R/slsPathLength.R")
 source("R/slsPathHeight.R")
@@ -17,12 +20,19 @@ ls_plt <- strsplit(ch_fls_ws, "_")
 ch_plt <- sapply(ls_plt, "[[", 3)
 
 # extraction of relevant information
-ls_pl_ph <- lapply(ch_fls_ws, function(tmp_i) {
-  num_pl <- slsPathLength(tmp_i)
-  num_ph <- slsPathHeight(tmp_i)
-
-  data.frame(path_length = num_pl, 
+df_cfg <- foreach(tmp_fls_ws = ch_fls_ws, tmp_plt = ch_plt, 
+                  .combine = "rbind") %do% {
+  num_pl <- slsPathLength(tmp_fls_ws)
+  num_ph <- slsPathHeight(tmp_fls_ws)
+  
+  data.frame(plot = tmp_plt, 
+             path_length = num_pl, 
              path_height = num_ph)  
-})
+}
 
-df_pl_ph <- do.call("rbind", ls_pl_ph)
+# shortest/longest path length/height
+df_cfg[which.min(df_cfg$path_length), ]
+df_cfg[which.max(df_cfg$path_length), ]
+
+df_cfg[which.min(df_cfg$path_height), ]
+df_cfg[which.max(df_cfg$path_height), ]
