@@ -29,7 +29,8 @@ dev.off()
 
 # Compare boxplot time series of corresponding natural and disturbed LUCs
 fls <- list.files(pattern = "mrg.csv", recursive = TRUE, full.names = TRUE)
-plt <- c("sav0", "mai0", "sav5", "mai4", "gra1", "cof3", "gra2", "cof2")
+plt <- c("sav0", "mai0", "sav5", "mai4", "gra1", "cof3", "gra2", "cof2", 
+         "fer0", "fed1", "hel1")
 
 dat <- do.call("rbind", lapply(plt, function(i) {
   # Import current LUC
