@@ -1,21 +1,10 @@
 slsDiurnalVariation <- function(fn, agg_by = 5, ...) {
   
-  # packages
-  stopifnot(require(zoo))
+  # functions
+  source("R/slsAggregate.R")
   
   # Import current LUC
-  tmp.dat <- read.csv(fn, stringsAsFactors = FALSE)
-  tmp.dat <- tmp.dat[, c("datetime", "waterET")]
-  
-  # aggregation
-  if (agg_by == 1) {
-    tmp_df_agg <- tmp.dat
-  } else {
-    tmp_agg_datetime <- tmp.dat$datetime[seq(1, nrow(tmp.dat), agg_by)]
-    tmp_agg_et <- rollapply(tmp.dat$waterET, width = agg_by, by = agg_by, ...)
-    tmp_df_agg <- data.frame(datetime = tmp_agg_datetime, waterET = tmp_agg_et, 
-                             stringsAsFactors = FALSE)
-  }
+  tmp_df_agg <- slsAggregate(fn = fn, agg_by = agg_by, ...)
   
   # Split by day
   tmp_df_agg$time <- substr(tmp_df_agg$datetime, 12, 19)
