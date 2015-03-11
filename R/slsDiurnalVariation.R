@@ -38,7 +38,7 @@ slsDiurnalVariation <- function(fn, plt, agg_by = 5) {
   }
   
   # Return rowMedians per minute of day
-  tmp_mat_mrg <- as.matrix(tmp.dat.mrg[, 2:ncol(tmp.dat.mrg)])
+  tmp_mat_mrg <- as.matrix(tmp_dat_mrg[, 2:ncol(tmp_dat_mrg)])
   tmp_med_mrg <- apply(tmp_mat_mrg, 1, 
                        FUN = function(...) median(..., na.rm = TRUE))
   tmp_df_mrg <- data.frame(plot = plt, 
