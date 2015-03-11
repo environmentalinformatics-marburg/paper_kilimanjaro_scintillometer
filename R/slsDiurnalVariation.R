@@ -1,4 +1,4 @@
-slsDiurnalVariation <- function(fn, plt, agg_by = 5) {
+slsDiurnalVariation <- function(fn, agg_by = 5, ...) {
   
   # packages
   stopifnot(require(zoo))
@@ -12,8 +12,7 @@ slsDiurnalVariation <- function(fn, plt, agg_by = 5) {
     tmp_df_agg <- tmp.dat
   } else {
     tmp_agg_datetime <- tmp.dat$datetime[seq(1, nrow(tmp.dat), agg_by)]
-    tmp_agg_et <- rollapply(tmp.dat$waterET, width = agg_by, by = agg_by, 
-                            FUN = function(...) mean(..., na.rm = TRUE))
+    tmp_agg_et <- rollapply(tmp.dat$waterET, width = agg_by, by = agg_by, ...)
     tmp_df_agg <- data.frame(datetime = tmp_agg_datetime, waterET = tmp_agg_et, 
                              stringsAsFactors = FALSE)
   }
@@ -41,8 +40,7 @@ slsDiurnalVariation <- function(fn, plt, agg_by = 5) {
   tmp_mat_mrg <- as.matrix(tmp_dat_mrg[, 2:ncol(tmp_dat_mrg)])
   tmp_med_mrg <- apply(tmp_mat_mrg, 1, 
                        FUN = function(...) median(..., na.rm = TRUE))
-  tmp_df_mrg <- data.frame(plot = plt, 
-                           time = tmp_dat_mrg$time,
+  tmp_df_mrg <- data.frame(time = tmp_dat_mrg$time,
                            waterET = tmp_med_mrg)
   return(tmp_df_mrg)
 }
