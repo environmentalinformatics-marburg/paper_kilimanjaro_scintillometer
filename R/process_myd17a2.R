@@ -27,6 +27,9 @@ ch_dir_myd17 <- "/media/permanent/phd/scintillometer/data/myd17a2/"
 ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/coords/"
 ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
+# path: output storage
+ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
+
 # modis options
 MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"), 
              localArcPath = ch_dir_arc, outDirPath = ch_dir_prc)
@@ -168,6 +171,7 @@ ls_sls_gpp_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
              gpp = median(tmp_df_sls_gpp[, 5], na.rm = TRUE))
 })
 df_sls_gpp_md <- do.call("rbind", ls_sls_gpp_md)
+save("df_sls_gpp_md", file = paste0(ch_dir_out_agg01d, "df_sls_gpp_md.RData"))
 
 # deregister parallel backend
 closeAllConnections()

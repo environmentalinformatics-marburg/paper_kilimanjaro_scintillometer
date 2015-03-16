@@ -10,8 +10,11 @@ source("R/slsProcessing.R")
 source("R/slsDiurnalVariation.R")
 source("R/slsAggregate.R")
 
-# srun path
+# path: srun
 ch_dir_srun <- "../../SRun/"
+
+# path: output storage 
+ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
 
 # relevant files
 ch_pattern <- c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg01h.csv$")
@@ -25,20 +28,23 @@ ls_df_sls_fls <- foreach(tmp_ch_pattern = ch_pattern) %do% {
   ls_sls_plt <- strsplit(ch_sls_plt, "_")
   ch_sls_plt <- sapply(ls_sls_plt, "[[", 1)
   
+  ch_sls_hab <- substr(ch_sls_plt, 1, 3)
+  
   # current season
   int_sls_ds <- which(duplicated(ch_sls_plt))
   ch_sls_ssn <- rep("r", length(ch_sls_plt))
   ch_sls_ssn[int_sls_ds] <- "d"
   
   ch_process_level <- substr(tmp_ch_pattern, 1, nchar(tmp_ch_pattern)-5)
-  tmp_df_fls <- data.frame(ch_sls_plt, ch_sls_ssn, tmp_ch_fls, 
+  tmp_df_fls <- data.frame(ch_sls_plt, ch_sls_hab, ch_sls_ssn, tmp_ch_fls, 
                            stringsAsFactors = FALSE)
-  names(tmp_df_fls) <- c("plot", "season", ch_process_level)
+  names(tmp_df_fls) <- c("plot", "habitat", "season", ch_process_level)
   return(tmp_df_fls)
 }
-
-df_sls_fls <- Reduce(function(...) merge(..., by = c(1, 2), sort = FALSE), 
+df_sls_fls <- Reduce(function(...) merge(..., by = c(1, 2, 3), sort = FALSE), 
                      ls_df_sls_fls)
+
+# subset rainy season measurements
 df_sls_fls_rs <- subset(df_sls_fls, season == "r")
 
 
@@ -205,3 +211,4 @@ ls_sls_dv_01d <- lapply(ls_sls_dv_01h, function(i) {
   data.frame(plotid = unique(i$plot), season = unique(i$season), tmp.df)
 })
 df_sls_dv_01d <- do.call("rbind", ls_sls_dv_01d)
+save("df_sls_dv_01d", file = paste0(ch_dir_out_agg01d, "df_sls_dv_01d.RData"))
