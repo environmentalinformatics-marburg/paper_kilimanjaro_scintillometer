@@ -4,7 +4,12 @@ slsAggregate <- function(fn, agg_by = 20, include_time = TRUE, ...) {
   stopifnot(require(zoo))
   
   # Import current LUC
-  tmp.dat <- read.csv(fn, stringsAsFactors = FALSE)
+  if (is.character(fn)) {
+    tmp.dat <- read.csv(fn, stringsAsFactors = FALSE)
+  } else {
+    tmp.dat <- fn
+  }
+  
   tmp.dat <- tmp.dat[, c("datetime", "waterET")]
   
   # aggregation
@@ -18,7 +23,13 @@ slsAggregate <- function(fn, agg_by = 20, include_time = TRUE, ...) {
   
   # add time column (optional)
   if (include_time) {
-    tmp_df_agg$time <- sapply(strsplit(as.character(tmp_df_agg$datetime), " "), "[[", 2)
+    tmp_ls_agg <- strsplit(as.character(tmp_df_agg$datetime), " ")
+    tmp_ls_agg_len <- sapply(tmp_ls_agg, length)
+    if (tmp_ls_agg_len > 1) {
+      tmp_df_agg$time <- sapply(tmp_ls_agg, "[[", 2)
+    } else {
+      tmp_df_agg$time <- sapply(tmp_ls_agg, "[[", 1)
+    }
     tmp_df_agg$time <- as.factor(tmp_df_agg$time)
   }
   
