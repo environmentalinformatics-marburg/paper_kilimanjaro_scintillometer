@@ -81,15 +81,15 @@ ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4",
 #   labs(x = "Time [h]", y = "Evapotranspiration [mm/h]") + 
 #   theme_bw()
 
-# # Compare boxplot time series of corresponding natural and disturbed LUCs
-# ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls_rs), function(i) {
-#   tmp_df <- slsDiurnalVariation(fn = df_sls_fls$mrg[i], agg_by = 20, 
-#                                 FUN = function(...) median(..., na.rm = TRUE))
-#   data.frame(tmp_df, season = df_sls_fls$season[i])
-# })
-# 
-# df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
-# 
+# Compare boxplot time series of corresponding natural and disturbed LUCs
+ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls), function(i) {
+  tmp_df <- slsDiurnalVariation(fn = df_sls_fls$mrg[i], agg_by = 20, 
+                                FUN = function(...) median(..., na.rm = TRUE))
+  data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df)
+})
+
+df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
+
 # df_sls_dv_20m_rs <- subset(df_sls_dv_20m, season == "r")
 # 
 # df_sls_dv_20m_rs$facet <- "SAV0 vs. MAI0"
@@ -115,36 +115,36 @@ ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4",
 #   labs(x = "Hour of day", y = "Evapotranspiration [mm/h]") + 
 #   theme_bw()
 
-# 20-min aggregation                 
-ls_sls_dv_20m <- lapply(ch_sls_plt, function(i) {
-  tmp_int_id <- grep(i, df_sls_fls_rs$plot)
-  tmp_df <- slsAggregate(fn = df_sls_fls_rs$mrg[tmp_int_id], agg_by = 20, 
-                         FUN = function(...) median(..., na.rm = TRUE))
-  data.frame(plotid = i, tmp_df, season = df_sls_fls_rs$season[tmp_int_id])
-})
-# time stamp to factor
-df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
-
-int_sls_dv_20m_hr <- hour(df_sls_dv_20m$datetime)
-int_sls_dv_20m_dt <- int_sls_dv_20m_hr >= 4 & int_sls_dv_20m_hr < 20
-df_sls_dv_20m_dt <- df_sls_dv_20m[int_sls_dv_20m_dt, ]
-
-df_sls_dv_20m_dt$time <- strptime(df_sls_dv_20m_dt$time, format = "%H:%M:%S")
-df_sls_dv_20m_dt$time_fac <- factor(format(df_sls_dv_20m_dt$time, format = "%H:%M"))
-
-# x-axis labels
-ch_lvl <- levels(df_sls_dv_20m_dt$time_fac)
-ch_lbl <- rep("", length(ch_lvl))
-
-ls_lvl <- strsplit(ch_lvl, ":")
-ch_lvl_hr <- sapply(ls_lvl, "[[", 1)
-int_lvl_hr <- as.integer(ch_lvl_hr)
-int_lvl_hr_odd <- int_lvl_hr %% 2 != 0
-ch_lvl_min <- sapply(ls_lvl, "[[", 2)
-
-int_lvl_hr_odd_full <- ch_lvl_min == "00" & int_lvl_hr_odd
-ch_lbl[int_lvl_hr_odd_full] <- ch_lvl[int_lvl_hr_odd_full]
-names(ch_lbl) <- ch_lvl
+# # 20-min aggregation                 
+# ls_sls_dv_20m <- lapply(ch_sls_plt, function(i) {
+#   tmp_int_id <- grep(i, df_sls_fls_rs$plot)
+#   tmp_df <- slsAggregate(fn = df_sls_fls_rs$mrg[tmp_int_id], agg_by = 20, 
+#                          FUN = function(...) median(..., na.rm = TRUE))
+#   data.frame(plotid = i, tmp_df, season = df_sls_fls_rs$season[tmp_int_id])
+# })
+# # time stamp to factor
+# df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
+# 
+# int_sls_dv_20m_hr <- hour(df_sls_dv_20m$datetime)
+# int_sls_dv_20m_dt <- int_sls_dv_20m_hr >= 4 & int_sls_dv_20m_hr < 20
+# df_sls_dv_20m_dt <- df_sls_dv_20m[int_sls_dv_20m_dt, ]
+# 
+# df_sls_dv_20m_dt$time <- strptime(df_sls_dv_20m_dt$time, format = "%H:%M:%S")
+# df_sls_dv_20m_dt$time_fac <- factor(format(df_sls_dv_20m_dt$time, format = "%H:%M"))
+# 
+# # x-axis labels
+# ch_lvl <- levels(df_sls_dv_20m_dt$time_fac)
+# ch_lbl <- rep("", length(ch_lvl))
+# 
+# ls_lvl <- strsplit(ch_lvl, ":")
+# ch_lvl_hr <- sapply(ls_lvl, "[[", 1)
+# int_lvl_hr <- as.integer(ch_lvl_hr)
+# int_lvl_hr_odd <- int_lvl_hr %% 2 != 0
+# ch_lvl_min <- sapply(ls_lvl, "[[", 2)
+# 
+# int_lvl_hr_odd_full <- ch_lvl_min == "00" & int_lvl_hr_odd
+# ch_lbl[int_lvl_hr_odd_full] <- ch_lvl[int_lvl_hr_odd_full]
+# names(ch_lbl) <- ch_lvl
 
 # # head-to-head comparison
 # foreach(h = list(c("sav0", "mai0"), c("sav5", "mai4"), 
@@ -189,3 +189,19 @@ ggplot(aes(x = time_fac, y = waterET), data = df_sls_dv_20m_dt) +
   labs(x = "\nTime (20 min)", y = "Evapotranspiration (mm/h)\n") + 
   theme_bw() + 
   theme(panel.grid = element_blank())
+
+# hourly aggregation                 
+ls_sls_dv_01h <- lapply(1:nrow(df_sls_fls), function(i) {
+  tmp_df <- slsDiurnalVariation(fn = df_sls_fls$mrg[i], agg_by = 60, 
+                                FUN = function(...) median(..., na.rm = TRUE))
+  data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df)
+})
+df_sls_dv_01h <- do.call("rbind", ls_sls_dv_01h)
+
+# diurnal aggregation
+ls_sls_dv_01d <- lapply(ls_sls_dv_01h, function(i) {
+  tmp.df <- slsAggregate(fn = i, agg_by = 24, include_time = FALSE,
+                         FUN = function(...) sum(..., na.rm = TRUE))
+  data.frame(plotid = unique(i$plot), season = unique(i$season), tmp.df)
+})
+df_sls_dv_01d <- do.call("rbind", ls_sls_dv_01d)
