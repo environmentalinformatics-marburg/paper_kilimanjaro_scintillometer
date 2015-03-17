@@ -6,6 +6,7 @@ library(foreach)
 # functions
 source("R/slsPathLength.R")
 source("R/slsPathHeight.R")
+source("R/slsPathInclination.R")
 
 # sls workspace path and files (sub-directories)
 ch_dir_ws <- "/media/permanent/SRun"
@@ -36,3 +37,10 @@ df_cfg[which.max(df_cfg$path_length), ]
 
 df_cfg[which.min(df_cfg$path_height), ]
 df_cfg[which.max(df_cfg$path_height), ]
+
+# path inclination
+df_slp <- slsPathInclination()
+df_slp$plot <- tolower(df_slp$plot)
+
+# merge path information
+merge(df_cfg, df_slp, by = 1, all = TRUE)
