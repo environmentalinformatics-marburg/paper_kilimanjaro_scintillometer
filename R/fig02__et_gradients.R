@@ -16,6 +16,16 @@ ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls_rs), function(i) {
 })
 df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
 
+# diurnal values
+ls_sls_dv_01d <- lapply(ls_sls_dv_20m, function(i) {
+  tmp.df <- slsAggregate(fn = i, agg_by = 24, include_time = FALSE,
+                         FUN = function(...) round(sum(..., na.rm = TRUE), 1))
+  data.frame(plot = unique(i$plot), habitat = unique(i$habitat), 
+             season = unique(i$season), tmp.df)
+})
+df_sls_dv_01d <- do.call("rbind", ls_sls_dv_01d)
+
+# daytime subset
 ch_sls_dv_20m_hr <- substr(as.character(df_sls_dv_20m$datetime), 1, 2)
 int_sls_dv_20m_hr <- as.integer(ch_sls_dv_20m_hr)
 int_sls_dv_20m_dt <- int_sls_dv_20m_hr >= 4 & int_sls_dv_20m_hr < 20
@@ -55,18 +65,5 @@ p <- ggplot(aes(x = time_fac, y = waterET, group = plot, colour = plot, fill = p
   scale_color_manual("", values = ch_cols_bg) + 
   scale_fill_manual("", values = ch_cols_bg) + 
   guides(colour = FALSE, fill = FALSE) + 
-  labs(x = "\nTime (hours)", y = "Evapotranspiration\n") + 
+  labs(x = "\nTime (hours)", y = "Evapotranspiration (mm) \n") + 
   theme_bw()
-
-###
-
-g = ggplotGrob(p)
-## remove empty panels
-g$grobs[names(g$grobs) %in% c("panel1", "panel2", "strip_t.1", "strip_t.2")] = NULL
-## remove them from the layout
-g$layout = g$layout[!(g$layout$name %in% c("panel-1", "panel-2", 
-                                           "strip_t-1", "strip_t-2")),]
-## move axis closer to panel
-g$layout[g$layout$name == "axis_l-1", c("l", "r")] = c(9,9)
-grid.newpage()
-grid.draw(g)
