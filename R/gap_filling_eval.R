@@ -8,9 +8,6 @@ sapply(lib, function(x) library(x, character.only = TRUE))
 cl <- makeCluster(3)
 registerDoParallel(cl)
 
-# functions
-source("phd/scintillometer/src/slsMergeDailyData.R")
-
 # path: srun
 ch_dir_srun <- "../../SRun/"
 
@@ -58,10 +55,10 @@ lapply(srunWorkspaces, function(i) {
                                 mean((waterET-tmp_prd)^2))
     }
     
-    mat_err <- cbind(num_err_oob, num_err_tst)
-    matplot(1:mtry, mat_err, pch = 19, col = c("blue", "red"), type = "b", 
-            xlab = expression(italic(mtry)), ylab = "Mean squared error")
-    legend("topright", legend = c("OOB", "Test"), pch = 19, col = c("blue","red"))
+    #     mat_err <- cbind(num_err_oob, num_err_tst)
+    #     matplot(1:mtry, mat_err, pch = 19, col = c("blue", "red"), type = "b", 
+    #             xlab = expression(italic(mtry)), ylab = "Mean squared error")
+    #     legend("topright", legend = c("OOB", "Test"), pch = 19, col = c("blue","red"))
     
     # selection of mtry based on fixed threshold (change?)
     mtry <- (1:8)[which(abs(diff(num_err_tst)) < .001)[1]]
@@ -88,21 +85,21 @@ lapply(srunWorkspaces, function(i) {
     #           xlab = expression(italic(ntree)), ylab = "Mean squared error")
     #   legend("topright", legend = c("OOB", "Test"), pch = 19, col = c("blue","red"))
     
-    valid <- FALSE
-    niter <- 1
-    while (!valid) {
-      set.seed(niter)
-      index <- sample(1:nrow(tmp_df_sub), 1000)
-      
-      train <- tmp_df_sub[-index, ]
-      
-      if (all(levels(train$waterET) %in% 
-                unique(levels(train$waterET)[train$waterET]))) {
-        valid <- TRUE
-      } else {
-        niter <- niter + 1
-      }
-    }
+    #     valid <- FALSE
+    #     niter <- 1
+    #     while (!valid) {
+    #       set.seed(niter)
+    #       index <- sample(1:nrow(tmp_df_sub), 1000)
+    #       
+    #       train <- tmp_df_sub[-index, ]
+    #       
+    #       if (all(levels(train$waterET) %in% 
+    #                 unique(levels(train$waterET)[train$waterET]))) {
+    #         valid <- TRUE
+    #       } else {
+    #         niter <- niter + 1
+    #       }
+    #     }
     
     # random forest
     rf <- randomForest(waterET ~ ., data = tmp_df_sub, subset = tmp_int_train, 
@@ -131,4 +128,12 @@ lapply(srunWorkspaces, function(i) {
     data.frame(plot = tmp_ch_plt, mtry = mtry, err_oob = num_err_oob[mtry], 
                err_tst = num_err_tst[mtry], rsq = num_rsq, p = num_p)
   }
+
+  int_mdl_mtry <- modal(tmp_df_rf_eval$mtry)
+  num_mu_scores <- colMeans(tmp_df_rf_eval[, 3:6])
+  mat_mu_scores <- matrix(num_mu_scores, 1, 4)
+  df_mu_scores <- data.frame(mat_mu_scores)
+  names(df_mu_scores) <- names(num_mu_scores)
+  
+  data.frame(plot = tmp_ch_plt, mtry = int_mdl_mtry, df_mu_scores)
 })
