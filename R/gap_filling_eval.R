@@ -4,6 +4,14 @@
 lib <- c("randomForest", "ggplot2", "latticeExtra", "doParallel")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
+# functions
+modal <- function(x) {
+  tbl <- table(x)
+  ch_mdl <- names(which.max(tbl))
+  int_mdl <- as.integer(ch_mdl)
+  return(int_mdl)
+}
+
 # parallelization
 cl <- makeCluster(3)
 registerDoParallel(cl)
@@ -11,10 +19,13 @@ registerDoParallel(cl)
 # path: srun
 ch_dir_srun <- "../../SRun/"
 
+
+## evaluation of random forest performance
+
 srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE, 
                       full.names = TRUE)
 
-lapply(srunWorkspaces, function(i) {
+ls_rf_scores <- lapply(srunWorkspaces, function(i) {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
