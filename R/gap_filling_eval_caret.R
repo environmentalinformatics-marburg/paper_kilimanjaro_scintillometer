@@ -66,8 +66,7 @@ ls_rf_scores <- lapply(srunWorkspaces, function(i) {
     tmp_prd <- predict(tmp_rf, newdata = tmp_df_sub[-tmp_int_train, ])
     
     # prediction parameters
-    num_rmse_tst <- with(tmp_df_sub[-tmp_int_train, ], 
-                         sqrt(mean((waterET-tmp_prd)^2)))
+    num_rmse_tst <- with(tmp_df_sub[-tmp_int_train, ], RMSE(waterET, tmp_prd))
     
     tmp_lm <- lm(tmp_prd ~ tmp_df_sub[-tmp_int_train, "waterET"])
     num_rsq <- summary(tmp_lm)$r.squared
