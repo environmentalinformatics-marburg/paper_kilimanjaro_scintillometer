@@ -4,6 +4,11 @@ slsMergeDailyData <- function(files,
   lib <- c("foreach", "plyr")
   sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
   
+  if (length(grep("gra1", files)) > 0) {
+    int_id_20140224 <- grep("2014-02-24", files)
+    files <- files[-int_id_20140224]
+  }
+  
   dat <- foreach(i = files, j = seq(files)) %do% {
     
     # Import headers
