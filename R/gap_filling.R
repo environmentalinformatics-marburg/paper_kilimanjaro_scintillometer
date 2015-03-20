@@ -8,7 +8,7 @@ sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 source("R/slsMergeDailyData.R")
 
 # parallelization
-cl <- makeCluster(4)
+cl <- makeCluster(3)
 registerDoParallel(cl)
 
 # path: srun
@@ -34,6 +34,12 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   
   # Merge daily .mnd files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
+
+  # fog events (fer, fed and hel only)
+  if (tmp_ch_plt %in% c("fer0", "fed1", "hel1")) {
+    tmp_df <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
+  }
+  
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, c("datetime", 
                            "tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
