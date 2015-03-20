@@ -36,8 +36,7 @@ srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace", recursive = FALSE,
 fit_control <- trainControl(method = "cv", number = 10, repeats = 10, 
                             verboseIter = TRUE)
 
-ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib, 
-                        .export = "slsFoggy") %dopar% {
+ls_rf_scores <- foreach(i = srunWorkspaces) %do% {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -59,7 +58,7 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib,
   tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
-  tmp_df_rf_eval <- foreach(seed = 1:10, .combine = "rbind") %do% {
+  tmp_ls_rf_stats <- foreach(seed = 1:10) %do% {
 
     # data partitioning                          
     set.seed(seed)
@@ -68,7 +67,14 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib,
     
     # random forest
     tmp_rf <- train(waterET ~ ., data = tmp_df_sub, method = "rf", 
-                    subset = tmp_int_train, trControl = fit_control)
+                    subset = tmp_int_train, trControl = fit_control, 
+                    importance = TRUE)
+    
+    # variable importance
+    tmp_df_varimp <- varImp(tmp_rf, scale = TRUE)$importance
+    tmp_mat_varimp <- t(tmp_df_varimp)
+    tmp_df_varimp <- data.frame(tmp_mat_varimp)
+    names(tmp_df_varimp) <- colnames(tmp_mat_varimp)
     
     # optimized training parameters and scores
     int_mtry <- tmp_rf$bestTune
@@ -87,11 +93,24 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib,
                                     adj.rsq = FALSE)
     
     # return output
-    data.frame(plot = tmp_ch_plt, mtry = mtry, 
-               rmse_trn = num_rmse_trn, rmse_trns_se = num_rmse_trn_se, 
-               rsq_trn = num_rsq_trn, df_reg_stats)
+    list(reg_stats = data.frame(plot = tmp_ch_plt, mtry = int_mtry, 
+                                rmse_trn = num_rmse_trn, rmse_trns_se = num_rmse_trn_se, 
+                                rsq_trn = num_rsq_trn, df_reg_stats), 
+         var_imp = tmp_df_varimp)
   }
 
+  # cv/prediction statistics
+  tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
+  tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
+  
+  # variable importances
+  tmp_ls_rf_varimp <- lapply(tmp_ls_rf_stats, function(i) i[[2]])
+  tmp_df_rf_varimp <- do.call("rbind", tmp_ls_rf_varimp)
+  tmp_num_rf_varimp <- colMeans(tmp_df_rf_varimp, na.rm = TRUE)
+  tmp_mat_rf_varimp <- matrix(tmp_num_rf_varimp, 1, byrow = TRUE)
+  tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
+  names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
+  
   #   # plot training stats
   #   num_trn_stats <- colMeans(tmp_df_rf_eval[, 3:5])
   #   names(num_trn_stats) <- c("RMSE", "RMSE.se", "Rsq")
@@ -111,6 +130,7 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib,
   
   # return data frame and corresponding plot
   list(data.frame(plot = tmp_ch_plt, mtry = int_mdl_mtry, df_mu_scores), 
+       data.frame(plot = tmp_ch_plt, mtry = int_mdl_mtry, tmp_df_rf_varimp),
        p_reg_stats)
 }
 
