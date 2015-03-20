@@ -1,7 +1,8 @@
 ## environmental stuff
 
 # packages
-lib <- c("randomForest", "ggplot2", "latticeExtra", "doParallel", "Rsenal", "caret")
+lib <- c("randomForest", "ggplot2", "latticeExtra", "doParallel", "Rsenal", 
+         "caret", "gridExtra")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 # functions
@@ -32,7 +33,8 @@ srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE,
 fit_control <- trainControl(method = "cv", number = 10, repeats = 10, 
                             verboseIter = TRUE)
 
-ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib) %dopar% {
+ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib, 
+                        .export = "slsFoggy") %dopar% {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -50,7 +52,9 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib) %dopar% {
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-                           "soilHeatFlux", "pressure", "precipRate", "waterET")]
+                           "soilHeatFlux", "pressure", "precipRate", "waterET", 
+                           "H_final")]
+  tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
   tmp_df_rf_eval <- foreach(seed = 1:10, .combine = "rbind") %do% {
@@ -107,3 +111,33 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib) %dopar% {
   list(data.frame(plot = tmp_ch_plt, mtry = int_mdl_mtry, df_mu_scores), 
        p_reg_stats)
 }
+
+# wet season data only
+int_id_dryssn <- c(11, 13)
+ls_rf_scores_dryssn <- ls_rf_scores[-int_id_dryssn]
+
+# split data into cv/prediction statistics...
+ls_rf_scores_dryssn_stats <- lapply(ls_rf_scores_dryssn, function(i) i[[1]])
+df_rf_scores_stats <- do.call("rbind", ls_rf_scores_dryssn_stats)
+# ...and referring visualization
+ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_dryssn, function(i) i[[2]])
+
+# plotting order
+ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4", 
+                "gra1", "gra2", "cof3", "cof2", 
+                "fer0", "fed1", "hel1")
+
+fc_rf_plt <- df_rf_scores_stats$plot
+ch_rf_plt <- as.character(fc_rf_plt)
+
+int_id_plt <- match(ch_rf_plt, ch_sls_plt_tmp)
+ls_rf_scores_dryssn_vis <- ls_rf_scores_dryssn_vis[int_id_plt]
+
+# add plot names to figures
+ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
+  update(ls_rf_scores_dryssn_vis[[i]], main = ch_sls_plt_tmp[i])
+})
+
+# grid.arrange
+p <- do.call(function(...) grid.arrange(..., ncol = 2, as.table = TRUE), 
+             ls_rf_scores_dryssn_vis)
