@@ -2,7 +2,7 @@
 
 # packages
 lib <- c("randomForest", "ggplot2", "latticeExtra", "doParallel", "Rsenal", 
-         "caret", "gridExtra")
+         "caret", "gridExtra", "lubridate")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 # functions
@@ -14,6 +14,7 @@ modal <- function(x) {
 }
 
 source("R/slsFoggy.R")
+source("R/slsMergeDailyData.R")
 source("R/plotPredictionStats.R")
 
 # parallelization
@@ -21,12 +22,14 @@ cl <- makeCluster(3)
 registerDoParallel(cl)
 
 # path: srun
-ch_dir_srun <- "../../SRun/"
+ch_dir_srun <- switch(Sys.info()[["sysname"]], 
+                      Linux = "../../SRun/", 
+                      Windows = "../../detsch_et_al__spotty_evapotranspiration/")
 
 
 ## evaluation of random forest performance
 
-srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE, 
+srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace", recursive = FALSE, 
                       full.names = TRUE)
 
 # training control parameters
@@ -52,8 +55,7 @@ ls_rf_scores <- foreach(i = srunWorkspaces, .packages = lib,
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-                           "soilHeatFlux", "pressure", "precipRate", "waterET", 
-                           "H_final")]
+                           "soilHeatFlux", "pressure", "precipRate", "waterET")]
   tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
