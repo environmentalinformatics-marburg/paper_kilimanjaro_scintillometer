@@ -3,13 +3,15 @@ slsFoggy <- function(channel_data, use_error = TRUE, error_code = 32,
 
   int_col_err <- grep("error", names(channel_data))
   
+  channel_data$fog <- FALSE
+  
   if (use_error) {
     # errors indexes
     log_id_err <- channel_data[, int_col_err] == error_code &
       !is.na(channel_data[, int_col_err])
     
     # reject measurements during fog events
-    channel_data[log_id_err, -c(date_col, int_col_err)] <- NA
+    channel_data[log_id_err, "fog"] <- TRUE
     
   } else {
     # rejection based on quantile limit or fixed threshold
@@ -34,7 +36,7 @@ slsFoggy <- function(channel_data, use_error = TRUE, error_code = 32,
       mat_channels_srd <- do.call("cbind", ls_channels_srd)
       log_channels_srd <- apply(mat_channels_srd, 1, FUN = any)
       
-      channel_data[log_channels_srd, -c(date_col, int_col_err)] <- NA
+      channel_data[log_channels_srd, "fog"] <- TRUE
       
     } else {
       # rejection of measurement if at least one channel dropbs below
@@ -46,7 +48,7 @@ slsFoggy <- function(channel_data, use_error = TRUE, error_code = 32,
       mat_channels_srd <- do.call("cbind", ls_channels_srd)
       log_channels_srd <- apply(mat_channels_srd, 1, FUN = any)
       
-      channel_data[log_channels_srd, -c(date_col, int_col_err)] <- NA
+      channel_data[log_channels_srd, "fog"] <- TRUE
     }    
   }
   
