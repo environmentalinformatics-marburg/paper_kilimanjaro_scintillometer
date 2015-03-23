@@ -2,13 +2,12 @@
 library(TSdist)
 
 # sls plots
-ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4", 
-                "gra1", "gra2", "cof3", "cof2", 
-                "fer0", "fed1", "hel1")
+source("R/slsPlots.R")
+ch_sls_plt <- slsPlots()
 
 # 20-min data
 ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls_rs), function(i) {
-  tmp_df <- slsDiurnalVariation(fn = df_sls_fls_rs$mrg[i], agg_by = 20, 
+  tmp_df <- slsDiurnalVariation(fn = df_sls_fls_rs$mrg_rf[i], agg_by = 20, 
                                 FUN = function(...) mean(..., na.rm = TRUE))
   data.frame(plot = df_sls_fls_rs$plot[i], habitat = df_sls_fls_rs$habitat[i],
              season = df_sls_fls_rs$season[i], tmp_df, stringsAsFactors = FALSE)
