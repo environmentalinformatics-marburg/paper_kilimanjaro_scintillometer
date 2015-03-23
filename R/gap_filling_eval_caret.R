@@ -16,9 +16,10 @@ modal <- function(x) {
 source("R/slsFoggy.R")
 source("R/slsMergeDailyData.R")
 source("R/plotPredictionStats.R")
+source("R/slsPlots.R")
 
 # parallelization
-cl <- makeCluster(3)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 
 # path: srun
@@ -40,7 +41,7 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
 ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
                "soilHeatFlux", "pressure", "precipRate", "waterET")
 
-ls_rf_scores <- foreach(i = srunWorkspaces) %do% {
+ls_rf_scores_wohr <- foreach(i = srunWorkspaces) %do% {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -59,7 +60,7 @@ ls_rf_scores <- foreach(i = srunWorkspaces) %do% {
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, ch_var_rf]
-  tmp_df_sub$hour <- hour(tmp_df$datetime)
+  # tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
   tmp_ls_rf_stats <- foreach(seed = 1:10) %do% {
@@ -145,27 +146,31 @@ ls_rf_scores_dryssn <- ls_rf_scores[-int_id_dryssn]
 # split data into cv/prediction statistics...
 ls_rf_scores_dryssn_stats <- lapply(ls_rf_scores_dryssn, function(i) i[[1]])
 df_rf_scores_stats <- do.call("rbind", ls_rf_scores_dryssn_stats)
+# ...variable importances...
+ls_rf_scores_dryssn_varimp <- lapply(ls_rf_scores_dryssn, function(i) i[[2]])
+df_rf_scores_dryssn_varimp <- do.call("rbind", ls_rf_scores_dryssn_varimp)
 # ...and referring visualization
-ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_dryssn, function(i) i[[2]])
+ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_dryssn, function(i) i[[3]])
+
+# save(list = c("df_rf_scores_stats", "df_rf_scores_dryssn_varimp", 
+#               "ls_rf_scores_dryssn_vis"), file = "data/reg_stats_whr.RData")
 
 # plotting order
-ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4", 
-                "gra1", "gra2", "cof3", "cof2", 
-                "fer0", "fed1", "hel1")
+ch_sls_plt <- slsPlots()
 
 fc_rf_plt <- df_rf_scores_stats$plot
 ch_rf_plt <- as.character(fc_rf_plt)
 
-int_id_plt <- match(ch_rf_plt, ch_sls_plt_tmp)
+int_id_plt <- match(ch_rf_plt, ch_sls_plt)
 ls_rf_scores_dryssn_vis <- ls_rf_scores_dryssn_vis[int_id_plt]
 
 # add plot names to figures
 ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
-  update(ls_rf_scores_dryssn_vis[[i]], main = ch_sls_plt_tmp[i])
+  update(ls_rf_scores_dryssn_vis[[i]], main = ch_sls_plt[i])
 })
 
 # grid.arrange
-p <- do.call(function(...) grid.arrange(..., ncol = 2, as.table = TRUE), 
+do.call(function(...) grid.arrange(..., ncol = 2, as.table = TRUE), 
              ls_rf_scores_dryssn_vis)
 
 # deregister parallel backend
