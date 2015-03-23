@@ -1,7 +1,8 @@
 ## environmental stuff
 
 # packages
-lib <- c("caret", "randomForest", "ggplot2", "latticeExtra")
+lib <- c("caret", "doParallel", "lubridate", "randomForest", "ggplot2", 
+         "latticeExtra")
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
 # functions
@@ -23,6 +24,10 @@ srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE,
 fit_control <- trainControl(method = "cv", number = 10, repeats = 10, 
                             verboseIter = TRUE)
 
+# variables relevant for rf procedure
+ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
+               "soilHeatFlux", "pressure", "precipRate", "waterET")
+
 # gap-filling
 ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   
@@ -37,29 +42,30 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
 
   # fog events (fer, fed and hel only)
   if (tmp_ch_plt %in% c("fer0", "fed1", "hel1")) {
-    tmp_df <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
+    tmp_df_fog <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
+    tmp_df[tmp_df_fog$fog, ch_var_rf] <- NA
   }
   
   # Subset columns relevant for randomForest algorithm
-  tmp_df_sub <- tmp_df[, c("datetime", 
-                           "tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-                           "soilHeatFlux", "pressure", "precipRate", "waterET")]
+  tmp_df_sub <- tmp_df[, ch_var_rf]
+  tmp_df_sub$hour <- hour(tmp_df$datetime)
   
   # complete meteorological records
-  tmp_df_sub_prd <- tmp_df_sub[, 2:(ncol(tmp_df_sub)-1)]
+  tmp_log_id_rsp <- names(tmp_df_sub) %in% c("datetime", "waterET")
+  tmp_df_sub_prd <- tmp_df_sub[, !tmp_log_id_rsp]
   tmp_id_sub_prd_cc <- complete.cases(tmp_df_sub_prd)
   
   # missing et recordings
-  tmp_df_sub_rsp <- tmp_df_sub[, ncol(tmp_df_sub)]
-  tmp_id_sub_rsp_na <- is.na(tmp_df_sub_rsp)
+  tmp_df_sub_rsp <- tmp_df_sub[, "waterET"]
+  tmp_log_id_rsp_na <- is.na(tmp_df_sub_rsp)
   
   # indices of training data (complete meteorological/et observations) 
   # and newdata (complete meteorological/missing et observations)
-  tmp_int_id_trn <- which(tmp_id_sub_prd_cc & !tmp_id_sub_rsp_na)
-  tmp_df_sub_trn <- tmp_df_sub[tmp_int_id_trn, -1]
+  tmp_int_id_trn <- which(tmp_id_sub_prd_cc & !tmp_log_id_rsp_na)
+  tmp_df_sub_trn <- tmp_df_sub[tmp_int_id_trn, ]
 
-  tmp_int_id_tst <- which(tmp_id_sub_prd_cc & tmp_id_sub_rsp_na)
-  tmp_df_sub_tst <- tmp_df_sub[tmp_int_id_tst, -1]
+  tmp_int_id_tst <- which(tmp_id_sub_prd_cc & tmp_log_id_rsp_na)
+  tmp_df_sub_tst <- tmp_df_sub[tmp_int_id_tst, ]
 
   # random forest
   tmp_rf <- train(waterET ~ ., data = tmp_df_sub_trn, method = "rf", 
