@@ -29,12 +29,16 @@ ch_dir_srun <- switch(Sys.info()[["sysname"]],
 
 ## evaluation of random forest performance
 
-srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace", recursive = FALSE, 
+srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace_sls", recursive = FALSE, 
                       full.names = TRUE)
 
 # training control parameters
 fit_control <- trainControl(method = "cv", number = 10, repeats = 10, 
                             verboseIter = TRUE)
+
+# variables relevant for rf procedure
+ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
+               "soilHeatFlux", "pressure", "precipRate", "waterET")
 
 ls_rf_scores <- foreach(i = srunWorkspaces) %do% {
   
@@ -49,12 +53,12 @@ ls_rf_scores <- foreach(i = srunWorkspaces) %do% {
   
   # fog events (fer, fed and hel only)
   if (tmp_ch_plt %in% c("fer0", "fed1", "hel1")) {
-    tmp_df <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
+    tmp_df_fog <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
+    tmp_df[tmp_df_fog$fog, ch_var_rf] <- NA
   }
   
   # Subset columns relevant for randomForest algorithm
-  tmp_df_sub <- tmp_df[, c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-                           "soilHeatFlux", "pressure", "precipRate", "waterET")]
+  tmp_df_sub <- tmp_df[, ch_var_rf]
   tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
@@ -163,3 +167,6 @@ ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
 # grid.arrange
 p <- do.call(function(...) grid.arrange(..., ncol = 2, as.table = TRUE), 
              ls_rf_scores_dryssn_vis)
+
+# deregister parallel backend
+closeAllConnections()
