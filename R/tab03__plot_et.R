@@ -7,7 +7,7 @@ ch_sls_plt <- slsPlots()
 
 # 20-min data
 ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls_rs), function(i) {
-  tmp_df <- slsDiurnalVariation(fn = df_sls_fls_rs$mrg_rf[i], agg_by = 20, 
+  tmp_df <- slsDiurnalVariation(fn = df_sls_fls_rs$mrg_rf[i], agg_by = 60, 
                                 FUN = function(...) mean(..., na.rm = TRUE))
   data.frame(plot = df_sls_fls_rs$plot[i], habitat = df_sls_fls_rs$habitat[i],
              season = df_sls_fls_rs$season[i], tmp_df, stringsAsFactors = FALSE)
