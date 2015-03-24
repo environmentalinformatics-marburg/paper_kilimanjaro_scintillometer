@@ -1,16 +1,19 @@
 ## environmental stuff
 
 # packages
-library(MODIS)
-library(Rsenal)
-library(doParallel)
+lib <- c("rgdal", "MODIS", "Rsenal", "doParallel", "zoo")
+jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
 
+# parallelization
 cl <- makeCluster(3)
 registerDoParallel(cl)
 
 # functions
+source("R/slsPlots.R")
 source("R/qcMyd17.R")
 source("R/qcxMyd15.R")
+source("R/slsTemporalRange.R")
+source("R/slsGppIndex.R")
 
 # path: modis, raw and extracted
 ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
@@ -27,6 +30,13 @@ ch_dir_myd15 <- "/media/permanent/phd/scintillometer/data/myd15a2/"
 # path: plot coordinates
 ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/coords/"
 ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
+
+
+## data: coordinates
+
+spt_plt <- readOGR(ch_dir_crd, ch_fls_crd)
+spt_plt <- subset(spt_plt, PoleType == "AMP")
+spt_plt <- subset(spt_plt, PlotID %in% slsPlots())
 
 
 ## data: lai-2200
@@ -157,6 +167,7 @@ rst_xqc <- sapply(ls_lai_crp, "[[", 3)
 fls_lai_crp_qc_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_QC_", 
                                  full.names = TRUE, recursive = TRUE)
 rst_lai_crp_qc_mrg <- stack(fls_lai_crp_qc_mrg)
+mat_lai_crp_qc_mrg <- as.matrix(rst_lai_crp_qc_mrg)
 
 # extra quality check
 # ls_lai_crp_qc_qcx <- foreach(lai = ls_lai_crp_qc, xqc = rst_xqc, 
@@ -205,3 +216,64 @@ rst_lai_crp_qc_mrg <- stack(fls_lai_crp_qc_mrg)
 fls_lai_crp_qc_qcx_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_QCX_", 
                                      full.names = TRUE, recursive = TRUE)
 rst_lai_crp_qc_qcx_mrg <- stack(fls_lai_crp_qc_qcx_mrg)
+mat_lai_crp_qc_qcx_mrg <- as.matrix(rst_lai_crp_qc_qcx_mrg)
+
+# gap-filling
+rst_lai_crp_qc_mrg_gf <- calc(rst_lai_crp_qc_mrg, fun = function(i) {
+  tmp_num_lai <- i
+  tmp_log_isna <- is.na(tmp_num_lai)
+  
+  tmp_num_mav <- rollapply(tmp_num_lai, width = 3, fill = NA, 
+                           FUN = function(...) mean(..., na.rm = TRUE))
+  
+  tmp_num_lai[tmp_log_isna] <- tmp_num_mav[tmp_log_isna]
+  return(tmp_num_lai)
+}, filename = paste0(ch_dir_myd15, "/gf/GF"), bylayer = TRUE, 
+suffix = names(rst_lai_crp_qc_mrg), format = "GTiff", overwrite = TRUE)
+
+# lai extraction
+ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i) {
+  tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
+  
+  tmp_int_plt_px <- cellFromXY(rst_lai_crp_qc_mrg_gf, tmp_spt_plt)
+  tmp_int_plt_px_adj <- adjacent(rst_lai_crp_qc_mrg_gf, tmp_int_plt_px, 
+                                 sorted = TRUE, directions = 8, include = TRUE, 
+                                 pairs = FALSE)
+  tmp_mat_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px_adj, ]
+  tmp_df_lai <- data.frame(tmp_mat_lai)
+  
+  data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df_lai)
+})
+df_sls_lai <- do.call("rbind", ls_sls_lai)
+
+# extraction of temporal range per plot
+df_sls_tmp_rng <- slsTemporalRange(df_sls_fls)
+
+ls_sls_lai_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
+  # subset lai data by current plot and season
+  tmp_df_lai <- subset(df_sls_lai, plot == df_sls_tmp_rng$plot[i] &
+                         season == df_sls_tmp_rng$season[i])
+  
+  # identify lai scene(s) corresponding to sls measurement
+  tmp_df_sls_rng <- subset(df_sls_tmp_rng, plot == df_sls_tmp_rng$plot[i] &
+                             season == df_sls_tmp_rng$season[i])
+  tmp_int_id_lai <- slsGppIndex(df_sls = tmp_df_sls_rng, 
+                                dt_fls_gpp = dt_fls_lai, offset = 2)
+  
+  tmp_df_sls_lai <- data.frame(tmp_df_sls_rng, tmp_df_lai[, tmp_int_id_lai])
+  
+  # calculate mean if sls measurement includes two modis scenes
+  if (ncol(tmp_df_sls_lai) > 5) {
+    tmp_df <- tmp_df_sls_lai[5:ncol(tmp_df_sls_lai)]
+    tmp_num_mu <- rowMeans(tmp_df, na.rm = TRUE)
+    tmp_df_sls_lai <- data.frame(tmp_df_sls_lai[, 1:4], tmp_num_mu)
+  }
+  
+  data.frame(tmp_df_sls_lai[1, 1:4], 
+             lai = median(tmp_df_sls_lai[, 5], na.rm = TRUE))
+})
+df_sls_lai_md <- do.call("rbind", ls_sls_lai_md)
+save("df_sls_lai_md", file = "data/lai.RData")
+
+# deregister parallel backend
+closeAllConnections()
