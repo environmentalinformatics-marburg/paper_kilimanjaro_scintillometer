@@ -5,6 +5,10 @@ library(ggplot2)
 # functions
 source("R/slsPlots.R")
 source("R/slsAvlFls.R") 
+source("R/slsDiurnalVariation.R")
+
+# output path
+ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
 # sls plots and referring files
 ch_sls_plt <- slsPlots()
@@ -71,4 +75,10 @@ p <- ggplot(aes(x = time_fac, y = waterET, group = plot, colour = plot, fill = p
   scale_fill_manual("", values = ch_cols_bg) + 
   guides(colour = FALSE, fill = FALSE) + 
   labs(x = "\nTime (hours)", y = "Evapotranspiration (mm) \n") + 
-  theme_bw()
+  theme_bw() + 
+  theme(panel.grid = element_blank())
+
+png(paste0(ch_dir_ppr, "/fig/fig02__elev_dist_gradients.png"), width = 35, 
+    height = 40, units = "cm", res = 300, pointsize = 18)
+print(p) 
+dev.off()
