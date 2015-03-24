@@ -30,7 +30,7 @@ ch_dir_srun <- switch(Sys.info()[["sysname"]],
 
 ## evaluation of random forest performance
 
-srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace_sls", recursive = FALSE, 
+srunWorkspaces <- dir(ch_dir_srun, pattern = "^workspace_SLS", recursive = FALSE, 
                       full.names = TRUE)
 
 # training control parameters
