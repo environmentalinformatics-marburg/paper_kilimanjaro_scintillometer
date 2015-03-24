@@ -75,7 +75,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_prd <- predict(tmp_rf, tmp_df_sub_tst)
   
   # gap-filling
-  tmp_df_sub_gf <- cbind(tmp_df$datetime, tmp_df_sub)
+  tmp_df_sub_gf <- cbind(datetime = tmp_df$datetime, tmp_df_sub)
   tmp_df_sub_gf[tmp_int_id_tst, "waterET"] <- tmp_prd
   
   # output storage
