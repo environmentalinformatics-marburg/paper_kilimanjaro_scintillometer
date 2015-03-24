@@ -25,6 +25,15 @@ ls_sls_dv_01h <- lapply(1:nrow(df_sls_fls_rs), function(i) {
 })
 df_sls_dv_01h <- do.call("rbind", ls_sls_dv_01h)
 
+# maximum hourly et rates per plot
+library(dplyr)
+df_sls_dv_01h %>%
+  group_by(plot) %>% 
+  filter(waterET == max(waterET)) %>%
+  data.frame() %>%
+  arrange(waterET)
+
+
 # diurnal et amounts (mm)
 ls_sls_dv_01d <- lapply(ls_sls_dv_01h, function(i) {
   tmp.df <- slsAggregate(fn = i, agg_by = 24, include_time = FALSE,
