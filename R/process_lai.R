@@ -1,7 +1,7 @@
 ## environmental stuff
 
 # packages
-lib <- c("rgdal", "MODIS", "Rsenal", "doParallel", "zoo")
+lib <- c("rgdal", "MODIS", "Rsenal", "doParallel", "zoo", "latticeExtra")
 jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
 
 # parallelization
@@ -74,7 +74,13 @@ ls_lai <- lapply(ch_fls_lai, function(i) {
 df_lai <- do.call("rbind", ls_lai)
 
 # merge
-df_plt_lai <- data.frame(PlotID = ch_plt, df_lai)
+df_plt_lai <- data.frame(plot = ch_plt, df_lai)
+
+df_plt_lai$season <- "r"
+int_id_dryssn <- grep("-D", df_plt_lai$plot)
+df_plt_lai$season[int_id_dryssn] <- "d"
+df_plt_lai$plot <- tolower(df_plt_lai$plot)
+df_plt_lai$plot <- substr(df_plt_lai$plot, 1, 4)
 
 
 ## data: modis
@@ -231,22 +237,34 @@ rst_lai_crp_qc_mrg_gf <- calc(rst_lai_crp_qc_mrg, fun = function(i) {
 }, filename = paste0(ch_dir_myd15, "/gf/GF"), bylayer = TRUE, 
 suffix = names(rst_lai_crp_qc_mrg), format = "GTiff", overwrite = TRUE)
 
-# lai extraction
-ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i) {
+
+## lai extraction 
+
+# 3-by-3 focal matrix per sls plot, or single pixel if `use_mat = FALSE`
+ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
   tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
   
   tmp_int_plt_px <- cellFromXY(rst_lai_crp_qc_mrg_gf, tmp_spt_plt)
-  tmp_int_plt_px_adj <- adjacent(rst_lai_crp_qc_mrg_gf, tmp_int_plt_px, 
-                                 sorted = TRUE, directions = 8, include = TRUE, 
-                                 pairs = FALSE)
-  tmp_mat_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px_adj, ]
+  
+  if (use_mat) {
+    tmp_int_plt_px_adj <- adjacent(rst_lai_crp_qc_mrg_gf, tmp_int_plt_px, 
+                                   sorted = TRUE, directions = 8, include = TRUE, 
+                                   pairs = FALSE)
+    tmp_mat_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px_adj, ]
+    tmp_nms <- colnames(tmp_mat_lai)
+  } else {
+    tmp_num_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px, ]
+    tmp_nms <- names(tmp_num_lai)
+    tmp_mat_lai <- matrix(tmp_num_lai, 1, byrow = TRUE)
+  }
   tmp_df_lai <- data.frame(tmp_mat_lai)
+  names(tmp_df_lai) <- tmp_nms
   
   data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df_lai)
 })
 df_sls_lai <- do.call("rbind", ls_sls_lai)
 
-# extraction of temporal range per plot
+# temporal range per plot
 df_sls_tmp_rng <- slsTemporalRange(df_sls_fls)
 
 ls_sls_lai_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
@@ -269,11 +287,24 @@ ls_sls_lai_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
     tmp_df_sls_lai <- data.frame(tmp_df_sls_lai[, 1:4], tmp_num_mu)
   }
   
+  # median lai
   data.frame(tmp_df_sls_lai[1, 1:4], 
              lai = median(tmp_df_sls_lai[, 5], na.rm = TRUE))
 })
 df_sls_lai_md <- do.call("rbind", ls_sls_lai_md)
 save("df_sls_lai_md", file = "data/lai.RData")
+
+
+## visualization: li-cor lai-2200 vs. modis lai
+
+df_licor_modis_lai <- merge(df_sls_lai_md, df_plt_lai, by = c("plot", "season"))
+
+xyplot(LAI ~ lai, data = df_licor_modis_lai, 
+       xlab = expression(LAI[MODIS]), ylab = expression(LAI[LICOR]), 
+       panel = function(x, y, ...) {
+  panel.xyplot(x, y, col = "grey50")
+  panel.text(x, y, labels = df_licor_modis_lai$plot, pos = 2, offset = .75)
+})
 
 # deregister parallel backend
 closeAllConnections()
