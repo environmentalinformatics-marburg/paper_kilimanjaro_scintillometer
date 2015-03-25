@@ -41,7 +41,7 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
 ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
                "soilHeatFlux", "pressure", "precipRate", "waterET")
 
-ls_rf_scores_wohr <- foreach(i = srunWorkspaces) %do% {
+ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -60,7 +60,7 @@ ls_rf_scores_wohr <- foreach(i = srunWorkspaces) %do% {
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, ch_var_rf]
-  # tmp_df_sub$hour <- hour(tmp_df$datetime)
+  tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
   tmp_ls_rf_stats <- foreach(seed = 1:10) %do% {
@@ -141,7 +141,7 @@ ls_rf_scores_wohr <- foreach(i = srunWorkspaces) %do% {
 
 # wet season data only
 int_id_dryssn <- c(11, 13)
-ls_rf_scores_dryssn <- ls_rf_scores[-int_id_dryssn]
+ls_rf_scores_dryssn <- ls_rf_scores_whr[-int_id_dryssn]
 
 # split data into cv/prediction statistics...
 ls_rf_scores_dryssn_stats <- lapply(ls_rf_scores_dryssn, function(i) i[[1]])
