@@ -46,6 +46,15 @@ slsMergeDailyData <- function(files,
   # Order data by datetime
   dat <- dat[order(dat$datetime), ]
   
+  # adjust sensor time during sav5 dry season measurement
+  if (length(grep("sav5", files)) > 0 & length(grep("2014-09", files)) > 0) {
+    stopifnot(require(lubridate))
+    tmp_dt <- strptime(dat$datetime, format = "%Y-%m-%d %H:%M:%S")
+    tmp_dt$hour <- tmp_dt$hour + 1
+    tmp_ch <- as.character(tmp_dt)
+    dat$datetime <- tmp_ch
+  }
+  
   # Continuous time series(i.e., begin 0:00 -> end 23:59)
   st <- paste(substr(dat$datetime[1], 1, 10), "00:00:00")
   nd <- paste(substr(dat$datetime[nrow(dat)], 1, 10), "23:59:00")
