@@ -1,5 +1,15 @@
-# output storage path
+## environmental stuff
+
+# packages
+library(plyr)
+library(plotrix)
+library(ggplot2)
+
+# path: output storage
 ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
+
+
+## data 
 
 # 60-min et rates (mm/h)
 df_sls_fls <- slsAvlFls()
@@ -27,3 +37,34 @@ load(paste0(ch_dir_out_agg01d, "df_sls_gpp_md.RData"))
 # merge and calculate water-use efficiency
 df_sls_gpp <- merge(df_sls_dv_01d, df_sls_gpp_md, by = c("plot", "season"), all = TRUE)
 df_sls_gpp$wue <- df_sls_gpp$gpp / df_sls_gpp$waterET
+
+
+## visualization
+
+# reorder factor levels
+ch_lvl <- substr(slsPlots(), 1, 3)
+ch_lvl <- unique(ch_lvl)
+df_sls_gpp$habitat <- factor(df_sls_gpp$habitat, levels = ch_lvl)
+
+df_sls_gpp$plot <- factor(df_sls_gpp$plot, levels = slsPlots())
+
+ggplot(aes(x = habitat, y = wue, group = plot, fill = plot), data = df_sls_gpp) + 
+  geom_histogram(stat = "identity", position = "dodge", 
+                 ,subset = .(season == "r"))
+
+# standard errors
+df_sls_gpp %>% 
+  filter(season == "r") %>% 
+  group_by(habitat) %>% 
+  summarise(wue_mu = mean(wue), wue_se = std.error(wue)) %>%
+  data.frame() -> df_wue_se
+
+limits <- aes(ymax = wue_mu + wue_se, ymin = wue_mu - wue_se)
+
+ggplot(aes(x = habitat, y = wue_mu), data = df_wue_se) + 
+  geom_histogram(stat = "identity", fill = "grey50") + 
+  geom_errorbar(limits, position = "dodge", linetype = "dashed", 
+                width = .2) + 
+  labs(x = "\nHabitat type", y = expression("Average daily WUE (kgC/m"^"2"~")")) + 
+  theme_bw() + 
+  theme(panel.grid = element_blank())
