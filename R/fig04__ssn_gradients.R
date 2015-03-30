@@ -35,7 +35,7 @@ df_sls_dv_01d <- do.call("rbind", ls_sls_dv_01d)
 # daytime subset
 ch_sls_dv_01h_hr <- substr(as.character(df_sls_dv_01h$datetime), 1, 2)
 int_sls_dv_01h_hr <- as.integer(ch_sls_dv_01h_hr)
-int_sls_dv_01h_dt <- int_sls_dv_01h_hr >= 4 & int_sls_dv_01h_hr < 20
+int_sls_dv_01h_dt <- int_sls_dv_01h_hr >= 0 & int_sls_dv_01h_hr < 24
 df_sls_dv_01h_dt <- df_sls_dv_01h[int_sls_dv_01h_dt, ]
 
 df_sls_dv_01h_dt$time <- strptime(df_sls_dv_01h_dt$datetime, format = "%H:%M:%S")
