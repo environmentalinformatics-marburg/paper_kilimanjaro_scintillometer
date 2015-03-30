@@ -5,12 +5,13 @@ library(rgdal)
 library(MODIS)
 library(Rsenal)
 library(doParallel)
-library(zoo)
+library(kza)
 library(GSODTools)
 
 # functions
 source("R/slsTemporalRange.R")
 source("R/slsGppIndex.R")
+source("R/qcMyd17.R")
 
 # parallelization
 cl <- makeCluster(3)
@@ -21,7 +22,7 @@ ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
 ch_dir_prc <- paste0(ch_dir_arc, "/PROCESSED")
 
 # path: modis, processed
-ch_dir_myd17 <- "/media/permanent/phd/scintillometer/data/myd17a2/"
+ch_dir_myd17 <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/myd17a2/"
 
 # path: plot coordinates
 ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/coords/"
@@ -52,23 +53,31 @@ dt_fls_gpp <- ls_fls_gpp$inputLayerDates
 rst_tmp <- kiliAerial(minNumTiles = 9L, rasterize = TRUE)
 
 # data import and cropping
-ls_myd17_crp <- foreach(sds = c("Gpp", "QC"), 
-                        .packages = c("raster", "rgdal", "foreach")) %dopar% {
-  tmp_ch_fls <- list.files(ch_dir_prc, full.names = TRUE, recursive = TRUE, 
-                          pattern = paste0("^MYD17A2.*", sds, "_1km.tif$"))
-  
-  tmp_rst_crp <- foreach(i = tmp_ch_fls, .combine = "stack") %do% {
-    tmp_rst <- raster(i)
-    
-    crop(tmp_rst, rst_tmp, format = "GTiff", overwrite = TRUE,
-         filename = paste0(ch_dir_myd17, "/crp/CRP_", basename(i)))
-  }
-  
-  return(tmp_rst_crp)
-}
+# ls_myd17_crp <- foreach(sds = c("Gpp", "QC"), 
+#                         .packages = c("raster", "rgdal", "foreach")) %dopar% {
+#   tmp_ch_fls <- list.files(ch_dir_prc, full.names = TRUE, recursive = TRUE, 
+#                           pattern = paste0("^MYD17A2.*", sds, "_1km.tif$"))
+#   
+#   tmp_rst_crp <- foreach(i = tmp_ch_fls, .combine = "stack") %do% {
+#     tmp_rst <- raster(i)
+#     
+#     crop(tmp_rst, rst_tmp, format = "GTiff", overwrite = TRUE,
+#          filename = paste0(ch_dir_myd17, "/crp/CRP_", basename(i)))
+#   }
+#   
+#   return(tmp_rst_crp)
+# }
+# 
+# rst_gpp <- ls_myd17_crp[[1]] * 0.0001
+# rst_qc <- ls_myd17_crp[[2]]
 
-rst_gpp <- ls_myd17_crp[[1]] * 0.0001
-rst_qc <- ls_myd17_crp[[2]]
+fls_gpp <- list.files(paste0(ch_dir_myd17, "/crp"), pattern = "^CRP.*Gpp", 
+                      full.names = TRUE)
+rst_gpp <- stack(fls_gpp) * 0.0001
+
+fls_qc <- list.files(paste0(ch_dir_myd17, "/crp"), pattern = "^CRP.*Psn_QC", 
+                     full.names = TRUE)
+rst_qc <- stack(fls_qc)
 
 # qc
 # rst_myd17_crp_qc <- foreach(i = 1:nlayers(rst_gpp), j = names(rst_gpp),
@@ -77,7 +86,7 @@ rst_qc <- ls_myd17_crp[[2]]
 #   overlay(rst_gpp[[i]], rst_qc[[i]], fun = function(x, y) {
 #     num_x <- x[]
 #     num_y <- y[]
-#     num_y_qc <- sapply(num_y, qcMyd17)
+#     num_y_qc <- sapply(num_y, function(i) qcMyd17(i, cs_exclude = c("10", "01")))
 #     log_y_qc <- is.na(num_y_qc)
 #     num_x[log_y_qc] <- NA
 #     return(num_x)
@@ -95,7 +104,7 @@ mat_myd17_crp_qc <- as.matrix(rst_myd17_crp_qc)
 #   tmp_num <- as.numeric(x)
 #   
 #   if (!all(is.na(tmp_num))) {
-#     tmp_int_id <- tsOutliers(tmp_num, lower_quantile = .4, upper_quantile = .9, 
+#     tmp_int_id <- tsOutliers(tmp_num, lower_quantile = .5, upper_quantile = .8, 
 #                              index = TRUE)
 #     if (length(tmp_int_id) > 0)
 #       tmp_num[tmp_int_id] <- NA
@@ -109,20 +118,22 @@ fls_myd17_crp_qc_tso <- list.files(ch_dir_myd17, pattern = "^TSO",
                                    full.names = TRUE, recursive = TRUE)
 rst_myd17_crp_qc_tso <- stack(fls_myd17_crp_qc_tso)
 
-# gap-filling
-# rst_myd17_crp_qc_gf <- calc(rst_myd17_crp_qc_tso, fun = function(i) {
-#   tmp_num_gpp <- i
-#   tmp_log_isna <- is.na(tmp_num_gpp)
-#   
-#   tmp_num_mav <- rollapply(tmp_num_gpp, width = 3, fill = NA, 
-#                            FUN = function(...) mean(..., na.rm = TRUE))
-#   
-#   tmp_num_gpp[tmp_log_isna] <- tmp_num_mav[tmp_log_isna]
-#   return(tmp_num_gpp)
-# }, filename = paste0(ch_dir_myd17, "/gf/GF"), bylayer = TRUE, 
-# suffix = names(rst_myd17_crp_qc_tso), format = "GTiff", overwrite = TRUE)
 
-fls_myd17_crp_qc_tso_gf <- list.files(ch_dir_myd17, pattern = "^GF_TSO", 
+## gap-filling
+
+# kolmogorov-zurbenko adaptive (if k = 1 -> identical to moving average)
+rst_myd17_crp_qc_tso_kz <- calc(rst_myd17_crp_qc_tso, fun = function(i) {
+  tmp_num_gpp <- i
+  tmp_log_isna <- is.na(tmp_num_gpp)
+  
+  tmp_num_mav <- kza(tmp_num_gpp, m = 3, k = 3, impute_tails = TRUE)
+  
+  tmp_num_gpp[tmp_log_isna] <- tmp_num_mav$kz[tmp_log_isna]
+  return(tmp_num_gpp)
+}, filename = paste0(ch_dir_myd17, "/gf/KZ"), bylayer = TRUE, 
+suffix = names(rst_myd17_crp_qc_tso), format = "GTiff", overwrite = TRUE)
+
+fls_myd17_crp_qc_tso_gf <- list.files(ch_dir_myd17, pattern = "^KZ_TSO", 
                                       full.names = TRUE, recursive = TRUE)
 rst_myd17_crp_qc_tso_gf <- stack(fls_myd17_crp_qc_tso_gf)
 mat_myd17_crp_qc_tso_gf <- as.matrix(rst_myd17_crp_qc_tso_gf)
@@ -135,11 +146,11 @@ ls_sls_gpp <- lapply(1:nrow(df_sls_fls), function(i) {
   tmp_spt_crd_amp <- subset(spt_crd_amp, PlotID == df_sls_fls$plot[i])
   tmp_int_crd_px <- cellFromXY(rst_myd17_crp_qc_tso_gf, tmp_spt_crd_amp)
   
-  tmp_num_gpp <- mat_myd17_crp_qc_tso_gf[tmp_int_crd_px, ]
-  tmp_nms <- names(tmp_num_gpp)
-  tmp_mat_gpp <- matrix(tmp_num_gpp, 1, byrow = TRUE)
+  tmp_int_crd_px_adj <- adjacent(rst_myd17_crp_qc_tso_gf, tmp_int_crd_px,
+                                 sorted = TRUE, directions = 8, include = TRUE,
+                                 pairs = FALSE)
+  tmp_mat_gpp <- mat_myd17_crp_qc_tso_gf[tmp_int_crd_px_adj, ]
   tmp_df_gpp <- data.frame(tmp_mat_gpp)
-  names(tmp_df_gpp) <- tmp_nms
   
   data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df_gpp)
 })
