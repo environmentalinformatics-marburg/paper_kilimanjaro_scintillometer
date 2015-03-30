@@ -134,11 +134,12 @@ spt_crd_amp <- subset(spt_crd, PoleType == "AMP")
 ls_sls_gpp <- lapply(1:nrow(df_sls_fls), function(i) {
   tmp_spt_crd_amp <- subset(spt_crd_amp, PlotID == df_sls_fls$plot[i])
   tmp_int_crd_px <- cellFromXY(rst_myd17_crp_qc_tso_gf, tmp_spt_crd_amp)
-  tmp_int_crd_px_adj <- adjacent(rst_myd17_crp_qc_tso_gf, tmp_int_crd_px, 
-                                 sorted = TRUE, directions = 8, include = TRUE, 
-                                 pairs = FALSE)
-  tmp_mat_gpp <- mat_myd17_crp_qc_tso_gf[tmp_int_crd_px_adj, ]
+  
+  tmp_num_gpp <- mat_myd17_crp_qc_tso_gf[tmp_int_crd_px, ]
+  tmp_nms <- names(tmp_num_gpp)
+  tmp_mat_gpp <- matrix(tmp_num_gpp, 1, byrow = TRUE)
   tmp_df_gpp <- data.frame(tmp_mat_gpp)
+  names(tmp_df_gpp) <- tmp_nms
   
   data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df_gpp)
 })
@@ -167,8 +168,13 @@ ls_sls_gpp_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
     tmp_df_sls_gpp <- data.frame(tmp_df_sls_gpp[, 1:4], tmp_num_mu)
   }
   
-  data.frame(tmp_df_sls_gpp[1, 1:4], 
-             gpp = median(tmp_df_sls_gpp[, 5], na.rm = TRUE))
+  # calculate focal median if cell of interest is missing, else return value
+  if (is.na(tmp_df_sls_gpp[5, 5])) {
+    return(data.frame(tmp_df_sls_gpp[1, 1:4], 
+           gpp = median(tmp_df_sls_gpp[, 5], na.rm = TRUE)))
+  } else {
+    return(data.frame(tmp_df_sls_gpp[1, 1:4], gpp = tmp_df_sls_gpp[5, 5]))
+  }
 })
 df_sls_gpp_md <- do.call("rbind", ls_sls_gpp_md)
 save("df_sls_gpp_md", file = paste0(ch_dir_out_agg01d, "df_sls_gpp_md.RData"))
