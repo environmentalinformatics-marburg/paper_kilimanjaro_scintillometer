@@ -40,7 +40,7 @@ MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"),
 
 # data download
 for (product in c("MOD17A2", "MYD17A2"))
-  runGdal(product, begin = "2013001", tileH = 21, tileV = 9, 
+  runGdal(product, collection = "005", begin = "2013001", tileH = 21, tileV = 9, 
           SDSstring = "101", job = "GPPkili", outProj = "+init=epsg:21037")
 
 # modis dates
