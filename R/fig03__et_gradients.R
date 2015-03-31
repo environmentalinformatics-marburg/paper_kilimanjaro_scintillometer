@@ -87,7 +87,7 @@ p <- ggplot(aes(x = time_fac, y = waterET, group = plot, colour = plot, fill = p
   theme_bw() + 
   theme(panel.grid = element_blank())
 
-png(paste0(ch_dir_ppr, "/fig/fig02__elev_dist_gradients.png"), width = 35, 
+png(paste0(ch_dir_ppr, "/fig/fig03__elev_dist_gradients.png"), width = 35, 
     height = 40, units = "cm", res = 300, pointsize = 18)
 print(p) 
 dev.off()

@@ -74,7 +74,7 @@ p <- ggplot(aes(x = time_fac, y = waterET, group = plot_season,
   labs(x = "\nTime (hours)", y = "Evapotranspiration (mm) \n") + 
   theme_bw()
 
-png(paste0(ch_dir_ppr, "/fig/fig03__seasonal_gradients.png"), width = 25, 
+png(paste0(ch_dir_ppr, "/fig/fig04__seasonal_gradients.png"), width = 25, 
     height = 20, units = "cm", res = 300, pointsize = 15)
 print(p) 
 dev.off()
