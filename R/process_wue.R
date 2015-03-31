@@ -5,8 +5,11 @@ library(plyr)
 library(plotrix)
 library(ggplot2)
 
-# path: output storage
+# path: load data
 ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
+
+# path: output storage
+ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
 
 ## data 
@@ -60,11 +63,19 @@ df_sls_gpp %>%
   data.frame() -> df_wue_se
 
 limits <- aes(ymax = wue_mu + wue_se, ymin = wue_mu - wue_se)
+num_ylim <- c(0, max(df_wue_se$wue_mu + df_wue_se$wue_se, na.rm = TRUE) + .002)
 
-ggplot(aes(x = habitat, y = wue_mu), data = df_wue_se) + 
-  geom_histogram(stat = "identity", fill = "grey50") + 
+p_wue <- ggplot(aes(x = habitat, y = wue_mu), data = df_wue_se) + 
+  geom_histogram(stat = "identity", fill = "grey50", colour = "black", 
+                 lwd = 1.2, alpha = .5) + 
   geom_errorbar(limits, position = "dodge", linetype = "dashed", 
                 width = .2) + 
   labs(x = "\nHabitat type", y = expression("Average daily WUE (kgC/m"^"2"~")")) + 
   theme_bw() + 
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank()) + 
+  coord_cartesian(ylim = num_ylim)
+
+png(paste0(ch_dir_ppr, "fig/fig05__wue.png"), width = 20, height = 15, 
+    units = "cm", pointsize = 18, res = 600)
+print(p_wue)
+dev.off()
