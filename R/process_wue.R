@@ -2,8 +2,15 @@
 
 # packages
 library(plyr)
+library(dplyr)
 library(plotrix)
 library(ggplot2)
+
+# functions
+source("R/slsAvlFls.R")
+source("R/slsPlots.R")
+source("R/slsDiurnalVariation.R")
+source("R/slsAggregate.R")
 
 # path: load data
 ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
@@ -79,3 +86,29 @@ png(paste0(ch_dir_ppr, "fig/fig05__wue.png"), width = 20, height = 15,
     units = "cm", pointsize = 18, res = 600)
 print(p_wue)
 dev.off()
+
+# dry season
+df_sls_gpp %>% 
+  filter(habitat == "sav") %>% 
+  #   group_by(season) %>% 
+  #   summarise(wue_mu = mean(wue), wue_se = std.error(wue)) %>%
+  data.frame() -> df_wue_se_ds
+
+levels(df_wue_se_ds$season) <- c("wet", "dry")
+
+num_ylim <- c(0, max(df_wue_se_ds$wue, na.rm = TRUE) + .002)
+
+p_wue_ds <- ggplot(aes(x = plot, y = wue, group = season, fill = season), 
+       data = df_wue_se_ds) + 
+  geom_histogram(stat = "identity", position = "dodge", 
+                 colour = "black", lwd = 1.2, alpha = .5) +
+  scale_fill_manual("", values = c("dry" = "brown", "wet" = "green")) + 
+  labs(x = "\nPlotID", y = expression("Average daily WUE (kgC/m"^"2"~")")) + 
+  theme_bw() + 
+  theme(panel.grid = element_blank(), 
+        legend.position = c(0, 1), 
+        legend.justification = c(0, .9)) + 
+  coord_cartesian(ylim = num_ylim)
+
+  
+  
