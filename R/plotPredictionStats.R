@@ -47,7 +47,7 @@ plotPredictionStats <- function(reg_stats, ...) {
   nms <- names(df_reg_stats)[c(1, 3, 5)]
   
   rsq_plt <- dotplot("Rsq" ~ Rsq, data = df_reg_stats, 
-                     xlab = "Value", ylab = "",
+                     xlab = "", ylab = "",
                      col = "grey20", xlim = c(-0.05, 1.05),
                      scales = list(x = list(draw = FALSE)),
                      par.settings = envinmr.theme(),
@@ -76,7 +76,8 @@ plotPredictionStats <- function(reg_stats, ...) {
   
   err_plt <- dotplot(nms ~ upr + lwr,
                      data = df_plt, , 
-                     xlab = "Value", ylab = "",
+                     xlab = "", ylab = "",
+                     ylim = c(-1, 4),
                      col = "grey20",
                      pch = "|",
                      par.settings = envinmr.theme(),
@@ -85,7 +86,9 @@ plotPredictionStats <- function(reg_stats, ...) {
   out_plt <- resizePanels(latticeCombineGrid(list(rsq_plt, err_plt),
                                              layout = c(1, 2)), 
                           h = c(1/4, 3/4))
-  out_plt$y.limits[[2]] <- nms[c(2, 1, 3)]
+  
+  out_plt <- update(out_plt, 
+                    scales = list(y = list(at = 1:3, labels = sort(nms))))
   
   out_plt <- update(out_plt, panel = panel.fun)
   return(out_plt)
