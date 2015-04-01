@@ -170,7 +170,7 @@ ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
 })
 
 # grid.arrange
-do.call(function(...) grid.arrange(..., ncol = 2, as.table = TRUE), 
+do.call(function(...) grid.arrange(..., ncol = 4, as.table = TRUE), 
              ls_rf_scores_dryssn_vis)
 
 # deregister parallel backend
