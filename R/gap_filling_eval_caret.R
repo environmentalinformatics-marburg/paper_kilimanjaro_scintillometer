@@ -1,5 +1,8 @@
 ## environmental stuff
 
+# workspace clearance
+rm(list = ls(all = TRUE))
+
 # packages
 lib <- c("randomForest", "ggplot2", "latticeExtra", "doParallel", "Rsenal", 
          "caret", "gridExtra", "lubridate")
@@ -19,7 +22,7 @@ source("R/plotPredictionStats.R")
 source("R/slsPlots.R")
 
 # parallelization
-cl <- makeCluster(4)
+cl <- makeCluster(3)
 registerDoParallel(cl)
 
 # path: srun
@@ -45,6 +48,7 @@ ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
+  tmp_ch_dt <- sapply(tmp_ls_plt, "[[", 4)
   
   tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
                         pattern = ".mnd$", full.names = TRUE)
@@ -107,6 +111,7 @@ ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
   # cv/prediction statistics
   tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
   tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
+  write.csv(tmp_df_rf_eval, paste0("data/regstats_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   # variable importances
   tmp_ls_rf_varimp <- lapply(tmp_ls_rf_stats, function(i) i[[2]])
@@ -115,6 +120,8 @@ ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
   tmp_mat_rf_varimp <- matrix(tmp_num_rf_varimp, 1, byrow = TRUE)
   tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
   names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
+  write.csv(tmp_df_rf_varimp, row.names = FALSE, quote = FALSE,
+            paste0("data/varimp_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   #   # plot training stats
   #   num_trn_stats <- colMeans(tmp_df_rf_eval[, 3:5])
