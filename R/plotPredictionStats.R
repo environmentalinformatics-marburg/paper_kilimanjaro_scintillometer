@@ -32,22 +32,26 @@ plotPredictionStats <- function(reg_stats, ...) {
       panel.axis("bottom", at = at, outside = FALSE,
                  labels = TRUE, half = FALSE)
       panel.abline(v = 0, lty = 3, lwd = 1)
-      panel.lines(x = x_se[c(1, 4)], col = "grey60",
-                  y = y_se[c(1, 4)], lwd = 4)
-      panel.lines(x = x_se[c(2, 5)], col = "grey60",
-                  y = y_se[c(2, 5)], lwd = 4)
-      panel.lines(x = x_se[c(3, 6)], col = "grey60",
-                  y = y_se[c(3, 6)], lwd = 4)
+      panel.lines(x = x_se[c(1, 5)], col = "grey60",
+                  y = y_se[c(1, 5)], lwd = 4)
+      panel.lines(x = x_se[c(2, 6)], col = "grey60",
+                  y = y_se[c(2, 6)], lwd = 4)
+      panel.lines(x = x_se[c(3, 7)], col = "grey60",
+                  y = y_se[c(3, 7)], lwd = 4)
       panel.dotplot(..., lwd = 0.5)
       panel.dotplot(x = df_plt$fit, y = df_plt$nms,
-                    cex = 1.3, col = "grey20", lwd = 0.5)
+                    cex = 1.3, col = "grey20", lwd = 0.5, col.line = "transparent")
     }
   }
   
   nms <- names(df_reg_stats)[c(1, 3, 5)]
+  nms <- c(nms, "")
   
-  rsq_plt <- dotplot("Rsq" ~ Rsq, data = df_reg_stats, 
-                     xlab = "", ylab = "",
+  df_rsq <- data.frame(nms = c("Rsq", ""), Rsq = c(df_reg_stats$Rsq, NA))
+  df_rsq$nms <- factor(df_rsq$nms, levels = c("Rsq", ""))
+  
+  rsq_plt <- dotplot(nms ~ Rsq, data = df_rsq, 
+                     xlab = "", ylab = "", col.line = c("grey70", "transparent"),
                      col = "grey20", xlim = c(-0.05, 1.05),
                      scales = list(x = list(draw = FALSE)),
                      par.settings = envinmr.theme(),
@@ -55,11 +59,13 @@ plotPredictionStats <- function(reg_stats, ...) {
   
   fit <- c(df_reg_stats$ME,
            df_reg_stats$MAE,
-           df_reg_stats$RMSE)
+           df_reg_stats$RMSE, 
+           NA)
   
   fit_se <- c(df_reg_stats$ME.se,
               df_reg_stats$MAE.se,
-              df_reg_stats$RMSE.se)
+              df_reg_stats$RMSE.se, 
+              NA)
   
   df_plt <- data.frame(nms = nms,
                        fit = fit,
@@ -68,17 +74,17 @@ plotPredictionStats <- function(reg_stats, ...) {
                        lwr = fit - fit_se)
   
   x_se <- c(df_plt$lwr, df_plt$upr)
-  y_se <- rep(c(2, 1, 3), 2)
+  y_se <- rep(c(2, 1, 3, NA) + 1, 2)
   
-  rng <- range(x_se)
+  rng <- range(x_se, na.rm = TRUE)
   rng <- round(c(rng[1] - 0.2 * rng[1],
                  rng[2] + 0.2 * rng[2]), ...)
   
   err_plt <- dotplot(nms ~ upr + lwr,
                      data = df_plt, , 
                      xlab = "", ylab = "",
-                     ylim = c(-1, 4),
-                     col = "grey20",
+                     # ylim = c(-1, 4),
+                     col = "grey20", col.line = c(rep("grey70", 3), "transparent"),
                      pch = "|",
                      par.settings = envinmr.theme(),
                      cex = 1.2, as.table = TRUE)
@@ -86,9 +92,6 @@ plotPredictionStats <- function(reg_stats, ...) {
   out_plt <- resizePanels(latticeCombineGrid(list(rsq_plt, err_plt),
                                              layout = c(1, 2)), 
                           h = c(1/4, 3/4))
-  
-  out_plt <- update(out_plt, 
-                    scales = list(y = list(at = 1:3, labels = sort(nms))))
   
   out_plt <- update(out_plt, panel = panel.fun)
   return(out_plt)
