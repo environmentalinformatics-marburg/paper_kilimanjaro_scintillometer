@@ -1,7 +1,10 @@
-slsDiurnalVariation <- function(fn, agg_by = 5, ...) {
+slsDiurnalVariation <- function(fn, agg_by = 5, path_fun = NULL, ...) {
   
   # functions
-  source("R/slsAggregate.R")
+  if (is.null(path_fun)) 
+    source("R/slsAggregate.R")
+  else
+    source(paste0(path_fun, "/slsAggregate.R"))
   
   # Import current LUC
   tmp_df_agg <- slsAggregate(fn = fn, agg_by = agg_by, ...)
