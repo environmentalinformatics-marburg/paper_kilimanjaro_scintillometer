@@ -1,4 +1,4 @@
-plotPredictionStats <- function(reg_stats, ...) {
+plotPredictionStats <- function(reg_stats, rng = NULL, ...) {
   
   # packages
   stopifnot(require(Rsenal))
@@ -76,16 +76,18 @@ plotPredictionStats <- function(reg_stats, ...) {
   x_se <- c(df_plt$lwr, df_plt$upr)
   y_se <- rep(c(2, 1, 3, NA) + 1, 2)
   
-  rng <- range(x_se, na.rm = TRUE)
-  rng <- round(c(rng[1] - 0.2 * rng[1],
-                 rng[2] + 0.2 * rng[2]), ...)
+  if (is.null(rng)) {
+    rng <- range(x_se, na.rm = TRUE)
+    rng <- round(c(rng[1] - 0.2 * rng[1],
+                   rng[2] + 0.2 * rng[2]), ...)
+  }
   
   err_plt <- dotplot(nms ~ upr + lwr,
                      data = df_plt, , 
                      xlab = "", ylab = "",
                      # ylim = c(-1, 4),
                      col = "grey20", col.line = c(rep("grey70", 3), "transparent"),
-                     pch = "|",
+                     pch = "|", xlim = rng,
                      par.settings = envinmr.theme(),
                      cex = 1.2, as.table = TRUE)
   
