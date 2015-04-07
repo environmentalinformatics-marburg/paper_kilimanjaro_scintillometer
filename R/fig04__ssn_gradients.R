@@ -78,10 +78,11 @@ p <- ggplot(aes(x = time_fac, y = waterET, group = plot_season,
 #   guides(colour = FALSE, fill = FALSE) + 
   labs(x = "\nTime (hours)", y = "Evapotranspiration (mm) \n") + 
   theme_bw() + 
-  theme(legend.position = c(1, 1), legend.justification = c(1, 1), 
+  theme(legend.position = c(1, 1), legend.justification = c(.9, .9), 
+        legend.key.size = unit(.8, "cm"), 
         panel.grid = element_blank(), strip.text = element_text(size = 12))
 
-png(paste0(ch_dir_ppr, "/fig/fig04__seasonal_gradients.png"), width = 30, 
+png(paste0(ch_dir_ppr, "/fig/fig04__seasonal_gradients.png"), width = 22, 
     height = 10, units = "cm", res = 300, pointsize = 18)
 print(p) 
 dev.off()
