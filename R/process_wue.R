@@ -79,11 +79,13 @@ p_wue <- ggplot(aes(x = habitat, y = wue_mu), data = df_wue_se) +
                 width = .2) + 
   labs(x = "\nHabitat type", y = expression("Average daily WUE (kgC/m"^"2"~")")) + 
   theme_bw() + 
-  theme(panel.grid = element_blank()) + 
+  theme(panel.grid = element_blank(), 
+        axis.title = element_text(size = 18), 
+        axis.text = element_text(size = 14)) + 
   coord_cartesian(ylim = num_ylim)
 
 png(paste0(ch_dir_ppr, "fig/fig05__wue.png"), width = 20, height = 15, 
-    units = "cm", pointsize = 18, res = 600)
+    units = "cm", pointsize = 21, res = 600)
 print(p_wue)
 dev.off()
 

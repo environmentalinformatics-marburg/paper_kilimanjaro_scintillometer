@@ -309,7 +309,7 @@ df_plt_lai_rs %>%
   summarise(lai_mu = mean(LAI), lai_se = std.error(LAI)) %>%
   data.frame() -> df_hab_lai_rs
 limits <- aes(ymax = lai_mu + lai_se, ymin = lai_mu - lai_se)
-num_ylim <- c(0, max(df_hab_lai_rs$lai_mu + df_hab_lai_rs$lai_se, na.rm = TRUE) + .05)
+num_ylim <- c(0, max(df_hab_lai_rs$lai_mu + df_hab_lai_rs$lai_se, na.rm = TRUE) + .15)
 
 # reorder factor levels
 ch_lvl <- substr(slsPlots(), 1, 3)
@@ -323,7 +323,9 @@ p_lai_rs <- ggplot(aes(x = habitat, y = lai_mu), data = df_hab_lai_rs) +
                 width = .2) + 
   labs(x = "\nHabitat type", y = "LAI\n") + 
   theme_bw() + 
-  theme(panel.grid = element_blank()) + 
+  theme(panel.grid = element_blank(), 
+        axis.title = element_text(size = 18), 
+        axis.text = element_text(size = 14)) + 
   coord_cartesian(ylim = num_ylim)
 
 png(paste0(ch_dir_ppr, "fig/fig0x__lai.png"), width = 20, height = 15, 
