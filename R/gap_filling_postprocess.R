@@ -15,7 +15,7 @@ ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
   # plot prediction stats
   num_reg_stats <- colMeans(tmp_df_rf_eval[, 7:ncol(tmp_df_rf_eval)])
   reg_stats <- num_reg_stats
-  p_reg_stats <- plotPredictionStats(reg_stats, digits = 2, rng = c(-0.01, 0.082))
+  p_reg_stats <- plotPredictionStats(reg_stats, digits = 2, rng = c(-0.01, 0.086))
   
   # modal mtry and mean training and prediction scores
   int_mdl_mtry <- modal(tmp_df_rf_eval$mtry)
