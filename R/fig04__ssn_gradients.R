@@ -35,7 +35,7 @@ df_sls_dv_01d <- do.call("rbind", ls_sls_dv_01d)
 # daytime subset
 ch_sls_dv_01h_hr <- substr(as.character(df_sls_dv_01h$datetime), 1, 2)
 int_sls_dv_01h_hr <- as.integer(ch_sls_dv_01h_hr)
-int_sls_dv_01h_dt <- int_sls_dv_01h_hr >= 0 & int_sls_dv_01h_hr < 24
+int_sls_dv_01h_dt <- int_sls_dv_01h_hr >= 4 & int_sls_dv_01h_hr < 20
 df_sls_dv_01h_dt <- df_sls_dv_01h[int_sls_dv_01h_dt, ]
 
 df_sls_dv_01h_dt$time <- strptime(df_sls_dv_01h_dt$datetime, format = "%H:%M:%S")
@@ -62,19 +62,26 @@ names(ch_lbl) <- ch_lvl
 ch_cols_bg <- rep(c("black", "grey65"), 2)
 names(ch_cols_bg) <- unique(df_sls_dv_01h_dt$plot_season)
 
+ch_cols_bg <- c("black", "grey75")
+names(ch_cols_bg) <- c("wet", "dry")
+
+levels(df_sls_dv_01h_dt$season) <- c("wet", "dry")
+
 p <- ggplot(aes(x = time_fac, y = waterET, group = plot_season, 
-                colour = plot_season, fill = plot_season), 
+                colour = season, fill = season), 
             data = df_sls_dv_01h_dt) + 
   geom_histogram(stat = "identity", position = "dodge") +
-  facet_wrap(~ plot, ncol = 1, drop = FALSE) + 
+  facet_wrap(~ plot, ncol = 2, drop = FALSE) + 
   scale_x_discrete(labels = ch_lbl) + 
   scale_color_manual("", values = ch_cols_bg) + 
   scale_fill_manual("", values = ch_cols_bg) + 
-  guides(colour = FALSE, fill = FALSE) + 
+#   guides(colour = FALSE, fill = FALSE) + 
   labs(x = "\nTime (hours)", y = "Evapotranspiration (mm) \n") + 
-  theme_bw()
+  theme_bw() + 
+  theme(legend.position = c(1, 1), legend.justification = c(1, 1), 
+        panel.grid = element_blank(), strip.text = element_text(size = 12))
 
-png(paste0(ch_dir_ppr, "/fig/fig04__seasonal_gradients.png"), width = 25, 
-    height = 20, units = "cm", res = 300, pointsize = 15)
+png(paste0(ch_dir_ppr, "/fig/fig04__seasonal_gradients.png"), width = 30, 
+    height = 10, units = "cm", res = 300, pointsize = 18)
 print(p) 
 dev.off()
