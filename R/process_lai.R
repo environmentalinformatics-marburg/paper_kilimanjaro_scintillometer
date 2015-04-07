@@ -31,6 +31,9 @@ ch_dir_myd15 <- "/media/permanent/phd/scintillometer/data/myd15a2/"
 ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/coords/"
 ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
+# path: output storage
+ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
+
 
 ## data: coordinates
 
@@ -297,6 +300,38 @@ save("df_sls_lai_md", file = "data/lai.RData")
 
 ## visualization: li-cor lai-2200 vs. modis lai
 
+# average lai per habitat type
+df_plt_lai$habitat <- substr(df_plt_lai$plot, 1, 3)
+df_plt_lai_rs <- subset(df_plt_lai, season == "r")
+
+df_plt_lai_rs %>%
+  group_by(habitat) %>% 
+  summarise(lai_mu = mean(LAI), lai_se = std.error(LAI)) %>%
+  data.frame() -> df_hab_lai_rs
+limits <- aes(ymax = lai_mu + lai_se, ymin = lai_mu - lai_se)
+num_ylim <- c(0, max(df_hab_lai_rs$lai_mu + df_hab_lai_rs$lai_se, na.rm = TRUE) + .05)
+
+# reorder factor levels
+ch_lvl <- substr(slsPlots(), 1, 3)
+ch_lvl <- unique(ch_lvl)
+df_hab_lai_rs$habitat <- factor(df_hab_lai_rs$habitat, levels = ch_lvl)
+
+p_lai_rs <- ggplot(aes(x = habitat, y = lai_mu), data = df_hab_lai_rs) + 
+  geom_histogram(stat = "identity", position = "dodge", fill = "grey50", 
+                 colour = "black", lwd = 1.2, alpha = .5) +
+  geom_errorbar(limits, position = "dodge", linetype = "dashed", 
+                width = .2) + 
+  labs(x = "\nHabitat type", y = "LAI\n") + 
+  theme_bw() + 
+  theme(panel.grid = element_blank()) + 
+  coord_cartesian(ylim = num_ylim)
+
+png(paste0(ch_dir_ppr, "fig/fig0x__lai.png"), width = 20, height = 15, 
+    units = "cm", pointsize = 18, res = 600)
+print(p_lai_rs)
+dev.off()
+
+# modis vs. in situ lai
 df_licor_modis_lai <- merge(df_sls_lai_md, df_plt_lai, by = c("plot", "season"))
 
 xyplot(LAI ~ lai, data = df_licor_modis_lai, 
