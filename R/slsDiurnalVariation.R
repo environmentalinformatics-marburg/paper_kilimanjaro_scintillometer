@@ -1,5 +1,8 @@
 slsDiurnalVariation <- function(fn, agg_by = 5, path_fun = NULL, ...) {
   
+  # packages
+  library(plotrix)
+  
   # functions
   if (is.null(path_fun)) 
     source("R/slsAggregate.R")
@@ -32,7 +35,10 @@ slsDiurnalVariation <- function(fn, agg_by = 5, path_fun = NULL, ...) {
   tmp_mat_mrg <- as.matrix(tmp_dat_mrg[, 2:ncol(tmp_dat_mrg)])
   tmp_med_mrg <- apply(tmp_mat_mrg, 1, 
                        FUN = function(...) median(..., na.rm = TRUE))
+  tmp_se_mrg <- apply(tmp_mat_mrg, 1, 
+                      FUN = function(...) std.error(..., na.rm = TRUE))
   tmp_df_mrg <- data.frame(datetime = tmp_dat_mrg$time,
-                           waterET = tmp_med_mrg)
+                           waterET = tmp_med_mrg, 
+                           waterET_se = tmp_se_mrg)
   return(tmp_df_mrg)
 }
