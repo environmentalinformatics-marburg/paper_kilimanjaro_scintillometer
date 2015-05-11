@@ -7,6 +7,7 @@ sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
 # functions
 source("R/slsMergeDailyData.R")
+source("R/slsFoggy.R")
 
 # parallelization
 cl <- makeCluster(3)
@@ -28,7 +29,7 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
 ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
                "soilHeatFlux", "pressure", "precipRate", "waterET")
 
-# gap-filling
+# gap-filling and 10m/1h aggregation
 ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
@@ -84,34 +85,33 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   write.csv(tmp_df_sub_gf, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
             quote = FALSE, row.names = FALSE)
   
-  #   dat3 <- dat2
-  #   dat3[index, "waterET"] <- pred
-  #   dat3$waterET <- as.numeric(as.character(dat3$waterET))
-  #   
-  #   write.csv(dat3, paste0(i, "/data/out/", plt, "_mrg_rf.csv"), row.names = FALSE)
-  #   
-  #   # 1h aggregation  
-  #   dat4 <- aggregate(dat3[, 2:ncol(dat3)], by = list(substr(dat3[, 1], 1, 13)), 
-  #                     FUN = function(x) round(mean(x, na.rm = TRUE), 1))
-  #   dat4[, 1] <- paste0(dat4[, 1], ":00")
-  #   names(dat4)[1] <- "datetime"
-  #   dat4$datetime <- strptime(dat4$datetime, format = "%Y-%m-%d %H:%M")
-  #   
-  #   
-  #   write.csv(dat4, paste0(i, "/data/out/", plt, "_mrg_rf_agg01h.csv"), 
-  #             row.names = FALSE)
-  #   
-  #   # 10m aggregation
-  #   dat5 <- aggregate(tmp_df_sub_gf[, 2:ncol(tmp_df_sub_gf)], 
-  #                     by = list(substr(tmp_df_sub_gf[, 1], 1, 15)), 
-  #                     FUN = function(x) round(mean(x, na.rm = TRUE), 1))
-  #   dat5[, 1] <- paste0(dat5[, 1], "0")
-  #   names(dat5)[1] <- "datetime"
-  #   dat5$datetime <- strptime(dat5$datetime, format = "%Y-%m-%d %H:%M")
+  # 1h aggregation  
+  tmp_df_sub_gf_agg01h <- aggregate(tmp_df_sub_gf[, 2:ncol(tmp_df_sub_gf)], 
+                    by = list(substr(tmp_df_sub_gf[, 1], 1, 13)), 
+                    FUN = function(x) round(mean(x, na.rm = TRUE), 1))
+  tmp_df_sub_gf_agg01h[, 1] <- paste0(tmp_df_sub_gf_agg01h[, 1], ":00")
+  names(tmp_df_sub_gf_agg01h)[1] <- "datetime"
+  tmp_df_sub_gf_agg01h$datetime <- strptime(tmp_df_sub_gf_agg01h$datetime, 
+                                            format = "%Y-%m-%d %H:%M")
   
-  #   write.csv(dat5, paste0(i, "/data/out/", plt, "_mrg_rf_agg10m.csv"), 
-  #             row.names = FALSE)
-    
+  tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf_agg01h.csv")
+  write.csv(tmp_df_sub_gf_agg01h, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
+            row.names = FALSE)
+
+  # 10m aggregation
+  tmp_df_sub_gf_agg10m <- aggregate(tmp_df_sub_gf[, 2:ncol(tmp_df_sub_gf)], 
+                                    by = list(substr(tmp_df_sub_gf[, 1], 1, 15)), 
+                                    FUN = function(x) round(mean(x, na.rm = TRUE), 1))
+  tmp_df_sub_gf_agg10m[, 1] <- paste0(tmp_df_sub_gf_agg10m[, 1], "0")
+  names(tmp_df_sub_gf_agg10m)[1] <- "datetime"
+  tmp_df_sub_gf_agg10m$datetime <- strptime(tmp_df_sub_gf_agg10m$datetime, 
+                                            format = "%Y-%m-%d %H:%M")
+  
+  tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf_agg10m.csv")
+
+  write.csv(tmp_df_sub_gf_agg10m, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
+            row.names = FALSE)
+  
   #   ggplot(aes(x = strptime(datetime, format = "%Y-%m-%d %H:%M"), y = waterET), 
   #          data = tmp_df_sub) + 
   #     geom_line(colour = "grey65") + 
