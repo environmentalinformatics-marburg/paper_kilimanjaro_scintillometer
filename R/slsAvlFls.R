@@ -1,5 +1,5 @@
 slsAvlFls <- function(ch_path = "../../phd/scintillometer/data", 
-                      ch_pattern = c("mrg.csv$", "mrg_rf.csv$", 
+                      ch_pattern = c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg10m.csv$", 
                                      "mrg_rf_agg01h.csv$")) {
   
   ls_df_sls_fls <- lapply(ch_pattern, function(tmp_ch_pattern) {
