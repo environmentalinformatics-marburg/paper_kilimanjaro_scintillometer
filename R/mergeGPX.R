@@ -1,4 +1,4 @@
-mergeGPX <- function(...) {
+mergeGPX <- function(df2sp = FALSE, ...) {
   
   stopifnot(require(plotKML))
   stopifnot(require(plyr))
@@ -114,5 +114,14 @@ mergeGPX <- function(...) {
   bool_isna_ssn <- is.na(df_gps$season)
   df_gps$season[bool_isna_ssn] <- "W"
   
-  return(df_gps)
+  ## return spatial object (optional)
+  if (df2sp) {
+    stopifnot(require(raster))
+    sp_gps <- df_gps
+    coordinates(sp_gps) <-  ~ lon + lat
+    projection(sp_gps) <- "+init=epsg:4326"
+    return(sp_gps)
+  } else {
+    return(df_gps)
+  }
 }
