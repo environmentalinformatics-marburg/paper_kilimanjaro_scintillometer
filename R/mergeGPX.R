@@ -1,10 +1,16 @@
 mergeGPX <- function(df2sp = FALSE, ...) {
   
+  # packages
   stopifnot(require(plotKML))
   stopifnot(require(plyr))
   
+  # os-dependent path to 'permanent' partition
+  ch_dir_os <- switch(Sys.info()[["sysname"]], 
+                      "Linux" = "/media/permanent/", 
+                      "Windows" = "C:/Permanent/")
+  
   ## file #1
-  ch_dir1 <- "/media/permanent/kilimanjaro/coordinates/coords/"
+  ch_dir1 <- paste0(ch_dir_os, "kilimanjaro/coordinates/coords/")
   ch_fls1 <- "sp01_gps_coordinates.gpx"
   ls_gps1 <- readGPX(paste0(ch_dir1, ch_fls1))
   df_gps1 <- ls_gps1$waypoints
@@ -25,7 +31,7 @@ mergeGPX <- function(df2sp = FALSE, ...) {
   df_gps1_tr$unit <- ch_tr
   
   ## file #2
-  ch_dir2 <- "/media/permanent/phd/gps/waypoints"
+  ch_dir2 <- paste0(ch_dir_os, "phd/gps/waypoints")
   ch_fls2 <- list.files(ch_dir2, full.names = TRUE)
   
   ls_gps2_tr <- lapply(ch_fls2, function(i) {
@@ -85,7 +91,7 @@ mergeGPX <- function(df2sp = FALSE, ...) {
   df_gps2_tr <- do.call("rbind", ls_gps2_tr)
  
   ## file #3
-  ch_dir3 <- "/media/permanent/phd/gps/waypoints/"
+  ch_dir3 <- paste0(ch_dir_os, "phd/gps/waypoints/")
   ch_fls3 <- "Waypoints_01-DEC-14.gpx"
   ls_gps3 <- readGPX(paste0(ch_dir3, ch_fls3))
   df_gps3 <- ls_gps3$waypoints
