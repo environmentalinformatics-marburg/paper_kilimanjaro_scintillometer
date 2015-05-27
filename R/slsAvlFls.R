@@ -1,6 +1,7 @@
 slsAvlFls <- function(ch_path = "../../phd/scintillometer/data", 
                       ch_pattern = c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg10m.csv$", 
-                                     "mrg_rf_agg01h.csv$")) {
+                                     "mrg_rf_agg01h.csv$"), 
+                      ssn = NULL) {
   
   ls_df_sls_fls <- lapply(ch_pattern, function(tmp_ch_pattern) {
     tmp_ch_fls <- list.files(ch_path, full.names = TRUE,
@@ -27,6 +28,10 @@ slsAvlFls <- function(ch_path = "../../phd/scintillometer/data",
   
   df_sls_fls <- Reduce(function(...) merge(..., by = c(1, 2, 3), sort = FALSE), 
                        ls_df_sls_fls)
+  
+  # seasonal subset (optional)
+  if (!is.null(ssn))
+    df_sls_fls <- subset(df_sls_fls, season == ssn)
   
   return(df_sls_fls)
 }
