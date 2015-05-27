@@ -1,7 +1,7 @@
 slsAvlFls <- function(ch_path = "../../phd/scintillometer/data", 
                       ch_pattern = c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg10m.csv$", 
                                      "mrg_rf_agg01h.csv$"), 
-                      ssn = NULL) {
+                      ssn = NULL, disturbed = NULL, ...) {
   
   ls_df_sls_fls <- lapply(ch_pattern, function(tmp_ch_pattern) {
     tmp_ch_fls <- list.files(ch_path, full.names = TRUE,
@@ -32,6 +32,14 @@ slsAvlFls <- function(ch_path = "../../phd/scintillometer/data",
   # seasonal subset (optional)
   if (!is.null(ssn))
     df_sls_fls <- subset(df_sls_fls, season == ssn)
+  
+  # degree of disturbance subset (optional)
+  if (!is.null(disturbed)) {
+    if (!disturbed)
+      df_sls_fls <- subset(df_sls_fls, habitat %in% c("sav", "gra", "fer", "hel"))
+    else 
+      df_sls_fls <- subset(df_sls_fls, habitat %in% c("mai", "cof", "fed"))
+  }
   
   return(df_sls_fls)
 }
