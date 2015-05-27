@@ -12,7 +12,7 @@ ch_dir_ppr <- paste0(ch_dir_os,
 
 # sls plots and referring files
 ch_sls_plt <- slsPlots()
-df_sls_fls_rs <- slsAvlFls(ssn = "r", disturbed = FALSE)
+df_sls_fls_rs <- slsAvlFls(ssn = "r", disturbed = TRUE)
 
 ## hourly aggregation
 ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {
@@ -31,7 +31,7 @@ ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {
                       FUN = function(...) mean(..., na.rm = TRUE))
   tmp_num_se <- apply(tmp_df_mrg[, 2:ncol(tmp_df_mrg)], 1, 
                       FUN = function(...) std.error(..., na.rm = TRUE))
-
+  
   ## merge and return relevant data
   tmp_df_all <- data.frame(PlotID = tmp_ch_plot, Time = tmp_df_mrg[, "Time"], 
                            ETmu = tmp_num_mu, ETse = tmp_num_se)
@@ -66,11 +66,11 @@ df_all$Time <- factor(format(df_all$Time, format = "%H:%M"))
 #   arrange(desc(sumETmu)) -> df_max_dy
 # 
 # df_max <- merge(df_max_dy, df_max_hr, by = "PlotID", sort = FALSE)
-# write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3|1.csv")
+# write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3|2.csv")
 
 ## reorder factor levels
 df_all$PlotID <- factor(df_all$PlotID, 
-                        levels = rev(c("sav5", "sav0", "gra2", "gra1", "hel1", "fer0")))
+                        levels = rev(c("mai4", "mai0", "cof2", "cof3", "", "fed1")))
 
 ## ylim adjustment
 limits <- aes(ymax = ETmu + ETse, ymin = ETmu - ETse)
@@ -96,14 +96,24 @@ p <- ggplot(aes(x = Time, y = ETmu), data = df_all) +
   geom_histogram(stat = "identity", fill = "grey65", colour = "grey35") + 
   geom_errorbar(limits, position = "dodge", width = .2) + 
   geom_hline(aes(yintercept = 0), colour = "grey50", linetype = "dashed") + 
-  facet_wrap(~ PlotID, ncol = 2) + 
+  facet_wrap(~ PlotID, ncol = 2, drop = FALSE) + 
   scale_x_discrete(labels = ch_lbl) + 
   labs(x = "\nTime (hours)", y = "Evapotranspiration (mm)\n") + 
   theme_bw() + 
   theme(panel.grid = element_blank(), 
         text = element_text(size = 14), axis.text = element_text(size = 10))
 
-png(paste0(ch_dir_ppr, "/fig/fig03__climate_gradient.png"), width = 22.5, 
+png(paste0(ch_dir_ppr, "/fig/fig04__disturbance_gradient.png"), width = 22.5, 
     height = 20, units = "cm", res = 300, pointsize = 18)
-print(p) 
+grid.newpage()
+vp1 <- viewport(x = 0, y = 0, width = 1, height = 1,
+                just = c("left", "bottom"), name = "p")
+pushViewport(vp1)
+current.viewport()
+print(p, newpage = FALSE)
+vp2 <- viewport(x = .535, y = .68, width = .45, height = .3, 
+                just = c("left", "bottom"), name = "p2")
+pushViewport(vp2)
+current.viewport()
+grid.rect(gp = gpar(col = "white"))
 dev.off()
