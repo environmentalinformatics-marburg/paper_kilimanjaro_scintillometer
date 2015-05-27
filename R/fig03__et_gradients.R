@@ -1,11 +1,6 @@
-# packages
-library(lubridate)
-library(ggplot2)
-
-# functions
-source("R/slsPlots.R")
-source("R/slsAvlFls.R") 
-source("R/slsDiurnalVariation.R")
+## packages and functions
+source("R/slsPkgs.R")
+source("R/slsFcts.R")
 
 # output path
 ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
