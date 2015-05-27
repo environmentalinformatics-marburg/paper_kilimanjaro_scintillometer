@@ -1,13 +1,8 @@
-## environmental stuff
+### environmental stuff
 
-# packages
-lib <- c("caret", "doParallel", "lubridate", "randomForest", "ggplot2", 
-         "latticeExtra")
-sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
-
-# functions
-source("R/slsMergeDailyData.R")
-source("R/slsFoggy.R")
+## packages and functions
+source("R/slsPkgs.R")
+source("R/slsFcts.R")
 
 # parallelization
 cl <- makeCluster(3)
@@ -17,7 +12,8 @@ registerDoParallel(cl)
 ch_dir_srun <- "../../SRun/"
 
 
-## data processing
+### data processing
+
 srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE, 
                       full.names = TRUE)
 
@@ -88,7 +84,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   # 1h aggregation  
   tmp_df_sub_gf_agg01h <- aggregate(tmp_df_sub_gf[, 2:ncol(tmp_df_sub_gf)], 
                     by = list(substr(tmp_df_sub_gf[, 1], 1, 13)), 
-                    FUN = function(x) round(mean(x, na.rm = TRUE), 1))
+                    FUN = function(x) round(mean(x, na.rm = TRUE), 3))
   tmp_df_sub_gf_agg01h[, 1] <- paste0(tmp_df_sub_gf_agg01h[, 1], ":00")
   names(tmp_df_sub_gf_agg01h)[1] <- "datetime"
   tmp_df_sub_gf_agg01h$datetime <- strptime(tmp_df_sub_gf_agg01h$datetime, 
@@ -101,7 +97,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   # 10m aggregation
   tmp_df_sub_gf_agg10m <- aggregate(tmp_df_sub_gf[, 2:ncol(tmp_df_sub_gf)], 
                                     by = list(substr(tmp_df_sub_gf[, 1], 1, 15)), 
-                                    FUN = function(x) round(mean(x, na.rm = TRUE), 1))
+                                    FUN = function(x) round(mean(x, na.rm = TRUE), 3))
   tmp_df_sub_gf_agg10m[, 1] <- paste0(tmp_df_sub_gf_agg10m[, 1], "0")
   names(tmp_df_sub_gf_agg10m)[1] <- "datetime"
   tmp_df_sub_gf_agg10m$datetime <- strptime(tmp_df_sub_gf_agg10m$datetime, 
