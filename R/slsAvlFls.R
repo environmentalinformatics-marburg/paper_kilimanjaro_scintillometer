@@ -12,6 +12,7 @@ slsAvlFls <- function(ch_path = "../../phd/scintillometer/data",
     ls_sls_plt <- strsplit(ch_sls_plt, "_")
     ch_sls_plt <- sapply(ls_sls_plt, "[[", 1)
     
+    # current habitat
     ch_sls_hab <- substr(ch_sls_plt, 1, 3)
     
     # current season
@@ -19,14 +20,17 @@ slsAvlFls <- function(ch_path = "../../phd/scintillometer/data",
     ch_sls_ssn <- rep("r", length(ch_sls_plt))
     ch_sls_ssn[int_sls_ds] <- "d"
     
+    # current workspace
+    ch_sls_wsp <- dirname(tmp_ch_fls)
+    
     ch_process_level <- substr(tmp_ch_pattern, 1, nchar(tmp_ch_pattern)-5)
-    tmp_df_fls <- data.frame(ch_sls_plt, ch_sls_hab, ch_sls_ssn, tmp_ch_fls, 
+    tmp_df_fls <- data.frame(ch_sls_plt, ch_sls_hab, ch_sls_ssn, ch_sls_wsp, tmp_ch_fls, 
                              stringsAsFactors = FALSE)
-    names(tmp_df_fls) <- c("plot", "habitat", "season", ch_process_level)
+    names(tmp_df_fls) <- c("plot", "habitat", "season", "workspace", ch_process_level)
     return(tmp_df_fls)
   })
   
-  df_sls_fls <- Reduce(function(...) merge(..., by = c(1, 2, 3), sort = FALSE), 
+  df_sls_fls <- Reduce(function(...) merge(..., by = 1:4, sort = FALSE), 
                        ls_df_sls_fls)
   
   # seasonal subset (optional)
