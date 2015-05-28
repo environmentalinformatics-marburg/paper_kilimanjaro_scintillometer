@@ -2,10 +2,10 @@ visMetData <- function(process_level = "mrg",
                        path_out = "../../phd/scintillometer/out/plot_data/", 
                        ...) {
   
-  ## required functions
+  ## required packages and functions
   source("R/slsPkgs.R")
   source("R/slsFcts.R")
-  df_sls <- slsAvlFls()
+  df_sls <- slsAvlFls(...)
   
   ## visualize meteorological time series per plot
   for (i in 1:nrow(df_sls)) {
