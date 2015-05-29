@@ -37,6 +37,14 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   # Merge daily .mnd files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
 
+  ## output storage
+  tmp_df2 <- tmp_df[, c("datetime", ch_var_rf)]
+  tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
+  
+  # output storage
+  write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/", basename(i), 
+                            "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
+  
   # fog events (fer, fed and hel only)
   if (tmp_ch_plt %in% c("fer0", "fed1", "hel1")) {
     tmp_df_fog <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
