@@ -1,59 +1,25 @@
 ## Environmental stuff
 
-# packages
-lib <- c("randomForest", "ggplot2", "latticeExtra", "foreach")
-sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
+## required packages and functions
+source("R/slsPkgs.R")
+source("R/slsFcts.R")
 
-# functions
-source("R/slsMergeDailyData.R")
-source("R/slsProcessing.R")
-source("R/slsDiurnalVariation.R")
-source("R/slsAggregate.R")
-
-# path: srun
+## path: srun
 ch_dir_srun <- "../../SRun/"
 
-# path: output storage 
+## path: output storage 
 ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
 
-# relevant files
-ch_pattern <- c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg01h.csv$")
 
-ls_df_sls_fls <- foreach(tmp_ch_pattern = ch_pattern) %do% {
-  tmp_ch_fls <- list.files("../../phd/scintillometer/data", full.names = TRUE,
-                           pattern = tmp_ch_pattern, recursive = TRUE)
-  
-  # current plot
-  ch_sls_plt <- basename(tmp_ch_fls)
-  ls_sls_plt <- strsplit(ch_sls_plt, "_")
-  ch_sls_plt <- sapply(ls_sls_plt, "[[", 1)
-  
-  ch_sls_hab <- substr(ch_sls_plt, 1, 3)
-  
-  # current season
-  int_sls_ds <- which(duplicated(ch_sls_plt))
-  ch_sls_ssn <- rep("r", length(ch_sls_plt))
-  ch_sls_ssn[int_sls_ds] <- "d"
-  
-  ch_process_level <- substr(tmp_ch_pattern, 1, nchar(tmp_ch_pattern)-5)
-  tmp_df_fls <- data.frame(ch_sls_plt, ch_sls_hab, ch_sls_ssn, tmp_ch_fls, 
-                           stringsAsFactors = FALSE)
-  names(tmp_df_fls) <- c("plot", "habitat", "season", ch_process_level)
-  return(tmp_df_fls)
-}
-df_sls_fls <- Reduce(function(...) merge(..., by = c(1, 2, 3), sort = FALSE), 
-                     ls_df_sls_fls)
-
-# subset rainy season measurements
-df_sls_fls_rs <- subset(df_sls_fls, season == "r")
+# # subset rainy season measurements
+# df_sls_fls_rs <- subset(df_sls_fls, season == "r")
 
 
-## data
-
+## original srun workspaces
 srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE, 
                       full.names = TRUE)
 
-# gap-filling and 1h aggregation
+## gap-filling and 1h aggregation
 ls_sls <- lapply(srunWorkspaces, function(i) {
   slsProcessing(i, dsn = "../../phd/scintillometer/data/sls")
 })
