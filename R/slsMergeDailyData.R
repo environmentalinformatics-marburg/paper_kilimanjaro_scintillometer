@@ -1,5 +1,4 @@
-slsMergeDailyData <- function(files, 
-                              ...) {
+slsMergeDailyData <- function(files, skip = 3, ...) {
   
   ## required packages
   source("R/slsPkgs.R")
@@ -32,10 +31,10 @@ slsMergeDailyData <- function(files,
     
     ## skip the first 5 min of measurement, 
     ## or return NULL if measurement was shorter than 5 min
-    if (nrow(tmp) < 2)
+    if (nrow(tmp) <= skip)
       return(NULL)
     else 
-      tmp <- tmp[2:nrow(tmp), ]
+      tmp <- tmp[(skip + 1L):nrow(tmp), ]
     
     ## reformat datetime 
     tmp.date <- substr(tmp[, 1], 13, 22)
