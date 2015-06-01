@@ -34,9 +34,15 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
                         pattern = ".mnd$", full.names = TRUE)
   
-  # Merge daily .mnd files
+  ## merge daily files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
 
+  ## adjust et rates < 0
+  num_et <- tmp_df[, "waterET"]
+  log_st0 <- which(!is.na(num_et) & num_et < 0)
+  if (length(log_st0) > 0)
+    tmp_df[log_st0, "waterET"] <- 0
+  
   ## output storage
   tmp_df2 <- tmp_df[, c("datetime", ch_var_rf)]
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
@@ -82,6 +88,12 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   # gap-filling
   tmp_df_sub_gf <- cbind(datetime = tmp_df$datetime, tmp_df_sub)
   tmp_df_sub_gf[tmp_int_id_tst, "waterET"] <- tmp_prd
+  
+  ## adjust predicted et rates < 0
+  num_et <- tmp_df_sub_gf[, "waterET"]
+  log_st0 <- which(!is.na(num_et) & num_et < 0)
+  if (length(log_st0) > 0)
+    tmp_df_sub_gf[log_st0, "waterET"] <- 0
   
   # output storage
   tmp_ch_dir_out <- paste0("../../phd/scintillometer/data/sls/", basename(i))
