@@ -1,9 +1,11 @@
 slsPlots <- function(style = NULL) {
   
-  if (style == "ggplot") {
-    return(rev(c("sav5", "sav0", "mai4", "mai0", 
-                 "gra2", "gra1", "cof2", "cof3", 
-                 "fed1", "fer0", "", "hel1")))
+  if (!is.null(style)) {
+    if (style == "ggplot") {
+      return(rev(c("sav5", "sav0", "mai4", "mai0", 
+                   "gra2", "gra1", "cof2", "cof3", 
+                   "fed1", "fer0", "", "hel1")))
+    }
   } else {
     return(c("sav0", "sav5", "mai0", "mai4", 
              "gra1", "gra2", "cof3", "cof2", 
