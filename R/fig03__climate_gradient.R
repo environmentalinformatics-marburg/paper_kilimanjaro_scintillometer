@@ -39,6 +39,26 @@ ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {
 })
 df_all <- do.call("rbind", ls_all)
 
+## maximum hourly and daily et rates per plot (table 3)
+df_all %>%
+  select(PlotID, Time, ETmu) %>%
+  group_by(PlotID) %>% 
+  filter(ETmu == max(ETmu)) %>%
+  mutate(ETmax = round(ETmu, 2)) %>%
+  select(PlotID, ETmax, Time) %>%
+  data.frame() %>%
+  arrange(desc(ETmax)) -> df_max_hr
+
+df_all %>%
+  select(PlotID, Time, ETmu) %>%
+  group_by(PlotID) %>% 
+  summarise(sumETmu = round(sum(ETmu, na.rm = TRUE), 2)) %>%
+  data.frame() %>%
+  arrange(desc(sumETmu)) -> df_max_dy
+
+df_max <- merge(df_max_dy, df_max_hr, by = "PlotID", sort = FALSE)
+write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3|1.csv")
+
 ## daytime subset
 ch_all_hr <- substr(df_all$Time, 1, 2)
 int_all_hr <- as.integer(ch_all_hr)
@@ -47,26 +67,6 @@ df_all <- df_all[int_all_dt, ]
 
 df_all$Time <- strptime(df_all$Time, format = "%H:%M:%S")
 df_all$Time <- factor(format(df_all$Time, format = "%H:%M"))
-
-# ## maximum hourly and daily et rates per plot (table 3)
-# df_all %>%
-#   select(PlotID, Time, ETmu) %>%
-#   group_by(PlotID) %>% 
-#   filter(ETmu == max(ETmu)) %>%
-#   mutate(ETmax = round(ETmu, 2)) %>%
-#   select(PlotID, ETmax, Time) %>%
-#   data.frame() %>%
-#   arrange(desc(ETmax)) -> df_max_hr
-# 
-# df_all %>%
-#   select(PlotID, Time, ETmu) %>%
-#   group_by(PlotID) %>% 
-#   summarise(sumETmu = round(sum(ETmu, na.rm = TRUE), 2)) %>%
-#   data.frame() %>%
-#   arrange(desc(sumETmu)) -> df_max_dy
-# 
-# df_max <- merge(df_max_dy, df_max_hr, by = "PlotID", sort = FALSE)
-# write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3|1.csv")
 
 ## reorder factor levels
 df_all$PlotID <- factor(df_all$PlotID, 
