@@ -1,29 +1,57 @@
-# packages
-library(TSdist)
+## packages and functions
+source("R/slsPkgs.R")
+source("R/slsFcts.R")
 
-# sls plots
-source("R/slsPlots.R")
+# output path
+ch_dir_os <- switch(Sys.info()[["sysname"]], 
+                    "Linux" = "/media/permanent/", 
+                    "Windows" = "C:/Permanent/")
+
+ch_dir_ppr <- paste0(ch_dir_os, 
+                     "publications/paper/detsch_et_al__spotty_evapotranspiration/")
+
+# sls plots and referring files
 ch_sls_plt <- slsPlots()
+df_sls_fls_rs <- slsAvlFls(ssn = "r")
 
-# 20-min data
-ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls_rs), function(i) {
-  tmp_df <- slsDiurnalVariation(fn = df_sls_fls_rs$mrg_rf[i], agg_by = 60, 
-                                FUN = function(...) mean(..., na.rm = TRUE))
-  data.frame(plot = df_sls_fls_rs$plot[i], habitat = df_sls_fls_rs$habitat[i],
-             season = df_sls_fls_rs$season[i], tmp_df, stringsAsFactors = FALSE)
+## hourly aggregation
+ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {
+  tmp_ch_plot <- substr(basename(i), 1, 4)
+  
+  ## import, reformat and merge daily data
+  tmp_df <- read.csv(i, stringsAsFactors = FALSE)
+  tmp_df <- tmp_df[, c("datetime", "waterET")]
+  tmp_df[, "Time"] <- sapply(strsplit(tmp_df[, "datetime"], " "), "[[", 2)
+  tmp_ls <- split(tmp_df, yday(tmp_df$datetime))
+  tmp_df_mrg <- Reduce(function(...) merge(..., by = "Time"), tmp_ls)
+  tmp_df_mrg <- tmp_df_mrg[, -grep("datetime", names(tmp_df_mrg))]
+  
+  ## hourly means (mu) and standard errors (se)
+  tmp_num_mu <- apply(tmp_df_mrg[, 2:ncol(tmp_df_mrg)], 1, 
+                      FUN = function(...) mean(..., na.rm = TRUE))
+  tmp_num_se <- apply(tmp_df_mrg[, 2:ncol(tmp_df_mrg)], 1, 
+                      FUN = function(...) std.error(..., na.rm = TRUE))
+  
+  ## merge and return relevant data
+  tmp_df_all <- data.frame(PlotID = tmp_ch_plot, Time = tmp_df_mrg[, "Time"], 
+                           ETmu = tmp_num_mu, ETse = tmp_num_se, 
+                           stringsAsFactors = FALSE)
+  return(tmp_df_all)
 })
-df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
+df_all <- do.call("rbind", ls_all)
 
-# subset by land-cover type
-ch_sls_lct <- unique(df_sls_dv_20m$habitat)
+## add 'habitat' column
+df_all$habitat <- substr(df_all$PlotID, 1, 3)
+ch_habitats <- unique(df_all$habitat)
 
-ls_sls_scores <- lapply(ch_sls_lct, function(i) {
-  tmp_df <- subset(df_sls_dv_20m, habitat == i)
-  tmp_ls <- split(tmp_df, tmp_df$plot)
+## calculate r-squared, p and euclidean distance
+ls_sls_scores <- lapply(ch_habitats, function(i) {
+  tmp_df <- subset(df_all, habitat == i)
+  tmp_ls <- split(tmp_df, tmp_df$PlotID)
   
   if (length(tmp_ls) > 1) {
-    tmp_x <- tmp_ls[[1]]$waterET
-    tmp_y <- tmp_ls[[2]]$waterET
+    tmp_x <- tmp_ls[[1]]$ETmu
+    tmp_y <- tmp_ls[[2]]$ETmu
 
     # r-squared
     tmp_lm <- lm(tmp_y ~ tmp_x)
