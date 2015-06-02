@@ -46,8 +46,6 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   ## output storage
   tmp_df2 <- tmp_df[, c("datetime", ch_var_rf)]
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
-  
-  # output storage
   write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/", basename(i), 
                             "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
   
