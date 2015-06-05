@@ -1,4 +1,4 @@
-mergeGPX <- function(df2sp = FALSE, ...) {
+mergeGPX <- function(df2sp = FALSE, CRS = NULL) {
   
   # packages
   stopifnot(require(plotKML))
@@ -126,6 +126,10 @@ mergeGPX <- function(df2sp = FALSE, ...) {
     sp_gps <- df_gps
     coordinates(sp_gps) <-  ~ lon + lat
     projection(sp_gps) <- "+init=epsg:4326"
+    ## reproject data (optional)
+    if (!is.null(CRS))
+      sp_gps <- spTransform(sp_gps, CRS = CRS)
+    
     return(sp_gps)
   } else {
     return(df_gps)
