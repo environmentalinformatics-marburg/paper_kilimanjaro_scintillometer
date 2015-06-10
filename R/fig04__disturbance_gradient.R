@@ -41,16 +41,16 @@ df_all <- do.call("rbind", ls_all)
 
 ## maximum hourly and daily et rates per plot (table 3)
 df_all %>%
-  select(PlotID, Time, ETmu) %>%
+  dplyr::select(PlotID, Time, ETmu) %>%
   group_by(PlotID) %>% 
   filter(ETmu == max(ETmu)) %>%
   mutate(ETmax = round(ETmu, 2)) %>%
-  select(PlotID, ETmax, Time) %>%
+  dplyr::select(PlotID, ETmax, Time) %>%
   data.frame() %>%
   arrange(desc(ETmax)) -> df_max_hr
 
 df_all %>%
-  select(PlotID, Time, ETmu) %>%
+  dplyr::select(PlotID, Time, ETmu) %>%
   group_by(PlotID) %>% 
   summarise(sumETmu = round(sum(ETmu, na.rm = TRUE), 2)) %>%
   data.frame() %>%
