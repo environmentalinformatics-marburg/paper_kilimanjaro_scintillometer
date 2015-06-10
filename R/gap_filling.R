@@ -23,7 +23,7 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
 
 # variables relevant for rf procedure
 ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-               "soilHeatFlux", "pressure", "precipRate", "waterET")
+               "soilHeatFlux", "pressure", "waterET")
 
 # gap-filling and 10m/1h aggregation
 ls_sls_rf <- lapply(srunWorkspaces, function(i) {
@@ -48,16 +48,35 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
   write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/", basename(i), 
                             "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
+  tmp_df$datetime <- tmp_df2$datetime
   
   # fog events (fer, fed and hel only)
   if (tmp_ch_plt %in% c("fer0", "fed1", "hel1")) {
     tmp_df_fog <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
     tmp_df[tmp_df_fog$fog, ch_var_rf] <- NA
   }
+
+  ## fill mai4 nighttime et
+  if (tmp_ch_plt == "mai4") {
+    date1 <- as.POSIXct("2014-05-13 22:00:00")
+    date2 <- as.POSIXct("2014-05-14 05:59:00")
+    int <- new_interval(date1, date2)
+    tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
+    
+    date1 <- as.POSIXct("2014-05-15 22:00:00")
+    date2 <- as.POSIXct("2014-05-16 05:59:00")
+    int <- new_interval(date1, date2)
+    tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
+  }
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, ch_var_rf]
   tmp_df_sub$hour <- hour(tmp_df$datetime)
+
+  ## vapor pressure deficit
+  tmp_df_sub %>%
+    mutate(vpd = vpd(tempUp, humidity)) %>%
+    data.frame() -> tmp_df_sub
   
   # complete meteorological records
   tmp_log_id_rsp <- names(tmp_df_sub) %in% c("datetime", "waterET")

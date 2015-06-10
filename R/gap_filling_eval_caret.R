@@ -33,7 +33,7 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
 
 # variables relevant for rf procedure
 ch_var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-               "soilHeatFlux", "pressure", "precipRate", "waterET")
+               "soilHeatFlux", "pressure", "waterET")
 
 ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   
@@ -46,6 +46,7 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   
   ## merge daily files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
+  tmp_df$datetime <- strptime(tmp_df$datetime, format = "%Y-%m-%d %H:%M:%S")
   
   ## adjust et rates < 0
   num_et <- tmp_df[, "waterET"]
@@ -58,11 +59,29 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
     tmp_df_fog <- slsFoggy(tmp_df, use_error = FALSE, probs = .1)
     tmp_df[tmp_df_fog$fog, ch_var_rf] <- NA
   }
+
+  ## fill mai4 nighttime et
+  if (tmp_ch_plt == "mai4") {
+    date1 <- as.POSIXct("2014-05-13 22:00:00")
+    date2 <- as.POSIXct("2014-05-14 05:59:00")
+    int <- new_interval(date1, date2)
+    tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
+    
+    date1 <- as.POSIXct("2014-05-15 22:00:00")
+    date2 <- as.POSIXct("2014-05-16 05:59:00")
+    int <- new_interval(date1, date2)
+    tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
+  }
   
   # Subset columns relevant for randomForest algorithm
   tmp_df_sub <- tmp_df[, ch_var_rf]
   tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
+  
+  ## vapor pressure deficit
+  tmp_df_sub %>%
+    mutate(vpd = vpd(tempUp, humidity)) %>%
+    data.frame() -> tmp_df_sub
   
   tmp_ls_rf_stats <- lapply(1:10, function(seed) {
 
