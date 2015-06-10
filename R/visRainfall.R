@@ -27,7 +27,7 @@ visRainfall <- function(process_level = "mrg_rf_agg01h",
   df_rain$plot <- factor(df_rain$plot, levels = slsPlots(style = "ggplot"))
   
   ## visualization
-  p <- ggplot(aes(x = datetime, y = variable), data = df_rain, df_rain = df_rain) + 
+  p <- ggplot(aes(x = datetime, y = variable), data = df_rain) + 
     geom_hline(aes(yintercept = 0), colour = "grey75") + 
     geom_histogram(stat = "identity") + 
     facet_wrap(~ plot, ncol = 2, scales = "free", drop = FALSE) + 
