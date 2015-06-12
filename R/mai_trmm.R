@@ -14,9 +14,19 @@ df_dat_mai <- do.call("rbind", ls_dat_mai)
 df_dat_mai$datetime <- as.POSIXct(df_dat_mai$datetime, format = "%Y-%m-%d %H:%M:%S")
 
 ## download trmm binary files and return filenames
-df_fls_trmm <- downloadTRMM(begin = df_dat_mai$datetime[1], 
-                            end = df_dat_mai$datetime[nrow(df_dat_mai)], 
-                            dsn = "../../phd/scintillometer/data/trmm/")
+download_trmm <- FALSE
+if (download_trmm) {
+  df_fls_trmm <- downloadTRMM(begin = df_dat_mai$datetime[1], 
+                              end = df_dat_mai$datetime[nrow(df_dat_mai)], 
+                              dsn = "../../phd/scintillometer/data/trmm/")
+} else {
+  ch_fls_bin <- list.files("../../phd/scintillometer/data/trmm/", 
+                           pattern = "bin$", full.names = TRUE)
+  ch_fls_xml <- list.files("../../phd/scintillometer/data/trmm/", 
+                           pattern = "xml$", full.names = TRUE)
+  df_fls_trmm <- data.frame(bin = ch_fls_bin, xml = ch_fls_xml, 
+                            stringsAsFactors = FALSE)
+}
 
 ## add date column
 ch_dt_trmm <- substr(basename(df_fls_trmm$bin), 12, 21)
@@ -60,17 +70,19 @@ spy_mai4 <- subset(spy_plot, PoleType == "AMP" & PlotID == "mai4")
 blues <- colorRampPalette(brewer.pal(9, "Blues"))
 breaks <- seq(0, ceiling(max(maxValue(rst_trmm_crp_utm))), 1)
 
-ls_p <- lapply(1:nlayers(rst_trmm_crp_utm), function(i) {
-  levelplot(rst_trmm_crp_utm[[i]], col.regions = blues(length(breaks)), 
-            margin = FALSE, scales = list(draw = TRUE), at = breaks,
-            xlab = list(label = "x", cex = 1.1), ylab = list(label = "y", cex = 1.1)) + 
-    as.layer(p_dem) + 
-    layer(sp.points(spy_mai4, col = "black", cex = 1.2)) + 
-  layer(sp.text(c(335000, 9687500), txt = df_fls_trmm$date[i], cex = .9))
-})
+dt_sq <- df_fls_trmm$date
+ls_p <- levelplot(rst_trmm_crp_utm, layout = c(2, 3), scales = list(draw = TRUE), 
+          margin = FALSE, col.regions = blues(length(breaks)), at = breaks, 
+          xlab = list(label = "x", cex = 1.1), 
+          ylab = list(label = "y", cex = 1.1), 
+          names.attr = rep("", nlayers(rst_trmm_crp_utm))) + 
+  layer(sp.text(loc = c(335000, 9687500), txt = dt_sq[panel.number()])) + 
+  layer(sp.points(spy_mai4, col = "black", cex = 1.2)) + 
+  as.layer(p_dem)
+
 
 png("../../phd/scintillometer/out/trmm_mai4.png", width = 15, height = 25, 
     units = "cm", pointsize = 15, res = 300)
 plot.new()
-print(latticeCombineGrid(ls_p), layout = c(3, 2))
+print(ls_p)
 dev.off()
