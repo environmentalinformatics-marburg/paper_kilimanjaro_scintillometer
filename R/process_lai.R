@@ -1,58 +1,53 @@
-## environmental stuff
+### environmental stuff
 
-# packages
-lib <- c("rgdal", "MODIS", "Rsenal", "doParallel", "zoo", "latticeExtra")
-jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
+## packages and functions
+source("R/slsPkgs.R")
+source("R/slsFcts.R")
 
-# parallelization
+## parallelization
 cl <- makeCluster(3)
 registerDoParallel(cl)
 
-# functions
-source("R/slsPlots.R")
-source("R/qcMyd17.R")
-source("R/qcxMyd15.R")
-source("R/slsTemporalRange.R")
-source("R/slsGppIndex.R")
-
-# path: modis, raw and extracted
-ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
+# ## modis settings
+# ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
+ch_dir_arc <- "/media/fdetsch/FREECOM_HDD/MODIS_ARC"
 ch_dir_prc <- paste0(ch_dir_arc, "/PROCESSED")
 
-# modis options
 MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"), 
              localArcPath = ch_dir_arc, outDirPath = ch_dir_prc)
 
-# path: modis, processed
+## path: modis, processed
 ch_dir_mod15 <- "/media/permanent/phd/scintillometer/data/mod15a2/"
 ch_dir_myd15 <- "/media/permanent/phd/scintillometer/data/myd15a2/"
 
-# path: plot coordinates
+## path: plot coordinates
 ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/coords/"
 ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
-# path: output storage
+## path: output storage
 ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
 
-## data: coordinates
+### processing
 
+## data: sls measurements
+df_sls_fls <- slsAvlFls()
+
+## data: coordinates
 spt_plt <- readOGR(ch_dir_crd, ch_fls_crd)
 spt_plt <- subset(spt_plt, PoleType == "AMP")
 spt_plt <- subset(spt_plt, PlotID %in% slsPlots())
 
-
 ## data: lai-2200
-
 ch_fls_lai <- list.files("../../phd/lai-2200", pattern = ".TXT$", 
                          full.names = TRUE)
 
-# research sites
+## sampled research sites
 ch_plt <- basename(ch_fls_lai)
 ls_plt <- strsplit(ch_plt, "\\.")
 ch_plt <- sapply(ls_plt, "[[", 1)
 
-# lai-2200 datasets
+## import lai-2200 datasets
 ls_lai <- lapply(ch_fls_lai, function(i) {
   tmp_ch_rl <- readLines(i)
   
@@ -130,23 +125,23 @@ rst_qc <- sapply(ls_lai_crp, "[[", 2)
 rst_xqc <- sapply(ls_lai_crp, "[[", 3)
 
 # quality check
-# ls_lai_crp_qc <- foreach(lai = ls_lai_crp, qc = rst_qc, 
-#                          path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
-#   foreach(i = 1:nlayers(lai), j = names(lai),
-#           .packages = c("rgdal", "raster"), .combine = "stack") %dopar% {
-#     overlay(lai[[i]], qc[[i]], fun = function(x, y) {
-#       num_x <- x[]
-#       num_y <- y[]
-#       num_y_qc <- sapply(num_y, qcMyd17)
-#       log_y_qc <- is.na(num_y_qc)
-#       num_x[log_y_qc] <- NA
-#       return(num_x)
-#     }, filename = paste0(path_out, "/qc/QC_", j), format = "GTiff", 
-#     overwrite = TRUE)
-#   }
-# }
+ls_lai_crp_qc <- foreach(lai = ls_lai_crp, qc = rst_qc, 
+                         path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+  foreach(i = 1:nlayers(lai), j = names(lai),
+          .packages = c("rgdal", "raster"), .combine = "stack") %dopar% {
+    overlay(lai[[i]], qc[[i]], fun = function(x, y) {
+      num_x <- x[]
+      num_y <- y[]
+      num_y_qc <- sapply(num_y, function(z) qcMyd17(z, qc = FALSE))
+      log_y_qc <- is.na(num_y_qc)
+      num_x[log_y_qc] <- NA
+      return(num_x)
+    }, filename = paste0(path_out, "/qc/QC_", j), format = "GTiff", 
+    overwrite = TRUE)
+  }
+}
 
-# merge qc data
+# # merge qc data
 # rst_lai_crp_qc_mrg <- 
 #   foreach(lai_terra = unstack(ls_lai_crp_qc[[1]]), 
 #           lai_aqua = unstack(ls_lai_crp_qc[[2]]), 
@@ -172,13 +167,14 @@ rst_xqc <- sapply(ls_lai_crp, "[[", 3)
 #     }, filename = paste0(ch_dir_myd15, "/qc_mrg/MRG_", names(lai_aqua)), 
 #     format = "GTiff", overwrite = TRUE)
 # }
+ 
+ls_lai_crp_qc <- foreach(path_in = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+  fls_lai_crp_qcx <- list.files(path_in, pattern = "^QC_", 
+                                full.names = TRUE, recursive = TRUE)
+  stack(fls_lai_crp_qcx)
+}
 
-fls_lai_crp_qc_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_QC_", 
-                                 full.names = TRUE, recursive = TRUE)
-rst_lai_crp_qc_mrg <- stack(fls_lai_crp_qc_mrg)
-mat_lai_crp_qc_mrg <- as.matrix(rst_lai_crp_qc_mrg)
-
-# extra quality check
+# # extra quality check (not recommended)
 # ls_lai_crp_qc_qcx <- foreach(lai = ls_lai_crp_qc, xqc = rst_xqc, 
 #                              path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
 #   foreach(i = 1:nlayers(lai), j = names(lai), 
@@ -194,51 +190,89 @@ mat_lai_crp_qc_mrg <- as.matrix(rst_lai_crp_qc_mrg)
 #     overwrite = TRUE)
 #   }
 # }
-
-# merge qcx data
-# rst_lai_crp_qc_qcx_mrg <- 
-#   foreach(lai_terra = unstack(ls_lai_crp_qc_qcx[[1]]), 
-#           lai_aqua = unstack(ls_lai_crp_qc_qcx[[2]]), 
-#           .packages = c("raster", "rgdal"), .combine = "stack") %dopar% {
-#             overlay(lai_terra, lai_aqua, fun = function(x, y) {
-#               log_isna_x <- is.na(x)
-#               log_isna_y <- is.na(y)
-#               log_isna <- cbind(log_isna_x, log_isna_y)
-#               
-#               num_lai_mrg <- sapply(1:nrow(log_isna), function(i) {
-#                 if (all(log_isna[i, ])) {
-#                   return(NA)
-#                 } else if (all(!log_isna[i, ])) {
-#                   tmp_mu <- mean(x[i], y[i])
-#                   return(tmp_mu)
-#                 } else if (!log_isna_x[i] & log_isna_y[i]) {
-#                   return(x[i])
-#                 } else {
-#                   return(y[i])
-#                 }
-#               })
-#               return(num_lai_mrg)
-#             }, filename = paste0(ch_dir_myd15, "/qcx_mrg/MRG_", names(lai_aqua)), 
-#             format = "GTiff", overwrite = TRUE)
-#           }
-
-fls_lai_crp_qc_qcx_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_QCX_", 
-                                     full.names = TRUE, recursive = TRUE)
-rst_lai_crp_qc_qcx_mrg <- stack(fls_lai_crp_qc_qcx_mrg)
-mat_lai_crp_qc_qcx_mrg <- as.matrix(rst_lai_crp_qc_qcx_mrg)
-
-# gap-filling
-rst_lai_crp_qc_mrg_gf <- calc(rst_lai_crp_qc_mrg, fun = function(i) {
-  tmp_num_lai <- i
-  tmp_log_isna <- is.na(tmp_num_lai)
+# 
+# ls_lai_crp_qcx <- foreach(path_in = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+#   fls_lai_crp_qcx <- list.files(path_in, pattern = "^QCX_", 
+#                                 full.names = TRUE, recursive = TRUE)
+#   stack(fls_lai_crp_qcx)
+# }
   
-  tmp_num_mav <- rollapply(tmp_num_lai, width = 3, fill = NA, 
-                           FUN = function(...) mean(..., na.rm = TRUE))
+# remove pixels neighboring clouds
+ls_lai_crp_qc_adj <- foreach(i = ls_lai_crp_qc, 
+                             path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+                                 
+  tmp_ls <- unstack(i)
   
-  tmp_num_lai[tmp_log_isna] <- tmp_num_mav[tmp_log_isna]
-  return(tmp_num_lai)
-}, filename = paste0(ch_dir_myd15, "/gf/GF"), bylayer = TRUE, 
-suffix = names(rst_lai_crp_qc_mrg), format = "GTiff", overwrite = TRUE)
+  # remove adjacent pixels
+  tmp_ls_adj <- foreach(j = tmp_ls, .packages = lib) %dopar% {
+    cells <- which(is.na(j[]))
+    id <- adjacent(j, cells = cells, directions = 4, pairs = FALSE)
+    j[id] <- NA
+    return(j)
+  }
+  tmp_rst_adj <- stack(tmp_ls_adj)
+  
+  # save images
+  tmp_ch_fls_out <- paste0(path_out, "/adj/ADJ_", names(i))
+  tmp_ls_adj <- foreach(j = tmp_ch_fls_out, k = 1:length(tmp_ch_fls_out)) %do%
+    writeRaster(tmp_rst_adj[[k]], filename = j, format = "GTiff", overwrite = TRUE)
+  tmp_rst_adj <- stack(tmp_ls_adj)
+  
+  return(tmp_rst_adj)
+}
+
+# merge qc data
+rst_lai_crp_qc_adj_mrg <- 
+  foreach(lai_terra = unstack(ls_lai_crp_qc_adj[[1]]), 
+          lai_aqua = unstack(ls_lai_crp_qc_adj[[2]]), 
+          .combine = "stack", .packages = lib) %dopar% {
+            overlay(lai_terra, lai_aqua, fun = function(x, y) {
+              log_isna_x <- is.na(x)
+              log_isna_y <- is.na(y)
+              log_isna <- cbind(log_isna_x, log_isna_y)
+              
+              num_lai_mrg <- sapply(1:nrow(log_isna), function(i) {
+                if (all(log_isna[i, ])) {
+                  return(NA)
+                } else if (all(!log_isna[i, ])) {
+                  tmp_mu <- mean(x[i], y[i])
+                  return(tmp_mu)
+                } else if (!log_isna_x[i] & log_isna_y[i]) {
+                  return(x[i])
+                } else {
+                  return(y[i])
+                }
+              })
+              return(num_lai_mrg)
+            }, filename = paste0(ch_dir_myd15, "/mrg/MRG_", names(lai_aqua)), 
+            format = "GTiff", overwrite = TRUE)
+          }
+
+fls_lai_crp_qc_adj_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_ADJ_", 
+                                 full.names = TRUE, recursive = TRUE)
+rst_lai_crp_qc_adj_mrg <- stack(fls_lai_crp_qc_adj_mrg)
+mat_lai_crp_qc_adj_mrg <- as.matrix(rst_lai_crp_qc_adj_mrg)
+
+# gap-filling (kza(..., k = 1) is equal to moving average)
+ls_kz <- lapply(1:nrow(mat_lai_crp_qc_adj_mrg), function(i) {
+  tmp_num_kz <- kza(mat_lai_crp_qc_adj_mrg[i, ], m = 3, k = 3, 
+                    impute_tails = TRUE)$kz
+})
+mat_kz <- do.call("rbind", ls_kz)
+rst_kz <- rst_lai_crp_qc_adj_mrg
+rst_kz <- setValues(rst_kz, mat_kz)
+rst_kz <- writeRaster(rst_kz, filename = paste0(ch_dir_myd15, "/gf/KZ"), 
+                      bylayer = TRUE, suffix = names(rst_lai_crp_qc_adj_mrg), 
+                      format = "GTiff", overwrite = TRUE)
+
+fls_kz <- list.files(ch_dir_myd15, pattern = "^KZ_MRG_", 
+                     full.names = TRUE, recursive = TRUE)
+rst_kz <- stack(fls_kz)
+mat_kz <- as.matrix(rst_kz)
+
+# modis dates
+ch_dt_fls_lai <- substr(basename(fls_kz), 28, 34)
+dt_fls_lai <- as.Date(ch_dt_fls_lai, format = "%Y%j")
 
 
 ## lai extraction 
@@ -247,16 +281,16 @@ suffix = names(rst_lai_crp_qc_mrg), format = "GTiff", overwrite = TRUE)
 ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
   tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
   
-  tmp_int_plt_px <- cellFromXY(rst_lai_crp_qc_mrg_gf, tmp_spt_plt)
+  tmp_int_plt_px <- cellFromXY(rst_kz, tmp_spt_plt)
   
   if (use_mat) {
-    tmp_int_plt_px_adj <- adjacent(rst_lai_crp_qc_mrg_gf, tmp_int_plt_px, 
+    tmp_int_plt_px_adj <- adjacent(rst_kz, tmp_int_plt_px, 
                                    sorted = TRUE, directions = 8, include = TRUE, 
                                    pairs = FALSE)
-    tmp_mat_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px_adj, ]
+    tmp_mat_lai <- mat_kz[tmp_int_plt_px_adj, ]
     tmp_nms <- colnames(tmp_mat_lai)
   } else {
-    tmp_num_lai <- mat_lai_crp_qc_mrg[tmp_int_plt_px, ]
+    tmp_num_lai <- mat_kz[tmp_int_plt_px, ]
     tmp_nms <- names(tmp_num_lai)
     tmp_mat_lai <- matrix(tmp_num_lai, 1, byrow = TRUE)
   }
