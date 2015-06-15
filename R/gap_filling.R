@@ -44,7 +44,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
     tmp_df[log_st0, "waterET"] <- 0
   
   ## output storage
-  tmp_df2 <- tmp_df[, c("datetime", ch_var_rf)]
+  tmp_df2 <- tmp_df[, c("datetime", ch_var_rf, "precipRate")]
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
   write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/", basename(i), 
                             "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
@@ -113,6 +113,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
     tmp_df_sub_gf[log_st0, "waterET"] <- 0
   
   # output storage
+  tmp_df_sub_gf <- data.frame(tmp_df_sub_gf, precipRate = tmp_df2$precipRate)
   tmp_ch_dir_out <- paste0("../../phd/scintillometer/data/sls/", basename(i))
   tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf.csv")
   write.csv(tmp_df_sub_gf, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
