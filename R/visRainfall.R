@@ -1,6 +1,6 @@
 visRainfall <- function(process_level = "mrg_rf_agg01h", 
                         path_out = "../../phd/scintillometer/out/plot_data/", 
-                        col = "precipRate", ...) {
+                        col = "precipRate", return_data = FALSE, visualize = TRUE, ...) {
   
   ## required packages and functions
   source("R/slsPkgs.R")
@@ -27,21 +27,27 @@ visRainfall <- function(process_level = "mrg_rf_agg01h",
   df_rain$plot <- factor(df_rain$plot, levels = slsPlots(style = "ggplot"))
   
   ## visualization
-  p <- ggplot(aes(x = datetime, y = variable), data = df_rain) + 
-    geom_hline(aes(yintercept = 0), colour = "grey75") + 
-    geom_histogram(stat = "identity") + 
-    facet_wrap(~ plot, ncol = 2, scales = "free", drop = FALSE) + 
-    labs(x = "\nTime (hours)", y = col) + 
-    scale_x_datetime(breaks = date_breaks("1 day"), labels = date_format("%d.%m.")) + 
-    theme_bw() + 
-    theme(text = element_text(size = 14), axis.text = element_text(size = 12))
+  if (visualize) {
+    p <- ggplot(aes(x = datetime, y = variable), data = df_rain) + 
+      geom_hline(aes(yintercept = 0), colour = "grey75") + 
+      geom_histogram(stat = "identity") + 
+      facet_wrap(~ plot, ncol = 2, scales = "free", drop = FALSE) + 
+      labs(x = "\nTime (hours)", y = col) + 
+      scale_x_datetime(breaks = date_breaks("1 day"), labels = date_format("%d.%m.")) + 
+      theme_bw() + 
+      theme(text = element_text(size = 14), axis.text = element_text(size = 12))
+    
+    ch_fls_out <- paste(col, process_level, sep = "_")
+    ch_fls_out <- paste0(path_out, "/", ch_fls_out, ".png")
+    png(ch_fls_out, width = 30, height = 30, units = "cm", res = 300, 
+        pointsize = 18)
+    print(p)
+    dev.off()
+  }
   
-  ch_fls_out <- paste(col, process_level, sep = "_")
-  ch_fls_out <- paste0(path_out, "/", ch_fls_out, ".png")
-  png(ch_fls_out, width = 30, height = 30, units = "cm", res = 300, 
-      pointsize = 18)
-  print(p)
-  dev.off()
-
-  return(invisible())
+  ## return data (optional)
+  if (return_data) 
+    return(df_rain)
+  else 
+    return(invisible())
 }
