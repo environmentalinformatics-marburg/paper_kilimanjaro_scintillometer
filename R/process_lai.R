@@ -9,8 +9,8 @@ cl <- makeCluster(3)
 registerDoParallel(cl)
 
 # ## modis settings
-# ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
-ch_dir_arc <- "/media/fdetsch/FREECOM_HDD/MODIS_ARC"
+ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
+# ch_dir_arc <- "/media/fdetsch/FREECOM_HDD/MODIS_ARC"
 ch_dir_prc <- paste0(ch_dir_arc, "/PROCESSED")
 
 MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"), 
@@ -34,7 +34,7 @@ ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotra
 df_sls_fls <- slsAvlFls()
 
 ## data: coordinates
-spt_plt <- readOGR(ch_dir_crd, ch_fls_crd)
+spt_plt <- readOGR(ch_dir_crd, ch_fls_crd, p4s = "+init=epsg:21037")
 spt_plt <- subset(spt_plt, PoleType == "AMP")
 spt_plt <- subset(spt_plt, PlotID %in% slsPlots())
 
@@ -124,15 +124,15 @@ rst_lai <- sapply(ls_lai_crp, "[[", 1)
 rst_qc <- sapply(ls_lai_crp, "[[", 2)
 rst_xqc <- sapply(ls_lai_crp, "[[", 3)
 
-# quality check
-ls_lai_crp_qc <- foreach(lai = ls_lai_crp, qc = rst_qc, 
+## quality check
+ls_lai_crp_qc <- foreach(lai = rst_lai, qc = rst_qc, 
                          path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
   foreach(i = 1:nlayers(lai), j = names(lai),
           .packages = c("rgdal", "raster"), .combine = "stack") %dopar% {
     overlay(lai[[i]], qc[[i]], fun = function(x, y) {
       num_x <- x[]
       num_y <- y[]
-      num_y_qc <- sapply(num_y, function(z) qcMyd17(z, qc = FALSE))
+      num_y_qc <- sapply(num_y, function(z) qcMyd17(z, qc = TRUE, dd = TRUE))
       log_y_qc <- is.na(num_y_qc)
       num_x[log_y_qc] <- NA
       return(num_x)
@@ -141,40 +141,49 @@ ls_lai_crp_qc <- foreach(lai = ls_lai_crp, qc = rst_qc,
   }
 }
 
-# # merge qc data
-# rst_lai_crp_qc_mrg <- 
-#   foreach(lai_terra = unstack(ls_lai_crp_qc[[1]]), 
-#           lai_aqua = unstack(ls_lai_crp_qc[[2]]), 
-#           .packages = c("raster", "rgdal"), .combine = "stack") %dopar% {
-#     overlay(lai_terra, lai_aqua, fun = function(x, y) {
-#       log_isna_x <- is.na(x)
-#       log_isna_y <- is.na(y)
-#       log_isna <- cbind(log_isna_x, log_isna_y)
-#       
-#       num_lai_mrg <- sapply(1:nrow(log_isna), function(i) {
-#         if (all(log_isna[i, ])) {
-#           return(NA)
-#         } else if (all(!log_isna[i, ])) {
-#           tmp_mu <- mean(x[i], y[i])
-#           return(tmp_mu)
-#         } else if (!log_isna_x[i] & log_isna_y[i]) {
-#           return(x[i])
-#         } else {
-#           return(y[i])
-#         }
-#       })
-#       return(num_lai_mrg)
-#     }, filename = paste0(ch_dir_myd15, "/qc_mrg/MRG_", names(lai_aqua)), 
-#     format = "GTiff", overwrite = TRUE)
-# }
- 
 ls_lai_crp_qc <- foreach(path_in = list(ch_dir_mod15, ch_dir_myd15)) %do% {
   fls_lai_crp_qcx <- list.files(path_in, pattern = "^QC_", 
                                 full.names = TRUE, recursive = TRUE)
   stack(fls_lai_crp_qcx)
 }
 
-# # extra quality check (not recommended)
+## fill single gaps based on focal median
+ls_lai_crp_qc_md <- foreach(lai = ls_lai_crp_qc, 
+        path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+  foreach(i = 1:nlayers(lai), j = names(lai), 
+          .combine = "stack", .packages = c("raster", "rgdal")) %do% {
+            
+            # identify gaps in current layer
+            tmp_rst <- lai[[i]]
+            tmp_mat <- as.matrix(tmp_rst)
+            num_val <- tmp_rst[]
+            int_na <- which(is.na(num_val))
+            
+            # fill each gap with focal median
+            ls_adj <- madjacent(tmp_mat, int_na, directions = 8)
+            num_val_md <- sapply(1:length(int_na), function(k) {
+              int_id <- int_na[k]
+              int_adj <- ls_adj[[k]]
+              
+              if (sum(is.na(num_val[int_adj])) > 2) {
+                return(NA)
+              } else {
+                return(median(num_val[int_adj], na.rm = TRUE))
+              }
+            })
+                        
+            tmp_rst[int_na] <- num_val_md
+            
+            # save and return raster
+            tmp_rst <- 
+              writeRaster(tmp_rst, 
+                          filename = paste0(path_out, "/md/MD_", j), 
+                          format = "GTiff", overwrite = TRUE)
+            return(tmp_rst)
+  }
+}
+
+# ## extra quality check (not recommended)
 # ls_lai_crp_qc_qcx <- foreach(lai = ls_lai_crp_qc, xqc = rst_xqc, 
 #                              path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
 #   foreach(i = 1:nlayers(lai), j = names(lai), 
@@ -198,8 +207,8 @@ ls_lai_crp_qc <- foreach(path_in = list(ch_dir_mod15, ch_dir_myd15)) %do% {
 # }
   
 # remove pixels neighboring clouds
-ls_lai_crp_qc_adj <- foreach(i = ls_lai_crp_qc, 
-                             path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
+ls_lai_crp_qc_md_adj <- foreach(i = ls_lai_crp_qc_md, 
+                                path_out = list(ch_dir_mod15, ch_dir_myd15)) %do% {
                                  
   tmp_ls <- unstack(i)
   
@@ -222,9 +231,9 @@ ls_lai_crp_qc_adj <- foreach(i = ls_lai_crp_qc,
 }
 
 # merge qc data
-rst_lai_crp_qc_adj_mrg <- 
-  foreach(lai_terra = unstack(ls_lai_crp_qc_adj[[1]]), 
-          lai_aqua = unstack(ls_lai_crp_qc_adj[[2]]), 
+rst_lai_crp_qc_md_adj_mrg <- 
+  foreach(lai_terra = unstack(ls_lai_crp_qc_md_adj[[1]]), 
+          lai_aqua = unstack(ls_lai_crp_qc_md_adj[[2]]), 
           .combine = "stack", .packages = lib) %dopar% {
             overlay(lai_terra, lai_aqua, fun = function(x, y) {
               log_isna_x <- is.na(x)
@@ -235,7 +244,7 @@ rst_lai_crp_qc_adj_mrg <-
                 if (all(log_isna[i, ])) {
                   return(NA)
                 } else if (all(!log_isna[i, ])) {
-                  tmp_mu <- mean(x[i], y[i])
+                  tmp_mu <- max(x[i], y[i])
                   return(tmp_mu)
                 } else if (!log_isna_x[i] & log_isna_y[i]) {
                   return(x[i])
@@ -248,21 +257,31 @@ rst_lai_crp_qc_adj_mrg <-
             format = "GTiff", overwrite = TRUE)
           }
 
-fls_lai_crp_qc_adj_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_ADJ_", 
+fls_lai_crp_qc_md_adj_mrg <- list.files(ch_dir_myd15, pattern = "^MRG_ADJ_", 
                                  full.names = TRUE, recursive = TRUE)
-rst_lai_crp_qc_adj_mrg <- stack(fls_lai_crp_qc_adj_mrg)
-mat_lai_crp_qc_adj_mrg <- as.matrix(rst_lai_crp_qc_adj_mrg)
+rst_lai_crp_qc_md_adj_mrg <- stack(fls_lai_crp_qc_md_adj_mrg)
+mat_lai_crp_qc_md_adj_mrg <- as.matrix(rst_lai_crp_qc_md_adj_mrg)
 
-# gap-filling (kza(..., k = 1) is equal to moving average)
-ls_kz <- lapply(1:nrow(mat_lai_crp_qc_adj_mrg), function(i) {
-  tmp_num_kz <- kza(mat_lai_crp_qc_adj_mrg[i, ], m = 3, k = 3, 
-                    impute_tails = TRUE)$kz
+
+
+## gap-filling (kza(..., k = 1) is equal to moving average)
+ls_kz <- lapply(1:nrow(mat_lai_crp_qc_md_adj_mrg), function(i) {
+  num_val <- mat_lai_crp_qc_md_adj_mrg[i, ]
+  int_na <- which(is.na(mat_lai_crp_qc_md_adj_mrg[i, ]))
+  
+  if (length(int_na) > 0) {
+    tmp_num_kz <- kza(mat_lai_crp_qc_md_adj_mrg[i, ], m = 3, k = 3, 
+                      impute_tails = TRUE)$kz
+    num_val[int_na] <- tmp_num_kz[int_na]
+  }
+  
+  return(num_val)
 })
 mat_kz <- do.call("rbind", ls_kz)
-rst_kz <- rst_lai_crp_qc_adj_mrg
+rst_kz <- rst_lai_crp_qc_md_adj_mrg
 rst_kz <- setValues(rst_kz, mat_kz)
 rst_kz <- writeRaster(rst_kz, filename = paste0(ch_dir_myd15, "/gf/KZ"), 
-                      bylayer = TRUE, suffix = names(rst_lai_crp_qc_adj_mrg), 
+                      bylayer = TRUE, suffix = names(rst_lai_crp_qc_md_adj_mrg), 
                       format = "GTiff", overwrite = TRUE)
 
 fls_kz <- list.files(ch_dir_myd15, pattern = "^KZ_MRG_", 
@@ -271,7 +290,7 @@ rst_kz <- stack(fls_kz)
 mat_kz <- as.matrix(rst_kz)
 
 # modis dates
-ch_dt_fls_lai <- substr(basename(fls_kz), 28, 34)
+ch_dt_fls_lai <- substr(basename(fls_kz), 31, 37)
 dt_fls_lai <- as.Date(ch_dt_fls_lai, format = "%Y%j")
 
 
