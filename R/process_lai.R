@@ -10,7 +10,6 @@ registerDoParallel(cl)
 
 # ## modis settings
 ch_dir_arc <- "/media/fdetsch/XChange/kilimanjaro/evapotranspiration/MODIS_ARC"
-# ch_dir_arc <- "/media/fdetsch/FREECOM_HDD/MODIS_ARC"
 ch_dir_prc <- paste0(ch_dir_arc, "/PROCESSED")
 
 MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"), 
@@ -79,6 +78,8 @@ int_id_dryssn <- grep("-D", df_plt_lai$plot)
 df_plt_lai$season[int_id_dryssn] <- "d"
 df_plt_lai$plot <- tolower(df_plt_lai$plot)
 df_plt_lai$plot <- substr(df_plt_lai$plot, 1, 4)
+
+save("df_plt_lai", file = "data/lai_licor.RData")
 
 
 ## data: modis
@@ -353,48 +354,55 @@ save("df_sls_lai_md", file = "data/lai.RData")
 
 ## visualization: li-cor lai-2200 vs. modis lai
 
-# average lai per habitat type
+## create and rearrange habitat type factor levels
 df_plt_lai$habitat <- substr(df_plt_lai$plot, 1, 3)
-df_plt_lai_rs <- subset(df_plt_lai, season == "r")
 
-df_plt_lai_rs %>%
-  group_by(habitat) %>% 
-  summarise(lai_mu = mean(LAI), lai_se = std.error(LAI)) %>%
-  data.frame() -> df_hab_lai_rs
-limits <- aes(ymax = lai_mu + lai_se, ymin = lai_mu - lai_se)
-num_ylim <- c(0, max(df_hab_lai_rs$lai_mu + df_hab_lai_rs$lai_se, na.rm = TRUE) + .15)
-
-# reorder factor levels
 ch_lvl <- substr(slsPlots(), 1, 3)
 ch_lvl <- unique(ch_lvl)
-df_hab_lai_rs$habitat <- factor(df_hab_lai_rs$habitat, levels = ch_lvl)
+df_plt_lai$habitat <- factor(df_plt_lai$habitat, levels = ch_lvl)
 
-p_lai_rs <- ggplot(aes(x = habitat, y = lai_mu), data = df_hab_lai_rs) + 
-  geom_histogram(stat = "identity", position = "dodge", fill = "grey50", 
-                 colour = "black", lwd = 1.2, alpha = .5) +
-  geom_errorbar(limits, position = "dodge", linetype = "dashed", 
-                width = .2) + 
+## lai means and standard errors per habitat type
+df_plt_lai %>%
+  group_by(habitat) %>% 
+  filter(season == "r") %>%
+  mutate(lai_mu = mean(LAI), lai_se = std.error(LAI)) %>%
+  data.frame() -> df_hab_lai
+
+## limits of error bars and y-axis
+limits <- aes(ymax = lai_mu + lai_se, ymin = lai_mu - lai_se)
+num_ylim <- c(0, max(df_hab_lai$lai_mu + df_hab_lai$lai_se, na.rm = TRUE) + .5)
+
+## visualize
+p_lai_rs <- ggplot(aes(x = habitat, y = lai_mu), data = df_hab_lai) + 
+  geom_histogram(stat = "identity", position = "dodge", fill = "grey80", 
+                 colour = "grey60", lwd = 1.2, alpha = .5) +
+  geom_errorbar(limits, position = "dodge", linetype = "dashed", width = .2) + 
+  geom_text(aes(x = habitat, y = LAI, label = plot), vjust = 1.6, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(lai_se) & plot %in% c("sav0", "mai0", "gra2", "cof3"))) + 
+  geom_text(aes(x = habitat, y = LAI, label = plot), vjust = -1, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(lai_se) & plot %in% c("sav5", "mai4", "gra1", "cof2"))) +
   labs(x = "\nHabitat type", y = "LAI\n") + 
   theme_bw() + 
-  theme(panel.grid = element_blank(), 
-        axis.title = element_text(size = 18), 
-        axis.text = element_text(size = 14)) + 
+  theme(axis.title = element_text(size = 18), 
+        axis.text = element_text(size = 15)) + 
   coord_cartesian(ylim = num_ylim)
 
 png(paste0(ch_dir_ppr, "fig/fig0x__lai.png"), width = 20, height = 15, 
-    units = "cm", pointsize = 18, res = 600)
+    units = "cm", pointsize = 18, res = 300)
 print(p_lai_rs)
 dev.off()
 
-# modis vs. in situ lai
-df_licor_modis_lai <- merge(df_sls_lai_md, df_plt_lai, by = c("plot", "season"))
+# ## modis vs. in situ lai
+# df_licor_modis_lai <- merge(df_sls_lai_md, df_plt_lai, by = c("plot", "season"))
+# 
+# xyplot(LAI ~ lai, data = df_licor_modis_lai, 
+#        xlab = expression(LAI[MODIS]), ylab = expression(LAI[LICOR]), 
+#        panel = function(x, y, ...) {
+#   panel.xyplot(x, y, col = "grey50")
+#   panel.text(x, y, labels = df_licor_modis_lai$plot, pos = 2, offset = .75)
+# })
 
-xyplot(LAI ~ lai, data = df_licor_modis_lai, 
-       xlab = expression(LAI[MODIS]), ylab = expression(LAI[LICOR]), 
-       panel = function(x, y, ...) {
-  panel.xyplot(x, y, col = "grey50")
-  panel.text(x, y, labels = df_licor_modis_lai$plot, pos = 2, offset = .75)
-})
-
-# deregister parallel backend
+## deregister parallel backend
 closeAllConnections()
