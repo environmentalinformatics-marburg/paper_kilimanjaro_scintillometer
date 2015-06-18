@@ -352,7 +352,7 @@ df_sls_lai_md <- do.call("rbind", ls_sls_lai_md)
 save("df_sls_lai_md", file = "data/lai.RData")
 
 
-## visualization: li-cor lai-2200 vs. modis lai
+### visualization
 
 ## create and rearrange habitat type factor levels
 df_plt_lai$habitat <- substr(df_plt_lai$plot, 1, 3)
