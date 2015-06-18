@@ -208,10 +208,10 @@ dt_fls_pet <- as.Date(ch_dt_fls_pet, format = "%Y%j")
 ls_sls_pet <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
   tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
   
-  tmp_int_plt_px <- cellFromXY(rst_pet_rcl, tmp_spt_plt)
+  tmp_int_plt_px <- cellFromXY(rst_kz, tmp_spt_plt)
   
   if (use_mat) {
-    tmp_int_plt_px_adj <- adjacent(rst_pet_rcl, tmp_int_plt_px, 
+    tmp_int_plt_px_adj <- adjacent(rst_kz, tmp_int_plt_px, 
                                    sorted = TRUE, directions = 8, include = TRUE, 
                                    pairs = FALSE)
     tmp_mat_pet <- mat_kz[tmp_int_plt_px_adj, ]
@@ -258,3 +258,45 @@ ls_sls_pet_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
 df_sls_pet_md <- do.call("rbind", ls_sls_pet_md)
 df_sls_pet_md$pet_dy <- df_sls_pet_md$pet / 8
 save("df_sls_pet_md", file = "data/pet.RData")
+
+### visualization
+
+## create and rearrange habitat type factor levels
+df_sls_pet_md$habitat <- substr(df_sls_pet_md$plot, 1, 3)
+
+ch_lvl <- substr(slsPlots(), 1, 3)
+ch_lvl <- unique(ch_lvl)
+df_sls_pet_md$habitat <- factor(df_sls_pet_md$habitat, levels = ch_lvl)
+
+## pet means and standard errors per habitat type
+df_sls_pet_md %>%
+  filter(season == "r") %>%
+  dplyr::group_by(habitat) %>% 
+  dplyr::mutate(pet_mu = mean(pet_dy), pet_se = std.error(pet_dy)) %>%
+  data.frame() -> df_hab_pet
+
+## limits of error bars and y-axis
+limits <- aes(ymax = pet_mu + pet_se, ymin = pet_mu - pet_se)
+num_ylim <- c(0, max(df_hab_pet$pet_mu + df_hab_pet$pet_se, na.rm = TRUE) + .5)
+
+## visualize
+p_pet_rs <- ggplot(aes(x = habitat, y = pet_mu), data = df_hab_pet) + 
+  geom_histogram(stat = "identity", position = "dodge", fill = "grey80", 
+                 colour = "grey60", lwd = 1.2, alpha = .5) +
+  geom_errorbar(limits, position = "dodge", linetype = "dashed", width = .2) + 
+  geom_text(aes(x = habitat, y = pet_dy, label = plot), vjust = 1.5, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(pet_se) & plot %in% c("sav0", "mai0", "gra2", "cof3"))) + 
+  geom_text(aes(x = habitat, y = pet_dy, label = plot), vjust = -1, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(pet_se) & plot %in% c("sav5", "mai4", "gra1", "cof2"))) +
+  labs(x = "\nHabitat type", y = expression(E[POT] ~ "\n")) + 
+  theme_bw() + 
+  theme(axis.title = element_text(size = 18), 
+        axis.text = element_text(size = 15)) + 
+  coord_cartesian(ylim = num_ylim)
+
+png(paste0(ch_dir_ppr, "fig/fig0x__pet.png"), width = 20, height = 15, 
+    units = "cm", pointsize = 18, res = 300)
+print(p_pet_rs)
+dev.off()
