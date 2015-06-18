@@ -1,4 +1,5 @@
 ## required packages and functions
+library(GSODTools)
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
@@ -74,6 +75,10 @@ rst_pet_crp <- foreach(i = 1:nlayers(rst_pet_prj), .packages = lib,
        format = "GTiff", overwrite = TRUE)
 }
 
+ch_fls_pet_crp <- list.files(paste0(ch_dir_out, "/crp/"), pattern = "^CRP", 
+                            full.names = TRUE)
+rst_pet_crp <- stack(ch_fls_pet_crp)
+
 ## quality control
 rst_pet <- rst_pet_crp[[grep("PET_1km", ch_fls_pet)]]
 rst_qc <- rst_pet_crp[[grep("ET_QC_1km", ch_fls_pet)]]
@@ -91,8 +96,58 @@ rst_pet_qc <- foreach(i = 1:nlayers(rst_pet), j = names(rst_pet),
           overwrite = TRUE)
         }
 
+ch_fls_pet_qc <- list.files(paste0(ch_dir_out, "/qc/"), pattern = "^QC", 
+                            full.names = TRUE)
+rst_pet_qc <- stack(ch_fls_pet_qc)
+
+
+## fill single gaps based on focal median
+rst_pet_md <- foreach(i = 1:nlayers(rst_pet_qc), j = names(rst_pet_qc), 
+                      .combine = "stack") %do% {
+                                        
+  # identify gaps in current layer
+  tmp_rst <- rst_pet_qc[[i]]
+  tmp_mat <- as.matrix(tmp_rst)
+  num_val <- tmp_rst[]
+  int_na <- which(is.na(num_val))
+  
+  # fill each gap with focal median
+  ls_adj <- madjacent(tmp_mat, int_na, directions = 8)
+  num_val_md <- sapply(1:length(int_na), function(k) {
+    int_id <- int_na[k]
+    int_adj <- ls_adj[[k]]
+    
+    if (sum(is.na(num_val[int_adj])) > 2) {
+      return(NA)
+    } else {
+      return(median(num_val[int_adj], na.rm = TRUE))
+    }
+  })
+  
+  tmp_rst[int_na] <- num_val_md
+  
+  # save and return raster
+  writeRaster(tmp_rst, format = "GTiff", overwrite = TRUE,
+              filename = paste0(ch_dir_out, "/md/MD_", j))
+}
+
+# # remove pixels neighboring clouds
+# rst_pet_adj <- foreach(j = unstack(rst_pet_md), .packages = lib, 
+#                        .combine = "stack") %dopar% {
+#   cells <- which(is.na(j[]))
+#   id <- adjacent(j, cells = cells, directions = 4, pairs = FALSE)
+#   j[id] <- NA
+#   return(j)
+# }
+# 
+# # save images
+# ch_fls_out <- paste0(ch_dir_out, "/adj/ADJ_", names(rst_pet_md))
+# rst_pet_adj <- foreach(j = ch_fls_out, k = 1:length(ch_fls_out), 
+#                       .packages = lib, .combine = "stack") %dopar%
+#   writeRaster(rst_pet_adj[[k]], filename = j, format = "GTiff", overwrite = TRUE)
+
 ## outlier check
-rst_pet_sd <- calc(rst_pet_qc, fun = function(x) {
+rst_pet_sd <- calc(rst_pet_md, fun = function(x) {
   log_na <- is.na(x)
   
   if (sum(log_na) / length(x) <= .8) {
@@ -105,7 +160,7 @@ rst_pet_sd <- calc(rst_pet_qc, fun = function(x) {
 })
 rst_pet_sd <- writeRaster(rst_pet_sd, filename = paste0(ch_dir_out, "/sd/SD"), 
                           format = "GTiff", bylayer = TRUE, 
-                          suffix = names(rst_pet_qc), overwrite = TRUE)
+                          suffix = names(rst_pet_md), overwrite = TRUE)
 
 ## reclassify
 rst_pet_rcl <- foreach(i = 1:nlayers(rst_pet_sd), .packages = lib, 
@@ -120,13 +175,14 @@ rst_pet_rcl <- foreach(i = 1:nlayers(rst_pet_sd), .packages = lib,
   writeRaster(tmp_rst, format = "GTiff", overwrite = TRUE,
               filename = paste0(ch_dir_out, "/rcl/RCL_", names(tmp_rst)))
 }
-mat_pet_rcl <- raster::as.matrix(rst_pet_rcl)
 
 ## gap-filling (kza(..., k = 1) is equal to moving average)
 rst_kz <- calc(rst_pet_rcl, function(x) {
-  int_na <- which(is.na(x))
+
+  log_na <- is.na(x)
+  int_na <- which(log_na)
   
-  if (length(int_na) > 0) {
+  if ((length(int_na) > 0) & (sum(log_na) / length(x) <= .8)) {
     tmp_num_kz <- kza(x, m = 3, k = 3, impute_tails = TRUE)$kz
     x[int_na] <- tmp_num_kz[int_na]
   }
@@ -137,7 +193,6 @@ rst_kz <- writeRaster(rst_kz, filename = paste0(ch_dir_out, "/gf/KZ"),
                       format = "GTiff", bylayer = TRUE, 
                       suffix = names(rst_pet_rcl), overwrite = TRUE)
 
-
 fls_kz <- list.files(ch_dir_out, pattern = "^KZ_", 
                      full.names = TRUE, recursive = TRUE)
 rst_kz <- stack(fls_kz)
@@ -146,7 +201,7 @@ mat_kz <- raster::as.matrix(rst_kz)
 ## et_pot extraction 
 
 # modis dates
-ch_dt_fls_pet <- substr(basename(fls_kz), 31, 37)
+ch_dt_fls_pet <- substr(basename(fls_kz), 34, 40)
 dt_fls_pet <- as.Date(ch_dt_fls_pet, format = "%Y%j")
 
 # 3-by-3 focal matrix per sls plot, or single pixel if `use_mat = FALSE`
@@ -201,4 +256,5 @@ ls_sls_pet_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
              pet = median(tmp_df_sls_pet[, 5], na.rm = TRUE))
 })
 df_sls_pet_md <- do.call("rbind", ls_sls_pet_md)
+df_sls_pet_md$pet_dy <- df_sls_pet_md$pet / 8
 save("df_sls_pet_md", file = "data/pet.RData")
