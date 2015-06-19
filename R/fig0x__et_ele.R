@@ -1,17 +1,46 @@
+## required functions
+source("R/slsFcts.R")
+
 ch_dir_pub <- "../../publications/paper/detsch_et_al__spotty_evapotranspiration/"
+ch_dir_tbl <- "../../phd/scintillometer/data/tbl/"
 
-ch_fls_et <- list.files("/mnt/windows/Permanent/phd/scintillometer/data/tbl", 
-                        pattern = "^table_3", full.names = TRUE)
+## input data
+df_fls <- slsAvlFls(ssn = "r")
 
-ls_et <- lapply(ch_fls_et, read.csv)
-df_et <- do.call("rbind", ls_et)
+## ta
+df_ta <- summarizeVar(df_fls$mrg_rf_agg01h, param = "tempUp", 
+                      FUN_dy = function(...) mean(..., na.rm = TRUE),
+                      file_out = paste0(ch_dir_tbl, "table_ta.csv"))
 
+## rh
+df_rh <- summarizeVar(df_fls$mrg_rf_agg01h, param = "humidity", 
+                      FUN_dy = function(...) mean(..., na.rm = TRUE),
+                      file_out = paste0(ch_dir_tbl, "table_rh.csv"))
+
+## radiation
+df_rad <- summarizeVar(df_fls$mrg_rf_agg01h, param = "dwnRad", 
+                       FUN_dy = function(...) mean(..., na.rm = TRUE),
+                       file_out = paste0(ch_dir_tbl, "table_rad.csv"))
+
+## et
+df_et <- summarizeVar(df_fls$mrg_rf_agg01h, 
+                      file_out = paste0(ch_dir_tbl, "table_et.csv"))
+
+## vpd
+df_vpd <- summarizeVar(df_fls$mrg_rf_agg01h, param = "vpd", 
+                       FUN_dy = function(...) mean(..., na.rm = TRUE),
+                       file_out = paste0(ch_dir_tbl, "table_vpd.csv"))
+
+## plot coordinates
 spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/", 
                     "PlotPoles_ARC1960_mod_20140807_final")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
 
-df_et_ele <- merge(df_et, spt_plot@data, by = "PlotID")
-df_et_ele$habitat <- substr(df_et_ele$PlotID, 1, 3)
+## merge data
+df_var <- Reduce(function(...) merge(..., by = "PlotID"), 
+                 list(df_ta, df_rh, df_vpd, df_rad, df_et))
+df_var_ele <- merge(df_var, spt_plot@data, by = "PlotID")
+df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
 
 cols_upper <- brewer.pal(3, "YlOrBr")
 names(cols_upper) <- c("hel", "fed", "fer")
@@ -19,27 +48,21 @@ cols <- c("sav" = "yellow", "mai" = "darkgreen",
           "cof" = "chocolate4", "gra" = "green")
 cols <- c(cols, cols_upper)
 
-df_et_ele$hjust <- .5
-df_et_ele$vjust <- -1.35
+df_var_ele$focal <- "yes"
+df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
-int_id_fer0 <- grep("fer0", df_et_ele$PlotID)
-df_et_ele$hjust[int_id_fer0] <- 1.5
-df_et_ele$vjust[int_id_fer0] <- .5
-
-p_et_ele <- ggplot(data = df_et_ele) + 
-  geom_point(aes(y = sumETmu, x = Z_DEM_HMP, colour = habitat), 
-             shape = 15, size = 6) + 
-  geom_point(aes(y = sumETmu, x = Z_DEM_HMP, colour = habitat), 
-             shape = 0, size = 6, colour = "black") + 
-  geom_text(aes(y = sumETmu, x = Z_DEM_HMP, label = PlotID, hjust = hjust, vjust = vjust), 
-            colour = "black", angle = 90, fontface = "bold") + 
-  stat_smooth(aes(y = sumETmu, x = Z_DEM_HMP), se = FALSE, 
+## ta
+p_ta_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = tempUpfun, x = Z_DEM_HMP), se = FALSE, 
               method = "loess", span = .99, colour = "grey50", 
               linetype = "dashed", lwd = 2) + 
-  scale_colour_manual(values = cols) + 
+  geom_point(aes(y = tempUpfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  ylim(1.5, 4.1) + 
-  labs(y = "Evapotranspiration (mm/day)\n", x = "Elevation (m)\n") + 
+  # ylim(1.5, 5) + 
+  labs(y = "Temperature (deg C)\n", x = "Elevation (m)\n") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -47,7 +70,117 @@ p_et_ele <- ggplot(data = df_et_ele) +
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
-png(paste0(ch_dir_pub, "fig/fig0x_et_ele.png"), width = 20, height = 15, 
-    units = "cm", pointsize = 15, res = 300)
-print(p_et_ele)
-dev.off()
+## rh
+p_rh_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = humidityfun, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey50", 
+              linetype = "dashed", lwd = 2) + 
+  geom_point(aes(y = humidityfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  # ylim(1.5, 5) + 
+  labs(y = "Relative humidity (%)\n", x = "") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(angle = 180, size = 14), 
+        axis.title.y = element_text(angle = 90, size = 14), 
+        axis.text.y = element_text(angle = 90, hjust = 0.5), 
+        axis.text.x = element_text(angle = 90, vjust = .5), 
+        legend.position = "none")
+
+## rad
+p_rad_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = dwnRadfun, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey50", 
+              linetype = "dashed", lwd = 2) + 
+  geom_point(aes(y = dwnRadfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  # ylim(1.5, 5) + 
+  labs(y = "Downward radiation (W/m²)\n", x = "Elevation (m)\n") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(angle = 180, size = 14), 
+        axis.title.y = element_text(angle = 90, size = 14), 
+        axis.text.y = element_text(angle = 90, hjust = 0.5), 
+        axis.text.x = element_text(angle = 90, vjust = .5), 
+        legend.position = "none")
+
+## et
+p_et_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = waterETfun, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey50", 
+              linetype = "dashed", lwd = 2) + 
+  geom_point(aes(y = waterETfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  ylim(1.5, 5) + 
+  labs(y = "Evapotranspiration (mm/day)\n", x = "") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(angle = 180, size = 14), 
+        axis.title.y = element_text(angle = 90, size = 14), 
+        axis.text.y = element_text(angle = 90, hjust = 0.5), 
+        axis.text.x = element_text(angle = 90, vjust = .5), 
+        legend.position = "none")
+
+int_id_sav0 <- grep("sav0", df_var_ele$PlotID)
+df_var_ele$hjust[int_id_sav0] <- 1.3
+df_var_ele$vjust[int_id_sav0] <- .5
+
+## vpd
+p_vpd_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey50", 
+              linetype = "dashed", lwd = 2) + 
+  geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  ylim(50, 720) + 
+  labs(y = "Vapor pressure deficit (Pa)\n", x = "") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(angle = 180, size = 14), 
+        axis.title.y = element_text(angle = 90, size = 14), 
+        axis.text.y = element_text(angle = 90, hjust = 0.5), 
+        axis.text.x = element_text(angle = 90, vjust = .5), 
+        legend.position = "none")
+
+## legend
+p_key_ele <- ggplot(data = df_var_ele) + 
+  geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
+             colour = "black", size = 6) +   
+  scale_fill_manual(values = c("sav0" = "yellow", "sav5" = "yellow", 
+                               "mai0" = "darkgreen", "mai4" = "darkgreen", 
+                               "cof3" = "chocolate4", "cof2" = "chocolate4", 
+                               "gra1" = "green", "gra2" = "green", 
+                               "fer0" = "#D95F0E", "fed1" = "#FEC44F", 
+                               "hel1" = "#FFF7BC"), 
+                    breaks = c("fer0", "hel1", "fed1",  
+                               "gra2", "gra1", "cof2", "cof3", 
+                               "mai0", "mai4", "sav0", "sav5")) + 
+  scale_shape_manual(values = c("sav0" = 23, "sav5" = 22, 
+                                "mai0" = 23, "mai4" = 22, 
+                                "cof3" = 23, "cof2" = 22, 
+                                "gra1" = 23, "gra2" = 22, 
+                                "fer0" = 23, "fed1" = 23, 
+                                "hel1" = 23), 
+                     breaks = c("fer0", "hel1", "fed1",  
+                                "gra2", "gra1", "cof2", "cof3", 
+                                "mai0", "mai4", "sav0", "sav5")) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  theme_bw()
+
+g_legend <- function(a.gplot) { 
+  tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
+  legend <- tmp$grobs[[leg]] 
+  return(legend)
+} 
+
+legend <- g_legend(p_key_ele) 
+grid.draw(legend) 
