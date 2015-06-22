@@ -1,22 +1,22 @@
-ls_rf_scores_whr <- foreach(i = srunWorkspaces) %do% {
+gfPostprocess <- function(wsp, dsn_regstats = "data/regstats_", 
+                          dsn_varimp = "data/varimp_") {
   
-  tmp_ls_plt <- strsplit(basename(i), "_")
+  tmp_ls_plt <- strsplit(basename(wsp), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
   tmp_ch_dt <- sapply(tmp_ls_plt, "[[", 4)
   
   # cv/prediction statistics
-  ch_fls_eval <- paste0("data/regstats_", tmp_ch_plt, "_", tmp_ch_dt, ".csv")
+  ch_fls_eval <- paste0(dsn_regstats, tmp_ch_plt, "_", tmp_ch_dt, ".csv")
   tmp_df_rf_eval <- read.csv(ch_fls_eval)
   
   # variable importances
-  ch_fls_varimp <- paste0("data/varimp_", tmp_ch_plt, "_", tmp_ch_dt, ".csv")
+  ch_fls_varimp <- paste0(dsn_varimp, tmp_ch_plt, "_", tmp_ch_dt, ".csv")
   tmp_df_rf_varimp <- read.csv(ch_fls_varimp)
   
   # plot prediction stats
   num_reg_stats <- colMeans(tmp_df_rf_eval[, 7:ncol(tmp_df_rf_eval)])
-  reg_stats <- num_reg_stats
-  p_reg_stats <- plotPredictionStats(reg_stats, digits = 2, rng = c(-0.01, 0.086))
-  
+  p_reg_stats <- plotPredictionStats(num_reg_stats, digits = 2, rng = c(-0.01, 0.086))
+
   # modal mtry and mean training and prediction scores
   int_mdl_mtry <- modal(tmp_df_rf_eval$mtry)
   num_mu_scores <- colMeans(tmp_df_rf_eval[, 3:ncol(tmp_df_rf_eval)])
