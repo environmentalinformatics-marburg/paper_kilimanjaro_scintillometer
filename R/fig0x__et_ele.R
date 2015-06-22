@@ -1,4 +1,5 @@
 ## required functions
+source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
 ch_dir_pub <- "../../publications/paper/detsch_et_al__spotty_evapotranspiration/"
@@ -54,15 +55,14 @@ df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "n
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
   stat_smooth(aes(y = tempUpfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey50", 
-              linetype = "dashed", lwd = 2) + 
+              method = "lm", span = .99, colour = "grey50", 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = tempUpfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  # ylim(1.5, 5) + 
-  labs(y = "Temperature (deg C)\n", x = "Elevation (m)\n") + 
+  labs(y = expression(atop("Temperature (" * degree * C * ")", ""))) + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -72,16 +72,15 @@ p_ta_ele <- ggplot(data = df_var_ele) +
 
 ## rh
 p_rh_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = humidityfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey50", 
-              linetype = "dashed", lwd = 2) + 
+  #   stat_smooth(aes(y = humidityfun, x = Z_DEM_HMP), se = FALSE, 
+  #               method = "loess", span = .99, colour = "grey50", 
+  #               linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = humidityfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  # ylim(1.5, 5) + 
-  labs(y = "Relative humidity (%)\n", x = "") + 
+  labs(y = expression(atop("Relative humidity (%)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -93,14 +92,14 @@ p_rh_ele <- ggplot(data = df_var_ele) +
 p_rad_ele <- ggplot(data = df_var_ele) + 
   stat_smooth(aes(y = dwnRadfun, x = Z_DEM_HMP), se = FALSE, 
               method = "loess", span = .99, colour = "grey50", 
-              linetype = "dashed", lwd = 2) + 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = dwnRadfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  # ylim(1.5, 5) + 
-  labs(y = "Downward radiation (W/m²)\n", x = "Elevation (m)\n") + 
+  labs(y = expression(atop("Downward radiation (W/" * m^{2} * ")", " ")), 
+       x = "Elevation (m)\n") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -112,14 +111,14 @@ p_rad_ele <- ggplot(data = df_var_ele) +
 p_et_ele <- ggplot(data = df_var_ele) + 
   stat_smooth(aes(y = waterETfun, x = Z_DEM_HMP), se = FALSE, 
               method = "loess", span = .99, colour = "grey50", 
-              linetype = "dashed", lwd = 2) + 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = waterETfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(1.5, 5) + 
-  labs(y = "Evapotranspiration (mm/day)\n", x = "") + 
+  labs(y = expression(atop("Evapotranspiration (mm/day)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -127,22 +126,18 @@ p_et_ele <- ggplot(data = df_var_ele) +
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
-int_id_sav0 <- grep("sav0", df_var_ele$PlotID)
-df_var_ele$hjust[int_id_sav0] <- 1.3
-df_var_ele$vjust[int_id_sav0] <- .5
-
 ## vpd
 p_vpd_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey50", 
-              linetype = "dashed", lwd = 2) + 
+  #   stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
+  #               method = "loess", span = .99, colour = "grey50", 
+  #               linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(50, 720) + 
-  labs(y = "Vapor pressure deficit (Pa)\n", x = "") + 
+  labs(y = expression(atop("Vapor pressure deficit (Pa)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -173,7 +168,8 @@ p_key_ele <- ggplot(data = df_var_ele) +
                                 "gra2", "gra1", "cof2", "cof3", 
                                 "mai0", "mai4", "sav0", "sav5")) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  theme_bw()
+  theme_bw() + 
+  theme(text = element_text(size = 14))
 
 g_legend <- function(a.gplot) { 
   tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
@@ -183,4 +179,14 @@ g_legend <- function(a.gplot) {
 } 
 
 legend <- g_legend(p_key_ele) 
-grid.draw(legend) 
+
+png(paste0(ch_dir_pub, "fig/fig0x_et_ele.png"), width = 22.5, height = 25, 
+    units = "cm", pointsize = 15, res = 300)
+grid.arrange(p_ta_ele, p_rad_ele, p_rh_ele, p_et_ele, p_vpd_ele,  
+             as.table = TRUE)
+
+vp_legend <- viewport(x = 0.76, y = 0.76, width = .3, height = .3, angle = 90)
+pushViewport(vp_legend)
+grid.draw(legend)
+
+dev.off()
