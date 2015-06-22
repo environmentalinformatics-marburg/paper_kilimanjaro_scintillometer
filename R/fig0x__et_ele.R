@@ -171,14 +171,8 @@ p_key_ele <- ggplot(data = df_var_ele) +
   theme_bw() + 
   theme(text = element_text(size = 14))
 
-g_legend <- function(a.gplot) { 
-  tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
-  legend <- tmp$grobs[[leg]] 
-  return(legend)
-} 
-
-legend <- g_legend(p_key_ele) 
+## save arranged plots incl. customized legend
+legend <- ggExtractLegend(p_key_ele) 
 
 png(paste0(ch_dir_pub, "fig/fig0x_et_ele.png"), width = 22.5, height = 25, 
     units = "cm", pointsize = 15, res = 300)
