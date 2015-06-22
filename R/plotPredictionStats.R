@@ -12,9 +12,9 @@ plotPredictionStats <- function(reg_stats, rng = NULL, ...) {
   
   # numeric vector to data.frame
   if (is.numeric(reg_stats)) {
-    mat_reg_stats <- matrix(num_reg_stats, 1, byrow = TRUE)
+    mat_reg_stats <- matrix(reg_stats, 1, byrow = TRUE)
     df_reg_stats <- data.frame(mat_reg_stats)
-    names(df_reg_stats) <- names(num_reg_stats)
+    names(df_reg_stats) <- names(reg_stats)
   } else {
     df_reg_stats <- reg_stats
   }
