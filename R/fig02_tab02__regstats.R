@@ -1,7 +1,7 @@
 ## environmental stuff
 
 rm(list = ls(all = TRUE))
-load("data/reg_stats_whr.RData")
+load("data/reg_stats_vpd.RData")
 
 # functions
 source("R/slsPlots.R")
@@ -25,7 +25,7 @@ ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
   update(ls_rf_scores_dryssn_vis[[i]], main = paste0("\t", ch_sls_plt[i]))
 })
 
-png(paste0(ch_dir_fig, "fig02__reg_stats.png"), width = 35, height = 20, 
+png(paste0(ch_dir_fig, "fig02__reg_stats_vpd.png"), width = 35, height = 20, 
     units = "cm", pointsize = 15, res = 300)
 do.call(function(...) grid.arrange(..., ncol = 4, as.table = TRUE), 
         ls_rf_scores_dryssn_vis)
