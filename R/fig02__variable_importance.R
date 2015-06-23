@@ -60,7 +60,7 @@ hmap <- levelplot(df_varimp_mlt ~ variable * plot, data = var_stats,
                     panel.levelplot(...)
                   })
 
-png(paste0(ch_dir_out, "fig/fig0x__varimp.png"), units = "cm", 
+png(paste0(ch_dir_out, "fig/fig02__varimp.png"), units = "cm", 
     width = 20, height = 25, pointsize = 21, res = 300)
 print(hmap)
 dev.off()
