@@ -46,6 +46,8 @@ ls_p_osm <- lapply(ch_plots, function(i) {
   ## subset gps data
   id_gps <- grep(toupper(i), spt_sls_ll$plot)
   spt_sls_ll_plot <- spt_sls_ll[id_gps, ]
+  #   plotKML(spt_sls_ll_plot, 
+  #           file.name = paste0("data/gps/gps_", i, ".kml"), open.kml = FALSE)
   
   ## extend map extent omnidirectionally
   ext <- extendByDist(extent(spt_plot), width = .00075)
