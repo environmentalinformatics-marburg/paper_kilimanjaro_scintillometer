@@ -163,7 +163,10 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
        p_reg_stats)
 })
 
-source("R/gap_filling_postprocess.R")
+ls_rf_scores_whr <- lapply(srunWorkspaces, function(h) {
+  gfPostprocess(h, dsn_regstats = "data/regstats_vpd_", 
+                dsn_varimp = "data/varimp_vpd_")
+})
 
 # wet season data only
 int_id_dryssn <- c(11, 13)
@@ -179,7 +182,7 @@ df_rf_scores_dryssn_varimp <- do.call("rbind", ls_rf_scores_dryssn_varimp)
 ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_dryssn, function(i) i[[3]])
 
 save(list = c("df_rf_scores_stats", "df_rf_scores_dryssn_varimp", 
-              "ls_rf_scores_dryssn_vis"), file = "data/reg_stats_vpd_agg10m.RData")
+              "ls_rf_scores_dryssn_vis"), file = "data/reg_stats_vpd.RData")
 
 # plotting order
 ch_sls_plt <- slsPlots()
