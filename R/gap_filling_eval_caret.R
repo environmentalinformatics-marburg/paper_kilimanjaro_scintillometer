@@ -65,22 +65,22 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   
   # Subset columns relevant for randomForest algorithm
   
-  ### test: model based on 10-min data, don't forget to uncomment subsequent code
-  tmp_df_sub <- tmp_df[, c("datetime", ch_var_rf)]
-  tmp_df_sub_agg10m <- aggregate(tmp_df_sub[, 2:ncol(tmp_df_sub)], 
-                                 by = list(substr(tmp_df_sub[, 1], 1, 15)), 
-                                 FUN = function(x) mean(x, na.rm = TRUE))
-  tmp_df_sub_agg10m[, 1] <- paste0(tmp_df_sub_agg10m[, 1], "0")
-  names(tmp_df_sub_agg10m)[1] <- "datetime"
-  tmp_df_sub_agg10m$datetime <- strptime(tmp_df_sub_agg10m$datetime, 
-                                         format = "%Y-%m-%d %H:%M")
+  #   ### test: model based on 10-min data, don't forget to uncomment subsequent code
+  #   tmp_df_sub <- tmp_df[, c("datetime", ch_var_rf)]
+  #   tmp_df_sub_agg10m <- aggregate(tmp_df_sub[, 2:ncol(tmp_df_sub)], 
+  #                                  by = list(substr(tmp_df_sub[, 1], 1, 15)), 
+  #                                  FUN = function(x) mean(x, na.rm = TRUE))
+  #   tmp_df_sub_agg10m[, 1] <- paste0(tmp_df_sub_agg10m[, 1], "0")
+  #   names(tmp_df_sub_agg10m)[1] <- "datetime"
+  #   tmp_df_sub_agg10m$datetime <- strptime(tmp_df_sub_agg10m$datetime, 
+  #                                          format = "%Y-%m-%d %H:%M")
+  #   
+  #   tmp_df_sub <- tmp_df_sub_agg10m[, ch_var_rf]
+  #   tmp_df_sub$hour <- hour(tmp_df_sub_agg10m$datetime)
+  #   ###
   
-  tmp_df_sub <- tmp_df_sub_agg10m[, ch_var_rf]
-  tmp_df_sub$hour <- hour(tmp_df_sub_agg10m$datetime)
-  ###
-
-  # tmp_df_sub <- tmp_df[, ch_var_rf]
-  # tmp_df_sub$hour <- hour(tmp_df$datetime)
+  tmp_df_sub <- tmp_df[, ch_var_rf]
+  tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
   ## vapor pressure deficit
@@ -133,7 +133,7 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
   tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
   write.csv(tmp_df_rf_eval, row.names = FALSE, quote = FALSE, 
-            paste0("data/regstats_vpd_agg10m_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
+            paste0("data/regstats_vpd_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   # variable importances
   tmp_ls_rf_varimp <- lapply(tmp_ls_rf_stats, function(i) i[[2]])
@@ -143,7 +143,7 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
   names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
   write.csv(tmp_df_rf_varimp, row.names = FALSE, quote = FALSE,
-            paste0("data/varimp_vpd_agg10m_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
+            paste0("data/varimp_vpd_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   # plot prediction stats
   num_reg_stats <- colMeans(tmp_df_rf_eval[, 6:ncol(tmp_df_rf_eval)])
