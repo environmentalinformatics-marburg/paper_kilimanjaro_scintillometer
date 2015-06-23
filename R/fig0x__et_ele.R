@@ -128,9 +128,9 @@ p_et_ele <- ggplot(data = df_var_ele) +
 
 ## vpd
 p_vpd_ele <- ggplot(data = df_var_ele) + 
-  #   stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
-  #               method = "loess", span = .99, colour = "grey50", 
-  #               linetype = "longdash", lwd = 2) + 
+  stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
+              method = "lm", span = .99, colour = "grey50", 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
