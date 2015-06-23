@@ -1,0 +1,57 @@
+<kml xmlns:xsd="http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd" xmlns:xmlns="http://www.opengis.net/kml/2.2/" version="1.0">
+  <Document>
+    <name>spt_sls_ll_plot</name>
+    <open>1</open>
+    <Folder>
+      <name>SpatialPointsDataFrame</name>
+      <Style id="pnt1">
+        <LabelStyle>
+          <scale>0.5</scale>
+        </LabelStyle>
+        <IconStyle>
+          <color>#ff999999</color>
+          <scale>0.5</scale>
+          <Icon>
+            <href>http://maps.google.com/mapfiles/kml/pal2/icon18.png</href>
+          </Icon>
+        </IconStyle>
+        <BalloonStyle>
+          <text>$[description]</text>
+        </BalloonStyle>
+      </Style>
+      <Style id="pnt2">
+        <LabelStyle>
+          <scale>0.5</scale>
+        </LabelStyle>
+        <IconStyle>
+          <color>#ff1c1ae4</color>
+          <scale>0.5</scale>
+          <Icon>
+            <href>http://maps.google.com/mapfiles/kml/pal2/icon18.png</href>
+          </Icon>
+        </IconStyle>
+        <BalloonStyle>
+          <text>$[description]</text>
+        </BalloonStyle>
+      </Style>
+      <Placemark>
+        <name>1014.908691</name>
+        <styleUrl>#pnt1</styleUrl>
+        <Point>
+          <extrude>1</extrude>
+          <altitudeMode>clampToGround</altitudeMode>
+          <coordinates>37.24362,-3.31034,0</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>1011.120605</name>
+        <styleUrl>#pnt2</styleUrl>
+        <Point>
+          <extrude>1</extrude>
+          <altitudeMode>clampToGround</altitudeMode>
+          <coordinates>37.24302,-3.31018,0</coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
