@@ -30,6 +30,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
+  tmp_ch_dt <- sapply(tmp_ls_plt, "[[", 4)
   
   tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
                         pattern = ".mnd$", full.names = TRUE)
@@ -97,7 +98,18 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
 
   # random forest
   tmp_rf <- train(waterET ~ ., data = tmp_df_sub_trn, method = "rf", 
-                  trControl = fit_control)
+                  trControl = fit_control, importance = TRUE)
+  
+  # save variable importances and applied mtry
+  tmp_df_varimp <- varImp(tmp_rf, scale = TRUE)$importance
+  tmp_mat_varimp <- t(tmp_df_varimp)
+  tmp_df_varimp <- data.frame(tmp_mat_varimp)
+  names(tmp_df_varimp) <- colnames(tmp_mat_varimp)
+  
+  int_mtry <- tmp_rf$bestTune
+  
+  df_out <- data.frame(plot = tmp_ch_plt, mtry = int_mtry, tmp_df_varimp)
+  write.csv(df_out, paste0("data/varimp_final_vpd_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   # random forest-based ET prediction
   tmp_prd <- predict(tmp_rf, tmp_df_sub_tst)
