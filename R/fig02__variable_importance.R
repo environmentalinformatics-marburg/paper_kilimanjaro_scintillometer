@@ -4,10 +4,6 @@
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
-## path: input data
-ch_fls_varimp <- "data/reg_stats_vpd.RData"
-load(ch_fls_varimp)
-
 ## path: output storage
 ch_dir_out <- "../../publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
@@ -15,7 +11,12 @@ ch_dir_out <- "../../publications/paper/detsch_et_al__spotty_evapotranspiration/
 ### processing
 
 ## variable importances
-df_varimp <- df_rf_scores_dryssn_varimp
+ch_fls_varimp <- list.files("data", pattern = "^varimp_final", 
+                            full.names = TRUE)
+ch_fls_varimp <- ch_fls_varimp[-grep("201409", ch_fls_varimp)]
+ls_varimp <- lapply(ch_fls_varimp, read.csv)
+df_varimp <- do.call("rbind", ls_varimp)
+df_varimp <- df_varimp[, -1]
 
 ## refactorize method so that it is ordered according to performance statistics, 
 ## works only with dotplots results still in global environment
