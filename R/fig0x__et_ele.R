@@ -62,7 +62,8 @@ p_ta_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Temperature (" * degree * C * ")", ""))) + 
+  labs(y = expression(atop("Temperature (" * degree * C * ")", "")), 
+       x = "Elevation (m)\n") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
