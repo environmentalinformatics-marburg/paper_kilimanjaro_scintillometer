@@ -1,17 +1,10 @@
 ## environmental stuff
 
-# packages
-library(rgdal)
-library(MODIS)
-library(Rsenal)
-library(doParallel)
-library(kza)
+# packages and functions
+source("R/slsPkgs.R")
 library(GSODTools)
 
-# functions
-source("R/slsTemporalRange.R")
-source("R/slsGppIndex.R")
-source("R/qcMyd17.R")
+source("R/slsFcts.R")
 
 # parallelization
 cl <- makeCluster(3)
@@ -30,6 +23,7 @@ ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
 # path: output storage
 ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
+ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
 
 # modis options
 MODISoptions(MODISserverOrder = c("LPDAAC", "LAADS"), 
@@ -181,13 +175,16 @@ suffix = names(rst_md17_mrg), format = "GTiff", overwrite = TRUE)
 
 fls_md17_mrg_kz <- list.files(ch_dir_myd17, pattern = "^KZ_MRG", 
                                       full.names = TRUE, recursive = TRUE)
-rst_md17_mrg_kz <- stack(fls_myd17_crp_qc_tso_gf)
-
+rst_md17_mrg_kz <- stack(fls_md17_mrg_kz)
 mat_md17_mrg_kz <- as.matrix(rst_md17_mrg_kz)
 
 # plot extraction (3-by-3 matrix)
-spt_crd <- readOGR(dsn = ch_dir_crd, layer = ch_fls_crd)
+spt_crd <- readOGR(dsn = ch_dir_crd, layer = ch_fls_crd, 
+                   p4s = "+init=epsg:21037")
 spt_crd_amp <- subset(spt_crd, PoleType == "AMP")
+
+## data: sls measurements
+df_sls_fls <- slsAvlFls()
 
 ls_sls_gpp <- lapply(1:nrow(df_sls_fls), function(i) {
   tmp_spt_crd_amp <- subset(spt_crd_amp, PlotID == df_sls_fls$plot[i])
@@ -236,6 +233,48 @@ ls_sls_gpp_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
 })
 df_sls_gpp_md <- do.call("rbind", ls_sls_gpp_md)
 save("df_sls_gpp_md", file = paste0(ch_dir_out_agg01d, "df_sls_gpp_md.RData"))
+
+### visualization
+
+## create and rearrange habitat type factor levels
+df_sls_gpp_md$habitat <- substr(df_sls_gpp_md$plot, 1, 3)
+
+ch_lvl <- substr(slsPlots(style = "elevation"), 1, 3)
+ch_lvl <- unique(ch_lvl)
+df_sls_gpp_md$habitat <- factor(df_sls_gpp_md$habitat, levels = ch_lvl)
+
+## lai means and standard errors per habitat type
+df_sls_gpp_md %>%
+  group_by(habitat) %>% 
+  filter(season == "r") %>%
+  mutate(gpp_mu = mean(gpp), gpp_se = std.error(gpp)) %>%
+  data.frame() -> df_hab_gpp
+
+## limits of error bars and y-axis
+limits <- aes(ymax = gpp_mu + gpp_se, ymin = gpp_mu - gpp_se)
+num_ylim <- c(0, max(df_hab_gpp$gpp_mu + df_hab_gpp$gpp_se, na.rm = TRUE) + .01)
+
+## visualize
+p_gpp_rs <- ggplot(aes(x = habitat, y = gpp_mu), data = df_hab_gpp) + 
+  geom_histogram(stat = "identity", position = "dodge", fill = "grey80", 
+                 colour = "grey60", lwd = 1.2, alpha = .5) +
+  geom_errorbar(limits, position = "dodge", linetype = "dashed", width = .2) + 
+  geom_text(aes(x = habitat, y = gpp, label = plot), vjust = 1.6, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(gpp_se) & plot %in% c("sav0", "mai0", "gra2", "cof2"))) + 
+  geom_text(aes(x = habitat, y = gpp, label = plot), vjust = -1, 
+            fontface = "bold", size = 6,
+            ,subset = .(!is.na(gpp_se) & plot %in% c("sav5", "mai4", "gra1", "cof3"))) +
+  labs(x = "\nHabitat type", y = expression(atop("GPP (kgC/" ~ m^{2} * ")", ""))) + 
+  theme_bw() + 
+  theme(axis.title = element_text(size = 18), 
+        axis.text = element_text(size = 15)) + 
+  coord_cartesian(ylim = num_ylim)
+
+png(paste0(ch_dir_ppr, "fig/fig0x__gpp.png"), width = 20, height = 15, 
+    units = "cm", pointsize = 18, res = 300)
+print(p_gpp_rs)
+dev.off()
 
 # deregister parallel backend
 closeAllConnections()
