@@ -357,7 +357,7 @@ save("df_sls_lai_md", file = "data/lai.RData")
 ## create and rearrange habitat type factor levels
 df_plt_lai$habitat <- substr(df_plt_lai$plot, 1, 3)
 
-ch_lvl <- substr(slsPlots(), 1, 3)
+ch_lvl <- substr(slsPlots(style = "elevation"), 1, 3)
 ch_lvl <- unique(ch_lvl)
 df_plt_lai$habitat <- factor(df_plt_lai$habitat, levels = ch_lvl)
 
