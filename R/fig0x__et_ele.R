@@ -34,7 +34,8 @@ df_vpd <- summarizeVar(df_fls$mrg_rf_agg01h, param = "vpd",
 
 ## plot coordinates
 spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/", 
-                    "PlotPoles_ARC1960_mod_20140807_final")
+                    "PlotPoles_ARC1960_mod_20140807_final", 
+                    p4s = "+init=epsg:21037")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
 
 ## merge data
@@ -51,6 +52,16 @@ cols <- c(cols, cols_upper)
 
 df_var_ele$focal <- "yes"
 df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
+
+## statistics (trend profiles)
+lm_ta <- lm(tempUpfun ~ Z_DEM_HMP, data = df_var_ele)
+summary(lm_ta)
+
+lm_vpd <- lm(vpdfun ~ Z_DEM_HMP, data = df_var_ele)
+summary(lm_vpd)
+
+loe_rad <- loess(dwnRadfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+summary(loe_rad)
 
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
