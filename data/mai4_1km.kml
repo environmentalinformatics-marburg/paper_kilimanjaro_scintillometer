@@ -23,11 +23,11 @@
           <altitudeMode>clampToGround</altitudeMode>
           <outerBoundaryIs>
             <LinearRing>
-              <coordinates>37.2923922037941,-3.07450345237084,0
- 37.3009753708419,-3.07451720331503,0
- 37.300961707164,-3.08314563140747,0
- 37.2923784711713,-3.08313184176645,0
- 37.2923922037941,-3.07450345237084,0</coordinates>
+              <coordinates>37.6096079128183,-3.35974513515841,0
+ 37.6181947548507,-3.35975736366828,0
+ 37.6181826089855,-3.3683870350409,0
+ 37.6095956915351,-3.36837477502665,0
+ 37.6096079128183,-3.35974513515841,0</coordinates>
             </LinearRing>
           </outerBoundaryIs>
         </Polygon>
@@ -56,7 +56,7 @@
         <Point>
           <extrude>1</extrude>
           <altitudeMode>clampToGround</altitudeMode>
-          <coordinates>37.2966769414323,-3.07882453800088,0</coordinates>
+          <coordinates>37.6138952446419,-3.36406608354712,0</coordinates>
         </Point>
       </Placemark>
     </Folder>
