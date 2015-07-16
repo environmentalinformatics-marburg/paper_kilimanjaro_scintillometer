@@ -79,7 +79,7 @@ df_plt_lai$season[int_id_dryssn] <- "d"
 df_plt_lai$plot <- tolower(df_plt_lai$plot)
 df_plt_lai$plot <- substr(df_plt_lai$plot, 1, 4)
 
-save("df_plt_lai", file = "data/licor_lai.RData")
+save("df_plt_lai", file = "data/licor_lai.rds")
 
 
 ## data: modis
@@ -298,7 +298,7 @@ dt_fls_lai <- as.Date(ch_dt_fls_lai, format = "%Y%j")
 ## lai extraction 
 
 # 3-by-3 focal matrix per sls plot, or single pixel if `use_mat = FALSE`
-ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = TRUE) {
+ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
   tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
   
   tmp_int_plt_px <- cellFromXY(rst_kz, tmp_spt_plt)
@@ -349,10 +349,14 @@ ls_sls_lai_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
              lai = mean(tmp_df_sls_lai[, 5], na.rm = TRUE))
 })
 df_sls_lai_md <- do.call("rbind", ls_sls_lai_md)
-save("df_sls_lai_md", file = "data/modis_lai_mu.RData")
+save("df_sls_lai_md", file = "data/modis_lai.rds")
 
 
 ### visualization
+
+df_plt_lai <- readRDS("data/licor_lai.rds")
+df_sls_lai <- readRDS("data/modis_lai.rds")
+df_sls_lai_mu <- readRDS("data/modis_lai_mu.rds")
 
 ## create and rearrange habitat type factor levels
 df_plt_lai$habitat <- substr(df_plt_lai$plot, 1, 3)
