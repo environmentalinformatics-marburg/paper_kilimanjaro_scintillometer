@@ -37,7 +37,7 @@ rst_tmp <- kiliAerial(minNumTiles = 9L, rasterize = TRUE)
 
 # data download
 ls_md17_gpp <- lapply(c("MOD", "MYD"), function(sensor, exe_crop = TRUE, 
-                                                exe_qc = TRUE, exe_tso = TRUE) {
+                                                exe_qc = TRUE) {
   
   # modis data download
   product <- paste0(sensor, "17A2")
@@ -102,43 +102,44 @@ ls_md17_gpp <- lapply(c("MOD", "MYD"), function(sensor, exe_crop = TRUE,
                                    full.names = TRUE, recursive = TRUE)
     rst_myd17_crp_qc <- stack(fls_myd17_crp_qc)
   }
-  
-  mat_myd17_crp_qc <- as.matrix(rst_myd17_crp_qc)
-  
-  # tsOutliers
-  if (exe_tso) {
-    rst_myd17_crp_qc_tso <- calc(rst_myd17_crp_qc, fun = function(x) {
-      tmp_num <- as.numeric(x)
-      
-      if (!all(is.na(tmp_num))) {
-        tmp_int_id <- tsOutliers(tmp_num, lower_quantile = .5, upper_quantile = .8, 
-                                 index = TRUE)
-        if (length(tmp_int_id) > 0)
-          tmp_num[tmp_int_id] <- NA
-      }
-      
-      return(tmp_num)
-    }, filename = paste0(ch_dir_myd17, "/tso/TSO"), bylayer = TRUE, 
-    suffix = names(rst_myd17_crp_qc), format = "GTiff", overwrite = TRUE)
-  } else {
-    fls_myd17_crp_qc_tso <- list.files(ch_dir_myd17, pattern = "^TSO", 
-                                       full.names = TRUE, recursive = TRUE)
-    rst_myd17_crp_qc_tso <- stack(fls_myd17_crp_qc_tso)
-  }
-    
-  return(rst_myd17_crp_qc_tso)
-})
+
+  #   # tsOutliers
+  #   if (exe_tso) {
+  #     rst_myd17_crp_qc_tso <- calc(rst_myd17_crp_qc, fun = function(x) {
+  #       tmp_num <- as.numeric(x)
+  #       
+  #       if (!all(is.na(tmp_num))) {
+  #         tmp_int_id <- tsOutliers(tmp_num, lower_quantile = .5, upper_quantile = .8, 
+  #                                  index = TRUE)
+  #         if (length(tmp_int_id) > 0)
+  #           tmp_num[tmp_int_id] <- NA
+  #       }
+  #       
+  #       return(tmp_num)
+  #     }, filename = paste0(ch_dir_myd17, "/tso/TSO"), bylayer = TRUE, 
+  #     suffix = names(rst_myd17_crp_qc), format = "GTiff", overwrite = TRUE)
+  #   } else {
+  #     fls_myd17_crp_qc_tso <- list.files(ch_dir_myd17, pattern = "^TSO", 
+  #                                        full.names = TRUE, recursive = TRUE)
+  #     rst_myd17_crp_qc_tso <- stack(fls_myd17_crp_qc_tso)
+  #   }
+  #     
+  #   return(rst_myd17_crp_qc_tso)
+  # })
+ 
+  return(rst_myd17_crp_qc)
+}
 
 # overlay terra and aqua modis
-ls_md17_tso <- lapply(c("MOD", "MYD"), function(i) {
-  tmp_ch_fls <- list.files(ch_dir_myd17, pattern = paste0("^TSO.*", i), 
+ls_md17_qc <- lapply(c("MOD", "MYD"), function(i) {
+  tmp_ch_fls <- list.files(ch_dir_myd17, pattern = paste0("^QC.*", i), 
                            full.names = TRUE, recursive = TRUE)
   stack(tmp_ch_fls)
 })
 
-rst_md17_mrg <- foreach(i = 1:nlayers(ls_md17_tso[[2]]), .combine = "stack",
+rst_md17_mrg <- foreach(i = 1:nlayers(ls_md17_qc[[2]]), .combine = "stack",
                         .packages = c("raster", "rgdal")) %dopar% {
-  overlay(ls_md17_tso[[1]][[i]], ls_md17_tso[[2]][[i]], 
+  overlay(ls_md17_qc[[1]][[i]], ls_md17_qc[[2]][[i]], 
           fun = function(x, y) {
             sapply(1:length(x), function(i) {
               nax <- is.na(x[i])
@@ -154,7 +155,7 @@ rst_md17_mrg <- foreach(i = 1:nlayers(ls_md17_tso[[2]]), .combine = "stack",
                 return(max(x[i], y[i]))
               }
             })
-          }, filename = paste0(ch_dir_myd17, "/mrg/MRG_", names(ls_md17_tso[[1]])[i]), 
+          }, filename = paste0(ch_dir_myd17, "/mrg/MRG_", names(ls_md17_qc[[1]])[i]), 
           format = "GTiff", overwrite = TRUE)
 }
 
