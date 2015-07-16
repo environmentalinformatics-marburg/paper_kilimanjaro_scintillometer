@@ -186,7 +186,7 @@ spt_crd_amp <- subset(spt_crd, PoleType == "AMP")
 ## data: sls measurements
 df_sls_fls <- slsAvlFls()
 
-ls_sls_gpp <- lapply(1:nrow(df_sls_fls), function(i, use_mat = TRUE) {
+ls_sls_gpp <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
   tmp_spt_crd_amp <- subset(spt_crd_amp, PlotID == df_sls_fls$plot[i])
   tmp_int_crd_px <- cellFromXY(rst_md17_mrg_kz, tmp_spt_crd_amp)
   
@@ -224,8 +224,13 @@ ls_sls_gpp_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
                                 dt_fls_gpp = dt_fls_gpp, offset = 2)
   
   num_val <- tmp_df_gpp[, tmp_int_id_gpp]
-  mat_val <- matrix(num_val, ncol = length(num_val))
-  tmp_df_sls_gpp <- data.frame(tmp_df_sls_rng, mat_val)
+  
+  if (is.numeric(num_val)) {
+    mat_val <- matrix(num_val, ncol = length(num_val))
+  } else {
+    mat_val <- t(as.matrix(num_val, ncol = length(num_val)))
+  }
+    tmp_df_sls_gpp <- data.frame(tmp_df_sls_rng, mat_val)
   
   # calculate mean if sls measurement includes two modis scenes
   if (ncol(tmp_df_sls_gpp) > 5) {
@@ -234,13 +239,8 @@ ls_sls_gpp_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
     tmp_df_sls_gpp <- data.frame(tmp_df_sls_gpp[, 1:4], tmp_num_mu)
   }
   
-  # calculate focal median if cell of interest is missing, else return value
-  if (is.na(tmp_df_sls_gpp[5, 5])) {
-    return(data.frame(tmp_df_sls_gpp[1, 1:4], 
-           gpp = median(tmp_df_sls_gpp[, 5], na.rm = TRUE)))
-  } else {
-    return(data.frame(tmp_df_sls_gpp[1, 1:4], gpp = tmp_df_sls_gpp[5, 5]))
-  }
+  # calculate focal mean if cell of interest is missing, else return value
+  return(data.frame(tmp_df_sls_gpp[1, 1:4], gpp = mean(tmp_df_sls_gpp[, 5])))
 })
 df_sls_gpp_md <- do.call("rbind", ls_sls_gpp_md)
 save("df_sls_gpp_md", file = "data/modis_gpp.rds")
