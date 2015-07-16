@@ -79,7 +79,7 @@ df_plt_lai$season[int_id_dryssn] <- "d"
 df_plt_lai$plot <- tolower(df_plt_lai$plot)
 df_plt_lai$plot <- substr(df_plt_lai$plot, 1, 4)
 
-save("df_plt_lai", file = "data/lai_licor.RData")
+save("df_plt_lai", file = "data/licor_lai.RData")
 
 
 ## data: modis
@@ -298,7 +298,7 @@ dt_fls_lai <- as.Date(ch_dt_fls_lai, format = "%Y%j")
 ## lai extraction 
 
 # 3-by-3 focal matrix per sls plot, or single pixel if `use_mat = FALSE`
-ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = FALSE) {
+ls_sls_lai <- lapply(1:nrow(df_sls_fls), function(i, use_mat = TRUE) {
   tmp_spt_plt <- subset(spt_plt, PlotID == df_sls_fls$plot[i])
   
   tmp_int_plt_px <- cellFromXY(rst_kz, tmp_spt_plt)
@@ -344,12 +344,12 @@ ls_sls_lai_md <- lapply(1:nrow(df_sls_tmp_rng), function(i) {
     tmp_df_sls_lai <- data.frame(tmp_df_sls_lai[, 1:4], tmp_num_mu)
   }
   
-  # median lai
+  # mean lai
   data.frame(tmp_df_sls_lai[1, 1:4], 
-             lai = median(tmp_df_sls_lai[, 5], na.rm = TRUE))
+             lai = mean(tmp_df_sls_lai[, 5], na.rm = TRUE))
 })
 df_sls_lai_md <- do.call("rbind", ls_sls_lai_md)
-save("df_sls_lai_md", file = "data/lai.RData")
+save("df_sls_lai_md", file = "data/modis_lai_mu.RData")
 
 
 ### visualization
