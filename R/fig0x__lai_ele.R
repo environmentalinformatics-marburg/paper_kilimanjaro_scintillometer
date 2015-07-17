@@ -9,14 +9,19 @@ ch_dir_tbl <- "../../phd/scintillometer/data/tbl/"
 df_fls <- slsAvlFls(ssn = "r")
 
 ## lai
-load("data/modis_lai_mu.rds")
+load("data/modis_lai.rds")
 df_lai <- df_sls_lai_md
 df_lai <- subset(df_lai, season == "r")
 
 ## gpp
-load("data/modis_gpp_mu.rds")
+load("data/modis_gpp.rds")
 df_gpp <- df_sls_gpp_md
 df_gpp <- subset(df_gpp, season == "r")
+
+## et
+df_et <- summarizeVar(df_fls$mrg_rf_agg01h, 
+                      file_out = paste0(ch_dir_tbl, "table_et.csv"))
+
 
 ## plot coordinates
 spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/", 
@@ -39,8 +44,30 @@ cols <- c(cols, cols_upper)
 df_var_ele$focal <- "yes"
 df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
+## statistics
+loe_lai <- loess(lai ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+hat <- predict(loe_lai)
+cor(df_var_ele$lai, hat)^2
+
+loe_gpp <- loess(gpp ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+hat <- predict(loe_gpp)
+cor(df_var_ele$gpp, hat)^2
+
+mod <- lm(lai ~ gpp, data = df_var_ele)
+summary(mod)
+
+df_var_ele_et <- merge(df_var_ele, df_et, by = "PlotID")
+mod_etlai <- lm(waterETfun ~ log(lai), data = df_var_ele_et)
+summary(mod_etlai)
+
+mod_etgpp <- lm(waterETfun ~ log(gpp), data = df_var_ele_et)
+summary(mod_etgpp)
+
 ## lai
 p_lai_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = lai, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey60", 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = lai, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
@@ -57,6 +84,9 @@ p_lai_ele <- ggplot(data = df_var_ele) +
 
 ## gpp
 p_gpp_ele <- ggplot(data = df_var_ele) + 
+  stat_smooth(aes(y = gpp, x = Z_DEM_HMP), se = FALSE, 
+              method = "loess", span = .99, colour = "grey60", 
+              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = gpp, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
@@ -99,7 +129,7 @@ p_key_ele <- ggplot(data = df_var_ele) +
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
 
-png(paste0(ch_dir_pub, "fig/fig0x_lai_mu_ele.png"), width = 11.25, height = 25, 
+png(paste0(ch_dir_pub, "fig/fig0x_lai_ele.png"), width = 11.25, height = 25, 
     units = "cm", pointsize = 15, res = 300)
 grid.newpage()
 
@@ -109,7 +139,7 @@ pushViewport(vp_figure)
 grid.arrange(p_gpp_ele, p_lai_ele, as.table = TRUE, newpage = FALSE)
 
 upViewport()
-vp_legend <- viewport(x = 0.5, y = 0.76, width = .3, height = .3, angle = 90)
+vp_legend <- viewport(x = 0.522, y = 0.71, width = .3, height = .3, angle = 90)
 pushViewport(vp_legend)
 grid.draw(legend)
 
