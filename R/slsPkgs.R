@@ -1,5 +1,5 @@
 lib <- c("doParallel", "caret", "lubridate", "plotrix", "plyr", "dplyr", 
-         "reshape2", "scales", "ggplot2", "latticeExtra", "gridExtra", 
+         "reshape2", "scales", "ggplot2", "latticeExtra", "gridExtra", "grid",
          "TSdist", "Rsenal", "OpenStreetMap", "Orcs", "rgeos", "rasterVis", 
          "rgdal", "MODIS", "zoo", "raster", "kza")
 
