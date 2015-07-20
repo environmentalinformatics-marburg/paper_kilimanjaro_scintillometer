@@ -8,15 +8,17 @@ ch_dir_tbl <- "../../phd/scintillometer/data/tbl/"
 ## input data
 df_fls <- slsAvlFls(ssn = "r")
 
+## lai (licor)
+load("data/licor_lai.rds")
+df_licor <- df_plt_lai
+df_licor <- subset(df_licor, season == "r")
+names(df_licor)[names(df_licor) == "LAI"] <- "lai_licor"
+
 ## lai
 load("data/modis_lai.rds")
-df_lai <- df_sls_lai_md
-df_lai <- subset(df_lai, season == "r")
-
-## gpp
-load("data/modis_gpp.rds")
-df_gpp <- df_sls_gpp_md
-df_gpp <- subset(df_gpp, season == "r")
+df_modis <- df_sls_lai_md
+df_modis <- subset(df_modis, season == "r")
+names(df_modis)[names(df_modis) == "lai"] <- "lai_modis"
 
 ## et
 df_et <- summarizeVar(df_fls$mrg_rf_agg01h, 
@@ -28,53 +30,65 @@ spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/",
                     "PlotPoles_ARC1960_mod_20140807_final", 
                     p4s = "+init=epsg:21037")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
+spt_plot@data <- spt_plot@data[, c("PlotID", "Z_DEM_HMP")]
 
 ## merge data
-df_var <- Reduce(function(...) merge(..., by = c("plot", "season", "begin", "end")), 
-                                     list(df_lai, df_gpp))
-df_var_ele <- merge(spt_plot@data, df_var, by.x = "PlotID", by.y = "plot")
-df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
+df_lai <- merge(df_licor, df_modis, by = c("plot", "season"))
+df_lai_ele <- merge(spt_plot@data, df_lai, by.x = "PlotID", by.y = "plot")
+df_lai_ele$habitat <- substr(df_lai_ele$PlotID, 1, 3)
 
+## colors
 cols_upper <- brewer.pal(3, "YlOrBr")
 names(cols_upper) <- c("hel", "fed", "fer")
 cols <- c("sav" = "yellow", "mai" = "darkgreen", 
           "cof" = "chocolate4", "gra" = "green")
 cols <- c(cols, cols_upper)
 
-df_var_ele$focal <- "yes"
-df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
+## focal plots
+df_lai_ele$focal <- "yes"
+df_lai_ele$focal[df_lai_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
 ## statistics
-loe_lai <- loess(lai ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-hat <- predict(loe_lai)
-cor(df_var_ele$lai, hat)^2
+mod_lai <- lm(lai_modis ~ lai_licor, data = df_lai_ele)
+summary(mod_lai)
 
-loe_gpp <- loess(gpp ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-hat <- predict(loe_gpp)
-cor(df_var_ele$gpp, hat)^2
+df_lai_et <- merge(df_lai, df_et, by.x = "plot", by.y = "PlotID")
+mod_licor_et <- lm(lai_licor ~ waterETfun, data = df_lai_et)
+summary(mod_licor_et)
 
-mod <- lm(lai ~ gpp, data = df_var_ele)
-summary(mod)
+mod_modis_et <- lm(lai_modis ~ waterETfun, data = df_lai_et)
+summary(mod_modis_et)
 
-df_var_ele_et <- merge(df_var_ele, df_et, by = "PlotID")
-mod_etlai <- lm(waterETfun ~ log(lai), data = df_var_ele_et)
-summary(mod_etlai)
+# loe_lai <- loess(lai ~ Z_DEM_HMP, data = df_lai_ele, span = .99)
+# hat <- predict(loe_lai)
+# cor(df_lai_ele$lai, hat)^2
+# 
+# loe_gpp <- loess(gpp ~ Z_DEM_HMP, data = df_lai_ele, span = .99)
+# hat <- predict(loe_gpp)
+# cor(df_lai_ele$gpp, hat)^2
+# 
+# mod <- lm(lai ~ gpp, data = df_lai_ele)
+# summary(mod)
+# 
+# df_lai_ele_et <- merge(df_lai_ele, df_et, by = "PlotID")
+# mod_etlai <- lm(waterETfun ~ log(lai), data = df_lai_ele_et)
+# summary(mod_etlai)
+# 
+# mod_etgpp <- lm(waterETfun ~ log(gpp), data = df_lai_ele_et)
+# summary(mod_etgpp)
 
-mod_etgpp <- lm(waterETfun ~ log(gpp), data = df_var_ele_et)
-summary(mod_etgpp)
-
-## lai
-p_lai_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = lai, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey60", 
-              linetype = "longdash", lwd = 2) + 
-  geom_point(aes(y = lai, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+## LiCOR-LAI-elevation relationship
+p_licor_ele <- ggplot(data = df_lai_ele) + 
+  #   stat_smooth(aes(y = lai_licor, x = Z_DEM_HMP), se = FALSE, 
+  #               method = "loess", span = .99, colour = "grey60", 
+  #               linetype = "longdash", lwd = 2) + 
+  geom_point(aes(y = lai_licor, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("LAI", "")), 
-       x = "Elevation (m)\n") + 
+  scale_y_continuous(limits = c(0, 6.5), breaks = seq(0, 6, 2)) + 
+  labs(y = expression(atop("LAI"[LI-COR], "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -82,27 +96,42 @@ p_lai_ele <- ggplot(data = df_var_ele) +
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
-## gpp
-p_gpp_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = gpp, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey60", 
-              linetype = "longdash", lwd = 2) + 
-  geom_point(aes(y = gpp, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+## MODIS-LAI-elevation relationship
+p_modis_ele <- ggplot(data = df_lai_ele) + 
+  #   stat_smooth(aes(y = lai_modis, x = Z_DEM_HMP), se = FALSE, 
+  #               method = "loess", span = .99, colour = "grey60", 
+  #               linetype = "longdash", lwd = 2) + 
+  geom_point(aes(y = lai_modis, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("GPP (kgC/" ~ m^{2} * ")", "")), x = "") + 
+  scale_y_continuous(limits = c(0, 6.5), breaks = seq(0, 6, 2)) + 
+  labs(y = expression(atop("LAI"[MODIS], "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
+
+## LiCOR-LAI vs. MODIS-LAI
+p_scatter <- ggplot(aes(x = lai_licor, y = lai_modis, fill = habitat, shape = focal), 
+       data = df_lai_ele) + 
+  geom_point(colour = "black", size = 6) + 
+  geom_text(label = "r² = 0.11", x = 5, y = 5) + 
+  scale_fill_manual(values = cols) + 
+  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+  scale_x_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
+  scale_y_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
+  labs(x = expression(atop("", "LAI"[LI-COR])), 
+       y = expression(atop("LAI"[MODIS], ""))) + 
+  theme_bw() + 
+  theme(legend.position = "none")
 
 ## legend
-p_key_ele <- ggplot(data = df_var_ele) + 
-  geom_point(aes(y = lai, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
+p_key_ele <- ggplot(data = df_lai_ele) + 
+  geom_point(aes(y = lai_licor, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = c("sav0" = "yellow", "sav5" = "yellow", 
                                "mai0" = "darkgreen", "mai4" = "darkgreen", 
@@ -129,18 +158,30 @@ p_key_ele <- ggplot(data = df_var_ele) +
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
 
-png(paste0(ch_dir_pub, "fig/fig0x_lai_ele.png"), width = 11.25, height = 25, 
+png(paste0(ch_dir_pub, "fig/fig0x_lai_ele.png"), width = 11.25*1.1, height = 12*1.5, 
     units = "cm", pointsize = 15, res = 300)
 grid.newpage()
 
-vp_figure <- viewport(x = 0, y = 0, width = 1, height = 2/3, 
+vp_figure <- viewport(x = 0, y = .05, width = 1, height = .95, 
                       just = c("left", "bottom"))
 pushViewport(vp_figure)
-grid.arrange(p_gpp_ele, p_lai_ele, as.table = TRUE, newpage = FALSE)
+grid.arrange(p_modis_ele, p_licor_ele, as.table = TRUE, newpage = FALSE)
 
+# upViewport()
+# vp_scatter <- viewport(x = 1, y = 0, width = .75, height = .6, 
+#                        just = c("left", "bottom"), angle = 90)
+# pushViewport(vp_scatter)
+# print(p_scatter, newpage = FALSE)
+ 
 upViewport()
-vp_legend <- viewport(x = 0.522, y = 0.71, width = .3, height = .3, angle = 90)
-pushViewport(vp_legend)
-grid.draw(legend)
+vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+                     just = c("left", "bottom"))
+pushViewport(vp_yaxis)
+grid.text("Elevation (m a.s.l.)", rot = 180)
+
+# upViewport()
+# vp_legend <- viewport(x = 0.522, y = 0.8, width = .3, height = .3, angle = 90)
+# pushViewport(vp_legend)
+# grid.draw(legend)
 
 dev.off()
