@@ -38,11 +38,7 @@ df_lai_ele <- merge(spt_plot@data, df_lai, by.x = "PlotID", by.y = "plot")
 df_lai_ele$habitat <- substr(df_lai_ele$PlotID, 1, 3)
 
 ## colors
-cols_upper <- brewer.pal(3, "YlOrBr")
-names(cols_upper) <- c("hel", "fed", "fer")
-cols <- c("sav" = "yellow", "mai" = "darkgreen", 
-          "cof" = "chocolate4", "gra" = "green")
-cols <- c(cols, cols_upper)
+cols <- hclPalette(n = 7, c = 180, l = 70)
 
 ## focal plots
 df_lai_ele$focal <- "yes"
@@ -115,51 +111,23 @@ p_modis_ele <- ggplot(data = df_lai_ele) +
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
-## LiCOR-LAI vs. MODIS-LAI
-p_scatter <- ggplot(aes(x = lai_licor, y = lai_modis, fill = habitat, shape = focal), 
-       data = df_lai_ele) + 
-  geom_point(colour = "black", size = 6) + 
-  geom_text(label = "r² = 0.11", x = 5, y = 5) + 
-  scale_fill_manual(values = cols) + 
-  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
-  scale_y_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
-  labs(x = expression(atop("", "LAI"[LI-COR])), 
-       y = expression(atop("LAI"[MODIS], ""))) + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-## legend
-p_key_ele <- ggplot(data = df_lai_ele) + 
-  geom_point(aes(y = lai_licor, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
-             colour = "black", size = 6) +   
-  scale_fill_manual(values = c("sav0" = "yellow", "sav5" = "yellow", 
-                               "mai0" = "darkgreen", "mai4" = "darkgreen", 
-                               "cof3" = "chocolate4", "cof2" = "chocolate4", 
-                               "gra1" = "green", "gra2" = "green", 
-                               "fer0" = "#D95F0E", "fed1" = "#FEC44F", 
-                               "hel1" = "#FFF7BC"), 
-                    breaks = c("fer0", "hel1", "fed1",  
-                               "gra2", "gra1", "cof2", "cof3", 
-                               "mai0", "mai4", "sav0", "sav5")) + 
-  scale_shape_manual(values = c("sav0" = 23, "sav5" = 22, 
-                                "mai0" = 23, "mai4" = 22, 
-                                "cof3" = 23, "cof2" = 22, 
-                                "gra1" = 23, "gra2" = 22, 
-                                "fer0" = 23, "fed1" = 23, 
-                                "hel1" = 23), 
-                     breaks = c("fer0", "hel1", "fed1",  
-                                "gra2", "gra1", "cof2", "cof3", 
-                                "mai0", "mai4", "sav0", "sav5")) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  theme_bw() + 
-  theme(text = element_text(size = 14))
+# ## LiCOR-LAI vs. MODIS-LAI
+# p_scatter <- ggplot(aes(x = lai_licor, y = lai_modis, fill = habitat, shape = focal), 
+#        data = df_lai_ele) + 
+#   geom_point(colour = "black", size = 6) + 
+#   geom_text(label = "r² = 0.11", x = 5, y = 5) + 
+#   scale_fill_manual(values = cols) + 
+#   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+#   scale_x_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
+#   scale_y_continuous(limits = c(0, 6.35), breaks = seq(0, 6, 1)) +
+#   labs(x = expression(atop("", "LAI"[LI-COR])), 
+#        y = expression(atop("LAI"[MODIS], ""))) + 
+#   theme_bw() + 
+#   theme(legend.position = "none")
 
 ## save arranged plots incl. customized legend
-legend <- ggExtractLegend(p_key_ele) 
-
-png(paste0(ch_dir_pub, "fig/fig0x_lai_ele.png"), width = 11.25*1.1, height = 12*1.5, 
-    units = "cm", pointsize = 15, res = 300)
+png(paste0(ch_dir_pub, "fig/fig05__lai_ele.png"), width = 11.25*1.1, 
+    height = 12*1.5, units = "cm", pointsize = 15, res = 300)
 grid.newpage()
 
 vp_figure <- viewport(x = 0, y = .05, width = 1, height = .95, 
@@ -178,10 +146,5 @@ vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1,
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)
 grid.text("Elevation (m a.s.l.)", rot = 180)
-
-# upViewport()
-# vp_legend <- viewport(x = 0.522, y = 0.8, width = .3, height = .3, angle = 90)
-# pushViewport(vp_legend)
-# grid.draw(legend)
 
 dev.off()
