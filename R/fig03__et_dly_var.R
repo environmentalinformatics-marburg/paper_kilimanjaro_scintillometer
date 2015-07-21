@@ -12,7 +12,7 @@ ch_dir_ppr <- paste0(ch_dir_os,
 
 # sls plots and referring files
 ch_sls_plt <- slsPlots()
-df_sls_fls_rs <- slsAvlFls(ssn = "r", disturbed = FALSE)
+df_sls_fls_rs <- slsAvlFls(ssn = "r")
 
 ## hourly aggregation
 ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {
@@ -57,7 +57,7 @@ df_all %>%
   arrange(desc(sumETmu)) -> df_max_dy
 
 df_max <- merge(df_max_dy, df_max_hr, by = "PlotID", sort = FALSE)
-write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3|1.csv")
+write.csv(df_max, "../../phd/scintillometer/data/tbl/table_3.csv")
 
 ## daytime subset
 ch_all_hr <- substr(df_all$Time, 1, 2)
@@ -66,11 +66,13 @@ int_all_dt <- int_all_hr >= 4 & int_all_hr < 20
 df_all <- df_all[int_all_dt, ]
 
 df_all$Time <- strptime(df_all$Time, format = "%H:%M:%S")
-df_all$Time <- factor(format(df_all$Time, format = "%H:%M"))
+df_all$Time <- factor(format(df_all$Time, format = "%H"))
 
 ## reorder factor levels
 df_all$PlotID <- factor(df_all$PlotID, 
-                        levels = rev(c("sav5", "sav0", "gra2", "gra1", "hel1", "fer0")))
+                        levels = rev(c("mai4", "mai0", "sav5", "sav0", 
+                                       "cof2", "cof3", "gra2", "gra1", 
+                                       "", "fed1", "hel1", "fer0")))
 
 ## ylim adjustment
 limits <- aes(ymax = ETmu + ETse, ymin = ETmu - ETse)
@@ -85,25 +87,32 @@ ls_lvl <- strsplit(ch_lvl, ":")
 ch_lvl_hr <- sapply(ls_lvl, "[[", 1)
 int_lvl_hr <- as.integer(ch_lvl_hr)
 int_lvl_hr_odd <- int_lvl_hr %% 2 != 0
-ch_lvl_min <- sapply(ls_lvl, "[[", 2)
-
-int_lvl_hr_odd_full <- ch_lvl_min == "00" & int_lvl_hr_odd
-ch_lbl[int_lvl_hr_odd_full] <- ch_lvl[int_lvl_hr_odd_full]
+ch_lbl[int_lvl_hr_odd] <- ch_lvl[int_lvl_hr_odd]
 names(ch_lbl) <- ch_lvl
 
 ## visualization
 p <- ggplot(aes(x = Time, y = ETmu), data = df_all) + 
-  geom_histogram(stat = "identity", fill = "grey65", colour = "grey35") + 
-  geom_errorbar(limits, position = "dodge", width = .2) + 
+  geom_histogram(stat = "identity", fill = "grey80", colour = "grey35") + 
+  geom_errorbar(limits, position = "dodge", width = .2) +
+  stat_smooth(aes(group = 1), method = "loess", se = FALSE, colour = "red", 
+              span = .99) + 
   geom_hline(aes(yintercept = 0), colour = "grey50", linetype = "dashed") + 
-  facet_wrap(~ PlotID, ncol = 2) + 
+  facet_wrap(~ PlotID, ncol = 4, drop = FALSE) + 
   scale_x_discrete(labels = ch_lbl) + 
-  labs(x = "\nTime (hours)", y = "Evapotranspiration (mm)\n") + 
+  labs(x = "\nHour of day", y = "Evapotranspiration (mm)\n") + 
   theme_bw() + 
   theme(panel.grid = element_blank(), 
-        text = element_text(size = 14), axis.text = element_text(size = 10))
+        text = element_text(size = 14), axis.text = element_text(size = 12))
 
-png(paste0(ch_dir_ppr, "/fig/fig03__climate_gradient.png"), width = 22.5, 
-    height = 20, units = "cm", res = 300, pointsize = 18)
-print(p) 
+png(paste0(ch_dir_ppr, "/fig/fig03__et_dly_var.png"), width = 34, 
+    height = 22, units = "cm", res = 300, pointsize = 18)
+grid.newpage()
+vp1 <- viewport(x = 0, y = 0, width = 1, height = 1,
+                just = c("left", "bottom"), name = "p")
+pushViewport(vp1)
+print(p, newpage = FALSE)
+vp2 <- viewport(x = .755, y = .68, width = .245, height = .32, 
+                just = c("left", "bottom"), name = "p2")
+pushViewport(vp2)
+grid.rect(gp = gpar(col = "white"))
 dev.off()
