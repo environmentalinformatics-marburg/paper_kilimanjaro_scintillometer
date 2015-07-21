@@ -104,7 +104,7 @@ p <- ggplot(aes(x = Time, y = ETmu), data = df_all) +
   theme(panel.grid = element_blank(), 
         text = element_text(size = 14), axis.text = element_text(size = 12))
 
-png(paste0(ch_dir_ppr, "/fig/fig03__et_dly_var.png"), width = 34, 
+png(paste0(ch_dir_ppr, "/fig/fig04__et_dly_var.png"), width = 34, 
     height = 22, units = "cm", res = 300, pointsize = 18)
 grid.newpage()
 vp1 <- viewport(x = 0, y = 0, width = 1, height = 1,

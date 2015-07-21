@@ -44,12 +44,16 @@ df_var <- Reduce(function(...) merge(..., by = "PlotID"),
 df_var_ele <- merge(df_var, spt_plot@data, by = "PlotID")
 df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
 
-cols_upper <- brewer.pal(3, "YlOrBr")
-names(cols_upper) <- c("hel", "fed", "fer")
-cols <- c("sav" = "yellow", "mai" = "darkgreen", 
-          "cof" = "chocolate4", "gra" = "green")
-cols <- c(cols, cols_upper)
+## colors
+cols <- hclPalette(n = 7, c = 180, l = 70)
 
+# cols_upper <- brewer.pal(3, "YlOrBr")
+# names(cols_upper) <- c("hel", "fed", "fer")
+# cols <- c("sav" = "yellow", "mai" = "darkgreen", 
+#           "cof" = "chocolate4", "gra" = "green")
+# cols <- c(cols, cols_upper)
+
+## focal plots
 df_var_ele$focal <- "yes"
 df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
@@ -63,6 +67,11 @@ summary(lm_vpd)
 loe_rad <- loess(dwnRadfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
 summary(loe_rad)
 
+loe_et <- loess(waterETfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+hat <- predict(loe_et)
+cor(df_var_ele$waterETfun, hat)^2
+summary(loe_et)
+
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
   stat_smooth(aes(y = tempUpfun, x = Z_DEM_HMP), se = FALSE, 
@@ -73,8 +82,7 @@ p_ta_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Temperature (" * degree * C * ")", "")), 
-       x = "Elevation (m)\n") + 
+  labs(y = expression(atop("Ta (" * degree * C * ")", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -92,7 +100,7 @@ p_rh_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Relative humidity (%)", "")), x = "") + 
+  labs(y = expression(atop("rH (%)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -110,8 +118,7 @@ p_rad_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Downward radiation (W/" * m^{2} * ")", " ")), 
-       x = "Elevation (m)\n") + 
+  labs(y = expression(atop("Rad"[dwn] ~ "(W/" * m^{2} * ")", " ")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -130,7 +137,7 @@ p_et_ele <- ggplot(data = df_var_ele) +
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(1.5, 5) + 
-  labs(y = expression(atop("Evapotranspiration (mm/day)", "")), x = "") + 
+  labs(y = expression(atop("ET (mm/day)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -149,7 +156,7 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(50, 720) + 
-  labs(y = expression(atop("Vapor pressure deficit (Pa)", "")), x = "") + 
+  labs(y = expression(atop("VPD (Pa)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -161,12 +168,12 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
 p_key_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
              colour = "black", size = 6) +   
-  scale_fill_manual(values = c("sav0" = "yellow", "sav5" = "yellow", 
-                               "mai0" = "darkgreen", "mai4" = "darkgreen", 
-                               "cof3" = "chocolate4", "cof2" = "chocolate4", 
-                               "gra1" = "green", "gra2" = "green", 
-                               "fer0" = "#D95F0E", "fed1" = "#FEC44F", 
-                               "hel1" = "#FFF7BC"), 
+  scale_fill_manual(values = c("sav0" = cols[1], "sav5" = cols[1], 
+                               "mai0" = cols[2], "mai4" = cols[2], 
+                               "cof3" = cols[3], "cof2" = cols[3], 
+                               "gra1" = cols[4], "gra2" = cols[4], 
+                               "fer0" = cols[5], "fed1" = cols[6], 
+                               "hel1" = cols[7]), 
                     breaks = c("fer0", "hel1", "fed1",  
                                "gra2", "gra1", "cof2", "cof3", 
                                "mai0", "mai4", "sav0", "sav5")) + 
@@ -185,14 +192,34 @@ p_key_ele <- ggplot(data = df_var_ele) +
 
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
+ls_p <- list(p_ta_ele, p_rh_ele, p_vpd_ele, p_rad_ele, p_et_ele)
 
-png(paste0(ch_dir_pub, "fig/fig0x_et_ele.png"), width = 22.5, height = 25, 
+png(paste0(ch_dir_pub, "fig/fig03__met_ele.png"), width = 22.5, height = 25, 
     units = "cm", pointsize = 15, res = 300)
-grid.arrange(p_ta_ele, p_rad_ele, p_rh_ele, p_et_ele, p_vpd_ele,  
-             as.table = TRUE)
 
-vp_legend <- viewport(x = 0.76, y = 0.76, width = .3, height = .3, angle = 90)
-pushViewport(vp_legend)
-grid.draw(legend)
+grid.newpage()
+n <- 0
+for (x in c(0, 0.5)) {
+  for (y in seq(0.05, 0.65, 0.3)) {
+    n <- n + 1
+    
+    # insert plots
+    if (n < 6) {
+      vp_tmp <- viewport(x = x, y = y, width = .5, height = .3, 
+                         just = c("left", "bottom"))
+      pushViewport(vp_tmp)
+      print(ls_p[[n]], newpage = FALSE)
+      
+    # insert legend  
+    } else {
+      vp_legend <- viewport(x = 0.7625, y = 0.76, width = .3, height = .3, 
+                            angle = 90)
+      pushViewport(vp_legend)
+      grid.draw(legend)
+    }
+    
+    upViewport()
+  }
+}
 
 dev.off()
