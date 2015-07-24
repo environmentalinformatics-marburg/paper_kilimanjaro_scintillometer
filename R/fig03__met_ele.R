@@ -45,7 +45,8 @@ df_var_ele <- merge(df_var, spt_plot@data, by = "PlotID")
 df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
 
 ## colors
-cols <- hclPalette(n = 7, c = 180, l = 70)
+cols <- envinmr.theme()$topo.cols(8)[1:7]
+names(cols) <- c("sav", "mai", "cof", "gra", "fed", "hel", "fer")
 
 # cols_upper <- brewer.pal(3, "YlOrBr")
 # names(cols_upper) <- c("hel", "fed", "fer")
@@ -82,7 +83,7 @@ p_ta_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Ta (" * degree * C * ")", "")), x = "") + 
+  labs(y = expression(atop("T"[a] ~ "(" * degree * C * ")", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -118,7 +119,7 @@ p_rad_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("Rad"[dwn] ~ "(W/" * m^{2} * ")", " ")), x = "") + 
+  labs(y = expression(atop("R"[dwn] ~ "(W/" * m^{2} * ")", " ")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -137,7 +138,7 @@ p_et_ele <- ggplot(data = df_var_ele) +
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(1.5, 5) + 
-  labs(y = expression(atop("ET (mm/day)", "")), x = "") + 
+  labs(y = expression(atop("ET (mm)", "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
         axis.title.y = element_text(angle = 90, size = 14), 
@@ -165,6 +166,7 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
         legend.position = "none")
 
 ## legend
+cols <- unname(cols)
 p_key_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
              colour = "black", size = 6) +   
@@ -172,8 +174,8 @@ p_key_ele <- ggplot(data = df_var_ele) +
                                "mai0" = cols[2], "mai4" = cols[2], 
                                "cof3" = cols[3], "cof2" = cols[3], 
                                "gra1" = cols[4], "gra2" = cols[4], 
-                               "fer0" = cols[5], "fed1" = cols[6], 
-                               "hel1" = cols[7]), 
+                               "fer0" = cols[7], "fed1" = cols[5], 
+                               "hel1" = cols[6]), 
                     breaks = c("fer0", "hel1", "fed1",  
                                "gra2", "gra1", "cof2", "cof3", 
                                "mai0", "mai4", "sav0", "sav5")) + 
@@ -221,5 +223,11 @@ for (x in c(0, 0.5)) {
     upViewport()
   }
 }
+
+# y axis title
+vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+                     just = c("left", "bottom"))
+pushViewport(vp_yaxis)
+grid.text("Elevation (m a.s.l.)", rot = 180)
 
 dev.off()

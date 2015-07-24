@@ -99,7 +99,7 @@ p <- ggplot(aes(x = Time, y = ETmu), data = df_all) +
   geom_hline(aes(yintercept = 0), colour = "grey50", linetype = "dashed") + 
   facet_wrap(~ PlotID, ncol = 4, drop = FALSE) + 
   scale_x_discrete(labels = ch_lbl) + 
-  labs(x = "\nHour of day", y = "Evapotranspiration (mm)\n") + 
+  labs(x = "\nHour of day", y = "ET (mm)\n") + 
   theme_bw() + 
   theme(panel.grid = element_blank(), 
         text = element_text(size = 14), axis.text = element_text(size = 12))

@@ -38,7 +38,8 @@ df_lai_ele <- merge(spt_plot@data, df_lai, by.x = "PlotID", by.y = "plot")
 df_lai_ele$habitat <- substr(df_lai_ele$PlotID, 1, 3)
 
 ## colors
-cols <- hclPalette(n = 7, c = 180, l = 70)
+cols <- envinmr.theme()$topo.cols(8)[1:7]
+names(cols) <- c("sav", "mai", "cof", "gra", "fed", "hel", "fer")
 
 ## focal plots
 df_lai_ele$focal <- "yes"
@@ -83,7 +84,7 @@ p_licor_ele <- ggplot(data = df_lai_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  scale_y_continuous(limits = c(0, 6.5), breaks = seq(0, 6, 2)) + 
+  scale_y_continuous(limits = c(0, 5.5), breaks = seq(1, 5, 2)) + 
   labs(y = expression(atop("LAI"[LI-COR], "")), x = "") + 
   theme_bw() + 
   theme(axis.title.x = element_text(angle = 180, size = 14), 
@@ -92,24 +93,24 @@ p_licor_ele <- ggplot(data = df_lai_ele) +
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
-## MODIS-LAI-elevation relationship
-p_modis_ele <- ggplot(data = df_lai_ele) + 
-  #   stat_smooth(aes(y = lai_modis, x = Z_DEM_HMP), se = FALSE, 
-  #               method = "loess", span = .99, colour = "grey60", 
-  #               linetype = "longdash", lwd = 2) + 
-  geom_point(aes(y = lai_modis, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
-  scale_fill_manual(values = cols) + 
-  scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  scale_y_continuous(limits = c(0, 6.5), breaks = seq(0, 6, 2)) + 
-  labs(y = expression(atop("LAI"[MODIS], "")), x = "") + 
-  theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
-        axis.text.y = element_text(angle = 90, hjust = 0.5), 
-        axis.text.x = element_text(angle = 90, vjust = .5), 
-        legend.position = "none")
+# ## MODIS-LAI-elevation relationship
+# p_modis_ele <- ggplot(data = df_lai_ele) + 
+#   #   stat_smooth(aes(y = lai_modis, x = Z_DEM_HMP), se = FALSE, 
+#   #               method = "loess", span = .99, colour = "grey60", 
+#   #               linetype = "longdash", lwd = 2) + 
+#   geom_point(aes(y = lai_modis, x = Z_DEM_HMP, fill = habitat, shape = focal), 
+#              colour = "black", size = 6) +   
+#   scale_fill_manual(values = cols) + 
+#   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
+#   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+#   scale_y_continuous(limits = c(0, 6.5), breaks = seq(0, 6, 2)) + 
+#   labs(y = expression(atop("LAI"[MODIS], "")), x = "") + 
+#   theme_bw() + 
+#   theme(axis.title.x = element_text(angle = 180, size = 14), 
+#         axis.title.y = element_text(angle = 90, size = 14), 
+#         axis.text.y = element_text(angle = 90, hjust = 0.5), 
+#         axis.text.x = element_text(angle = 90, vjust = .5), 
+#         legend.position = "none")
 
 # ## LiCOR-LAI vs. MODIS-LAI
 # p_scatter <- ggplot(aes(x = lai_licor, y = lai_modis, fill = habitat, shape = focal), 
@@ -127,13 +128,15 @@ p_modis_ele <- ggplot(data = df_lai_ele) +
 
 ## save arranged plots incl. customized legend
 png(paste0(ch_dir_pub, "fig/fig05__lai_ele.png"), width = 11.25*1.1, 
-    height = 12*1.5, units = "cm", pointsize = 15, res = 300)
+    # height = 12*1.5, 
+    height = 6 * 1.5, units = "cm", pointsize = 12, res = 300)
 grid.newpage()
 
 vp_figure <- viewport(x = 0, y = .05, width = 1, height = .95, 
                       just = c("left", "bottom"))
 pushViewport(vp_figure)
-grid.arrange(p_modis_ele, p_licor_ele, as.table = TRUE, newpage = FALSE)
+# grid.arrange(p_modis_ele, p_licor_ele, as.table = TRUE, newpage = FALSE)
+print(p_licor_ele, newpage = FALSE)
 
 # upViewport()
 # vp_scatter <- viewport(x = 1, y = 0, width = .75, height = .6, 
