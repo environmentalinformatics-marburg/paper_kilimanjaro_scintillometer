@@ -19,49 +19,45 @@ ch_dir_out_agg01d <- "../../phd/scintillometer/data/agg01d/"
 srunWorkspaces <- dir(ch_dir_srun, pattern = "workspace_SLS", recursive = FALSE, 
                       full.names = TRUE)
 
-## gap-filling and 1h aggregation
-ls_sls <- lapply(srunWorkspaces, function(i) {
-  slsProcessing(i, dsn = "../../phd/scintillometer/data/sls")
-})
 
-ch_sls_1h <- list.files("../../phd/scintillometer/data", full.names = TRUE,
-                        pattern = "_mrg_rf_agg01h.csv$", recursive = TRUE)
 
-ls_sls_1h <- foreach(i = df_sls_fls$mrg_rf_agg01h, j = df_sls_fls$season, 
-                     k = df_sls_fls$plot) %do% {
-                       tmp_df <- read.csv(i)
-                       return(data.frame(plot = k, season = j, tmp_df))
-                     }
-df_sls_1h <- do.call("rbind", ls_sls_1h)
-df_sls_1h$datetime <- strptime(df_sls_1h$datetime, format = "%Y-%m-%d %H:%M")
-
-# plot colors
-cols <- c("sav0" = "darkgoldenrod", "mai0" = "darkolivegreen", 
-          "sav5" = "darkgoldenrod", "mai4" = "darkolivegreen", 
-          "gra1" = "chartreuse", "cof3" = "burlywood4", 
-          "gra2" = "chartreuse", "cof2" = "burlywood4")
-
-# plot names
-ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4", 
-                "gra1", "gra2", "cof3", "cof2", 
-                "fer0", "fed1", "hel1")
-
+# ## visualize et per plot
+# df_sls_fls <- slsAvlFls(ssn = "r")
+# ls_sls_1h <- foreach(i = df_sls_fls$mrg_rf_agg01h, j = df_sls_fls$season, 
+#                      k = df_sls_fls$plot) %do% {
+#                        tmp_df <- read.csv(i)
+#                        return(data.frame(plot = k, season = j, tmp_df))
+#                      }
+# df_sls_1h <- do.call("rbind", ls_sls_1h)
+# df_sls_1h$datetime <- strptime(df_sls_1h$datetime, format = "%Y-%m-%d %H:%M")
+# 
+# # plot colors
+# cols <- c("sav0" = "darkgoldenrod", "mai0" = "darkolivegreen", 
+#           "sav5" = "darkgoldenrod", "mai4" = "darkolivegreen", 
+#           "gra1" = "chartreuse", "cof3" = "burlywood4", 
+#           "gra2" = "chartreuse", "cof2" = "burlywood4")
+# 
+# # plot names
+# ch_sls_plt <- c("sav0", "sav5", "mai0", "mai4", 
+#                 "gra1", "gra2", "cof3", "cof2", 
+#                 "fer0", "fed1", "hel1")
+# 
 # ggplot(aes(x = datetime, y = waterET), data = df_sls_1h) + 
 #   geom_histogram(stat = "identity") + 
 #   facet_wrap(~ plot + season, ncol = 2, scales = "free_x") + 
-#   geom_hline(aes(y = 0), colour = "darkgrey") + 
+#   geom_hline(aes(yintercept = 0), colour = "darkgrey") + 
 #   labs(x = "Time [h]", y = "Evapotranspiration [mm/h]") + 
 #   theme_bw()
-
-# Compare boxplot time series of corresponding natural and disturbed LUCs
-ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls), function(i) {
-  tmp_df <- slsDiurnalVariation(fn = df_sls_fls$mrg[i], agg_by = 20, 
-                                FUN = function(...) median(..., na.rm = TRUE))
-  data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df)
-})
-
-df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
-
+# 
+# # Compare boxplot time series of corresponding natural and disturbed LUCs
+# ls_sls_dv_20m <- lapply(1:nrow(df_sls_fls), function(i) {
+#   tmp_df <- slsDiurnalVariation(fn = df_sls_fls$mrg[i], agg_by = 20, 
+#                                 FUN = function(...) median(..., na.rm = TRUE))
+#   data.frame(plot = df_sls_fls$plot[i], season = df_sls_fls$season[i], tmp_df)
+# })
+# 
+# df_sls_dv_20m <- do.call("rbind", ls_sls_dv_20m)
+# 
 # df_sls_dv_20m_rs <- subset(df_sls_dv_20m, season == "r")
 # 
 # df_sls_dv_20m_rs$facet <- "SAV0 vs. MAI0"
