@@ -1,4 +1,4 @@
-visKili <- function(lwd = 2, col = "red", cex = 2) {
+visKili <- function(lwd = 2, cex = 2, ext = NULL) {
   
   library(rworldmap)
   library(Rsenal)
@@ -12,7 +12,11 @@ visKili <- function(lwd = 2, col = "red", cex = 2) {
   spy_tanzania <- subset(countriesCoarse, POSTAL == "TZ")
   
   ## kilimanjaro
-  rst_kili <- kiliAerial(projection = proj4string(spy_africa), rasterize = TRUE)
+  if (is.null(ext)) {
+    rst_kili <- kiliAerial(projection = proj4string(spy_africa))
+  } else {
+    rst_kili <- ext
+  }
   
   spt_kili <- data.frame(x = (xmin(rst_kili) + xmax(rst_kili)) / 2, 
                          y = (ymin(rst_kili) + ymax(rst_kili)) / 2)
@@ -21,10 +25,13 @@ visKili <- function(lwd = 2, col = "red", cex = 2) {
   ## visualization
   ylim <- c(ymin(spy_africa) - 2, ymax(spy_africa) + 2)
   
-  spplot(spy_africa, "ADMIN", colorkey = FALSE, col.regions = "grey85", ylim = ylim,
-         sp.layout = list(list("sp.lines", as(spy_africa, "SpatialLines"), col = "grey50"), 
-                          list("sp.lines", as(spy_tanzania, "SpatialLines"), 
-                               lwd = lwd), 
-                          list("sp.points", spt_kili, col = col, pch = 20, cex = cex)), 
-         par.settings = list(panel.background = list(col = "white")))
+  p <- spplot(spy_africa, col = "transparent", "ADMIN", colorkey = FALSE, col.regions = "grey85", ylim = ylim,
+              par.settings = list(panel.background = list(col = "white"))) 
+  
+  p +
+    latticeExtra::layer(panel.refline(h = 0, col = "grey60", lty = 2, lwd = .5)) + 
+    latticeExtra::layer(sp.polygons(spy_tanzania, fill = "grey50", col = "transparent"), 
+                        data = list(spy_tanzania = spy_tanzania)) + 
+    latticeExtra::layer(sp.points(spt_kili, col = "black", pch = 24, cex = cex, fill = "white"), 
+                        data = list(spt_kili = spt_kili, cex = cex))
 }
