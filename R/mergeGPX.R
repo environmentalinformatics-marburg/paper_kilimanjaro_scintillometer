@@ -10,7 +10,7 @@ mergeGPX <- function(df2sp = FALSE, CRS = NULL) {
                       "Windows" = "C:/Permanent/")
   
   ## file #1
-  ch_dir1 <- paste0(ch_dir_os, "kilimanjaro/coordinates/coords/")
+  ch_dir1 <- paste0(ch_dir_os, "kilimanjaro/coordinates/")
   ch_fls1 <- "sp01_gps_coordinates.gpx"
   ls_gps1 <- readGPX(paste0(ch_dir1, ch_fls1))
   df_gps1 <- ls_gps1$waypoints

@@ -3,39 +3,33 @@ slsPathInclination <- function(...) {
   ## environmental stuff
   
   # packages
-  stopifnot(require(plotKML))
-  stopifnot(require(raster))
+  library(plotKML)
+  library(raster)
   
   # functions
   source("R/mergeGPX.R")
   source("R/spatialPointsToLines.R")
   source("R/slsPathSlope.R")
   
-  # path: coordinates
-  ch_dir_crd <- "../../kilimanjaro/coordinates/coords/"
+  # path: coordinates and dem
+  ch_dir_crd <- "../../kilimanjaro/coordinates/"
   ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
+
+  ch_fls_dem <- "DEM_ARC1960_30m_Hemp.tif"
   
   # gps data path and files
   ch_dir_gps <- "/media/permanent/phd/gps/waypoints"
   ch_fls_gps <- list.files(ch_dir_gps, full.names = TRUE)
   
-  # path and file with research plot coordinates, dem
-  ch_dir_dem <- "/media/permanent/kilimanjaro/coordinates/coords/"
-  ch_fls_dem <- "DEM_ARC1960_30m_Hemp.tif"
-  
-  
+
   ## data
   
   # plots included in sls field campaign
-  ch_plt_sls <- c("sav5", "sav4", 
-                  "mai4", "mai1", 
-                  "cof3", "cof2", 
-                  "gra1", "gra2", 
-                  "fer0", "fed1", 
-                  "hel1")
+  ch_plt_sls <- rev(slsPlots(style = "elevation"))
   
   # gps data with scintillometer locations
   df_gps <- mergeGPX()
+  df_gps <- subset(df_gps, season == "W")
   sp_gps <- df_gps
   coordinates(sp_gps) <-  ~ lon + lat
   projection(sp_gps) <- "+init=epsg:4326"
