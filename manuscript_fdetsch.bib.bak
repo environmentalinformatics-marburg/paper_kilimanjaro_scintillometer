@@ -636,17 +636,3 @@
   URL                      = {http://onlinelibrary.wiley.com/doi/10.1029/2011RG000373/full}
 }
 
-@Article{Watson1947,
-  author =    {Watson, D. J.},
-  title =     {{Comparative Physiological Studies on the Growth of Field Crops: I. Variation in Net Assimilation Rate and Leaf Area between Species and Varieties, and within and between Years}},
-  journal =   {Annals of Botany},
-  year =      {1947},
-  volume =    {11},
-  number =    {41},
-  pages =     {41--76},
-  file =      {:Watson - 1947.pdf:PDF},
-  owner =     {fdetsch},
-  timestamp = {2015.07.20},
-  url =       {http://www.jstor.org/stable/42907002}
-}
-
