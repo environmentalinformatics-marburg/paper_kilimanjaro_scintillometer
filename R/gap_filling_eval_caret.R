@@ -5,7 +5,7 @@ source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
 ## parallelization
-cl <- makeCluster(4)
+cl <- makeCluster(3)
 registerDoParallel(cl)
 
 ## path: srun
@@ -163,23 +163,24 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
        p_reg_stats)
 })
 
-ls_rf_scores_whr <- lapply(srunWorkspaces, function(h) {
-  gfPostprocess(h, dsn_regstats = "data/regstats_vpd_", 
-                dsn_varimp = "data/varimp_vpd_")
+## sort workspaces according to elevation
+id <- sapply(slsPlots(style = "elevation"), function(h) {
+  grep(h, srunWorkspaces)[1] # rain season only
 })
 
-# wet season data only
-int_id_dryssn <- c(11, 13)
-ls_rf_scores_dryssn <- ls_rf_scores_whr[-int_id_dryssn]
+ls_rf_scores_whr <- lapply(1:length(srunWorkspaces[id]), function(h) {
+  gfPostprocess(srunWorkspaces[id][h], dsn_regstats = "data/regstats_vpd_", 
+                dsn_varimp = "data/varimp_vpd_", left = h %in% c(1, 5, 9))
+})
 
 # split data into cv/prediction statistics...
-ls_rf_scores_dryssn_stats <- lapply(ls_rf_scores_dryssn, function(i) i[[1]])
-df_rf_scores_stats <- do.call("rbind", ls_rf_scores_dryssn_stats)
+ls_rf_scores_whr_stats <- lapply(ls_rf_scores_whr, function(i) i[[1]])
+df_rf_scores_stats <- do.call("rbind", ls_rf_scores_whr_stats)
 # ...variable importances...
-ls_rf_scores_dryssn_varimp <- lapply(ls_rf_scores_dryssn, function(i) i[[2]])
-df_rf_scores_dryssn_varimp <- do.call("rbind", ls_rf_scores_dryssn_varimp)
+ls_rf_scores_whr_varimp <- lapply(ls_rf_scores_whr, function(i) i[[2]])
+df_rf_scores_dryssn_varimp <- do.call("rbind", ls_rf_scores_whr_varimp)
 # ...and referring visualization
-ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_dryssn, function(i) i[[3]])
+ls_rf_scores_dryssn_vis <- lapply(ls_rf_scores_whr, function(i) i[[3]])
 
 save(list = c("df_rf_scores_stats", "df_rf_scores_dryssn_varimp", 
               "ls_rf_scores_dryssn_vis"), file = "data/reg_stats_vpd.RData")
