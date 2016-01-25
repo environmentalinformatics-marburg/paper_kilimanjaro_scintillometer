@@ -1,3 +1,8 @@
+### environmental stuff --------------------------------------------------------
+
+## clear workspace
+rm(list = ls(all = TRUE))
+
 ## required functions
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
@@ -33,7 +38,7 @@ df_vpd <- summarizeVar(df_fls$mrg_rf_agg01h, param = "vpd",
                        file_out = paste0(ch_dir_tbl, "table_vpd.csv"))
 
 ## plot coordinates
-spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/", 
+spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/", 
                     "PlotPoles_ARC1960_mod_20140807_final", 
                     p4s = "+init=epsg:21037")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
@@ -75,129 +80,121 @@ summary(loe_et)
 
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = tempUpfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "lm", span = .99, colour = "grey50", 
-              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = tempUpfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("T"[a] ~ "(" * degree * C * ")", "")), x = "") + 
+  labs(y = expression("T"[a] ~ "(" * degree * C * ")"), x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
 ## rh
 p_rh_ele <- ggplot(data = df_var_ele) + 
-  #   stat_smooth(aes(y = humidityfun, x = Z_DEM_HMP), se = FALSE, 
-  #               method = "loess", span = .99, colour = "grey50", 
-  #               linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = humidityfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("rH (%)", "")), x = "") + 
+  labs(y = expression("rH (%)"), x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
 ## rad
 p_rad_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = dwnRadfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey50", 
-              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = dwnRadfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression(atop("R"[dwn] ~ "(W/" * m^{2} * ")", " ")), x = "") + 
+  labs(y = expression("R"[dwn] ~ "(W/" * m^{2} * ")"), x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
 ## et
 p_et_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = waterETfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "loess", span = .99, colour = "grey50", 
-              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = waterETfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(1.5, 5) + 
-  labs(y = expression(atop("ET (mm)", "")), x = "") + 
+  labs(y = expression("ET (mm)"), x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
 ## vpd
 p_vpd_ele <- ggplot(data = df_var_ele) + 
-  stat_smooth(aes(y = vpdfun, x = Z_DEM_HMP), se = FALSE, 
-              method = "lm", span = .99, colour = "grey50", 
-              linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(50, 720) + 
-  labs(y = expression(atop("VPD (Pa)", "")), x = "") + 
+  labs(y = expression("VPD (Pa)"), x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
 
 ## legend
-cols <- unname(cols)
+cols_key <- unname(cols)
 p_key_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
              colour = "black", size = 6) +   
-  scale_fill_manual(values = c("sav0" = cols[1], "sav5" = cols[1], 
-                               "mai0" = cols[2], "mai4" = cols[2], 
-                               "cof3" = cols[3], "cof2" = cols[3], 
-                               "gra1" = cols[4], "gra2" = cols[4], 
-                               "fer0" = cols[7], "fed1" = cols[5], 
-                               "hel1" = cols[6]), 
-                    breaks = c("fer0", "hel1", "fed1",  
-                               "gra2", "gra1", "cof2", "cof3", 
-                               "mai0", "mai4", "sav0", "sav5")) + 
-  scale_shape_manual(values = c("sav0" = 23, "sav5" = 22, 
+  scale_fill_manual("Plot", guide = guide_legend(ncol = 2, byrow = TRUE), 
+                    values = c("sav0" = cols_key[1], "sav5" = cols_key[1], 
+                               "mai0" = cols_key[2], "mai4" = cols_key[2], 
+                               "cof3" = cols_key[3], "cof2" = cols_key[3], 
+                               "gra1" = cols_key[4], "gra2" = cols_key[4], 
+                               "fer0" = cols_key[7], "fed1" = cols_key[5], 
+                               "hel1" = cols_key[6]), 
+                    breaks = c("sav0", "sav5", "mai0", "mai4",   
+                               "cof2", "cof3", "gra2", "gra1", 
+                               "fed1", "hel1", "fer0")) + 
+  scale_shape_manual("Plot", values = c("sav0" = 23, "sav5" = 22, 
                                 "mai0" = 23, "mai4" = 22, 
                                 "cof3" = 23, "cof2" = 22, 
                                 "gra1" = 23, "gra2" = 22, 
                                 "fer0" = 23, "fed1" = 23, 
                                 "hel1" = 23), 
-                     breaks = c("fer0", "hel1", "fed1",  
-                                "gra2", "gra1", "cof2", "cof3", 
-                                "mai0", "mai4", "sav0", "sav5")) + 
+                     breaks = c("sav0", "sav5", "mai0", "mai4",   
+                                "cof2", "cof3", "gra2", "gra1", 
+                                "fed1", "hel1", "fer0")) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   theme_bw() + 
-  theme(text = element_text(size = 14))
+  theme(text = element_text(size = 10), 
+        legend.key.size = unit(.5, "cm"))
 
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
 ls_p <- list(p_ta_ele, p_rh_ele, p_vpd_ele, p_rad_ele, p_et_ele)
 
-png(paste0(ch_dir_pub, "fig/fig03__met_ele.png"), width = 22.5, height = 25, 
-    units = "cm", pointsize = 15, res = 300)
+png(paste0(ch_dir_pub, "fig/figure05.png"), width = 15, height = 20, 
+    units = "cm", res = 500)
 
 grid.newpage()
 n <- 0
@@ -214,7 +211,7 @@ for (x in c(0, 0.5)) {
       
     # insert legend  
     } else {
-      vp_legend <- viewport(x = 0.7625, y = 0.76, width = .3, height = .3, 
+      vp_legend <- viewport(x = .725, y = .795, width = .3, height = .2, 
                             angle = 90)
       pushViewport(vp_legend)
       grid.draw(legend)
@@ -228,6 +225,44 @@ for (x in c(0, 0.5)) {
 vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)
-grid.text("Elevation (m a.s.l.)", rot = 180)
+grid.text("Elevation (m a.s.l.)", rot = 180, gp = gpar(cex = .8))
+
+dev.off()
+
+## standalone tiff version
+setEPS()
+postscript(paste0(ch_dir_pub, "fig/figure05.eps"), width = 15*.3937, 
+           height = 20*.3937)
+
+grid.newpage()
+n <- 0
+for (x in c(0, 0.5)) {
+  for (y in seq(0.05, 0.65, 0.3)) {
+    n <- n + 1
+    
+    # insert plots
+    if (n < 6) {
+      vp_tmp <- viewport(x = x, y = y, width = .5, height = .3, 
+                         just = c("left", "bottom"))
+      pushViewport(vp_tmp)
+      print(ls_p[[n]], newpage = FALSE)
+      
+      # insert legend  
+    } else {
+      vp_legend <- viewport(x = .725, y = .795, width = .3, height = .2, 
+                            angle = 90)
+      pushViewport(vp_legend)
+      grid.draw(legend)
+    }
+    
+    upViewport()
+  }
+}
+
+# y axis title
+vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+                     just = c("left", "bottom"))
+pushViewport(vp_yaxis)
+grid.text("Elevation (m a.s.l.)", rot = 180, gp = gpar(cex = .8))
 
 dev.off()
