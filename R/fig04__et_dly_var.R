@@ -1,3 +1,8 @@
+### environmental stuff --------------------------------------------------------
+
+## clear workspace
+rm(list = ls(all = TRUE))
+
 ## packages and functions
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
@@ -70,9 +75,9 @@ df_all$Time <- factor(format(df_all$Time, format = "%H"))
 
 ## reorder factor levels
 df_all$PlotID <- factor(df_all$PlotID, 
-                        levels = rev(c("mai4", "mai0", "sav5", "sav0", 
-                                       "cof2", "cof3", "gra2", "gra1", 
-                                       "", "fed1", "hel1", "fer0")))
+                        levels = rev(c("mai0", "mai4", "sav0", "sav5", 
+                                       "gra1", "gra2", "cof2", "cof3", 
+                                       "", "fer0", "hel1", "fed1")))
 
 ## ylim adjustment
 limits <- aes(ymax = ETmu + ETse, ymin = ETmu - ETse)
@@ -91,8 +96,15 @@ ch_lbl[int_lvl_hr_odd] <- ch_lvl[int_lvl_hr_odd]
 names(ch_lbl) <- ch_lvl
 
 ## visualization
+detach("package:OpenStreetMap", unload = TRUE)
+detach("package:caret", unload = TRUE)
+detach("package:ggplot2", unload=TRUE)
+install.packages("inst/packages/ggplot2_1.0.1.tar.gz", repos = NULL)
+library(ggplot2)
+
 p <- ggplot(aes(x = Time, y = ETmu), data = df_all) + 
-  geom_histogram(stat = "identity", fill = "grey80", colour = "grey35") + 
+  geom_histogram(stat = "identity", fill = "grey80", colour = "grey35", 
+                 size = .5) + 
   geom_errorbar(limits, position = "dodge", width = .2) +
   stat_smooth(aes(group = 1), method = "loess", se = FALSE, colour = "red", 
               span = .99) + 
@@ -100,12 +112,16 @@ p <- ggplot(aes(x = Time, y = ETmu), data = df_all) +
   facet_wrap(~ PlotID, ncol = 4, drop = FALSE) + 
   scale_x_discrete(labels = ch_lbl) + 
   labs(x = "\nHour of day", y = "ET (mm)\n") + 
+  expand_limits(x = 0, y = 0) + 
+  scale_y_continuous(limits = c(0, .775), expand = c(0, 0)) + 
   theme_bw() + 
   theme(panel.grid = element_blank(), 
-        text = element_text(size = 14), axis.text = element_text(size = 12))
+        text = element_text(size = 10), 
+        axis.text = element_text(size = 8))
 
-png(paste0(ch_dir_ppr, "/fig/fig04__et_dly_var.png"), width = 34, 
-    height = 22, units = "cm", res = 300, pointsize = 18)
+## in-text png version
+png(paste0(ch_dir_ppr, "/fig/figure06.png"), width = 20, height = 12, 
+    units = "cm", res = 500)
 grid.newpage()
 vp1 <- viewport(x = 0, y = 0, width = 1, height = 1,
                 just = c("left", "bottom"), name = "p")
@@ -115,4 +131,19 @@ vp2 <- viewport(x = .755, y = .68, width = .245, height = .32,
                 just = c("left", "bottom"), name = "p2")
 pushViewport(vp2)
 grid.rect(gp = gpar(col = "white"))
+dev.off()
+
+## standalone tiff version
+setEPS()
+postscript(paste0(ch_dir_ppr, "fig/figure06.eps"), width = 20*.3937, 
+           height = 12*.3937)
+grid.newpage()
+vp1 <- viewport(x = 0, y = 0, width = 1, height = 1,
+                just = c("left", "bottom"), name = "p")
+pushViewport(vp1)
+print(p, newpage = FALSE)
+vp2 <- viewport(x = .755, y = .68, width = .245, height = .32, 
+                just = c("left", "bottom"), name = "p2")
+pushViewport(vp2)
+grid.rect(gp = gpar(col = "white", fill = "white"))
 dev.off()
