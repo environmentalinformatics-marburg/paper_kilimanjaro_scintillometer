@@ -85,7 +85,7 @@ p_ta_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression("T"[a] ~ "(" * degree * C * ")"), x = "") + 
+  labs(y = expression("a) T"[a] ~ "(" * degree * C * ")"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
@@ -101,7 +101,7 @@ p_rh_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression("rH (%)"), x = "") + 
+  labs(y = expression("b) rH (%)"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
@@ -117,7 +117,7 @@ p_rad_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression("R"[dwn] ~ "(W/" * m^{2} * ")"), x = "") + 
+  labs(y = expression("d) R"[dwn] ~ "(W/" * m^{2} * ")"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
@@ -134,7 +134,7 @@ p_et_ele <- ggplot(data = df_var_ele) +
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(1.5, 5) + 
-  labs(y = expression("ET (mm)"), x = "") + 
+  labs(y = expression("e) ET (mm)"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
@@ -151,7 +151,7 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   ylim(50, 720) + 
-  labs(y = expression("VPD (Pa)"), x = "") + 
+  labs(y = expression("c) VPD (Pa)"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 

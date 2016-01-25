@@ -77,12 +77,12 @@ df_lai_ele$focal[df_lai_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "n
 ## LiCOR-LAI-elevation relationship
 p_licor_ele <- ggplot(data = df_lai_ele) + 
   geom_point(aes(y = lai_licor, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   scale_y_continuous(limits = c(0, 5.5), breaks = seq(1, 5, 2)) + 
-  labs(y = "LAI", x = "") + 
+  labs(y = "f) LAI", x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
