@@ -81,7 +81,7 @@ summary(loe_et)
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = tempUpfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
@@ -97,7 +97,7 @@ p_ta_ele <- ggplot(data = df_var_ele) +
 ## rh
 p_rh_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = humidityfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
@@ -113,7 +113,7 @@ p_rh_ele <- ggplot(data = df_var_ele) +
 ## rad
 p_rad_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = dwnRadfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
@@ -129,7 +129,7 @@ p_rad_ele <- ggplot(data = df_var_ele) +
 ## et
 p_et_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = waterETfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
@@ -146,7 +146,7 @@ p_et_ele <- ggplot(data = df_var_ele) +
 ## vpd
 p_vpd_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = habitat, shape = focal), 
-             colour = "black", size = 6) +   
+             colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
@@ -164,8 +164,8 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
 cols_key <- unname(cols)
 p_key_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = PlotID, shape = PlotID), 
-             colour = "black", size = 6) +   
-  scale_fill_manual("Plot", guide = guide_legend(ncol = 2, byrow = TRUE), 
+             colour = "black", size = 4) +   
+  scale_fill_manual("Sampling plots", guide = guide_legend(nrow = 1, byrow = TRUE), 
                     values = c("sav0" = cols_key[1], "sav5" = cols_key[1], 
                                "mai0" = cols_key[2], "mai4" = cols_key[2], 
                                "cof3" = cols_key[3], "cof2" = cols_key[3], 
@@ -175,7 +175,7 @@ p_key_ele <- ggplot(data = df_var_ele) +
                     breaks = c("sav0", "sav5", "mai0", "mai4",   
                                "cof2", "cof3", "gra2", "gra1", 
                                "fed1", "hel1", "fer0")) + 
-  scale_shape_manual("Plot", values = c("sav0" = 23, "sav5" = 22, 
+  scale_shape_manual("Sampling plots", values = c("sav0" = 23, "sav5" = 22, 
                                 "mai0" = 23, "mai4" = 22, 
                                 "cof3" = 23, "cof2" = 22, 
                                 "gra1" = 23, "gra2" = 22, 
@@ -190,38 +190,35 @@ p_key_ele <- ggplot(data = df_var_ele) +
         legend.key.size = unit(.5, "cm"))
 
 ## save arranged plots incl. customized legend
+source("R/fig05__lai_ele.R")
 legend <- ggExtractLegend(p_key_ele) 
-ls_p <- list(p_ta_ele, p_rh_ele, p_vpd_ele, p_rad_ele, p_et_ele)
+ls_p <- list(p_ta_ele, p_rh_ele, p_vpd_ele, p_rad_ele, p_et_ele, p_licor_ele)
 
 png(paste0(ch_dir_pub, "fig/figure05.png"), width = 15, height = 20, 
     units = "cm", res = 500)
 
 grid.newpage()
 n <- 0
-for (x in c(0, 0.5)) {
+for (x in c(0, 0.45)) {
   for (y in seq(0.05, 0.65, 0.3)) {
     n <- n + 1
     
     # insert plots
-    if (n < 6) {
-      vp_tmp <- viewport(x = x, y = y, width = .5, height = .3, 
-                         just = c("left", "bottom"))
-      pushViewport(vp_tmp)
-      print(ls_p[[n]], newpage = FALSE)
-      
-    # insert legend  
-    } else {
-      vp_legend <- viewport(x = .725, y = .795, width = .3, height = .2, 
-                            angle = 90)
-      pushViewport(vp_legend)
-      grid.draw(legend)
-    }
+    vp_tmp <- viewport(x = x, y = y, width = .475, height = .3, 
+                       just = c("left", "bottom"))
+    pushViewport(vp_tmp)
+    print(ls_p[[n]], newpage = FALSE)
     
     upViewport()
   }
 }
 
+vp_legend <- viewport(x = .95, y = .5, width = .1, height = .5, angle = 90)
+pushViewport(vp_legend)
+grid.draw(legend)
+
 # y axis title
+upViewport(0)
 vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)
@@ -236,30 +233,26 @@ postscript(paste0(ch_dir_pub, "fig/figure05.eps"), width = 15*.3937,
 
 grid.newpage()
 n <- 0
-for (x in c(0, 0.5)) {
+for (x in c(0, 0.45)) {
   for (y in seq(0.05, 0.65, 0.3)) {
     n <- n + 1
     
     # insert plots
-    if (n < 6) {
-      vp_tmp <- viewport(x = x, y = y, width = .5, height = .3, 
-                         just = c("left", "bottom"))
-      pushViewport(vp_tmp)
-      print(ls_p[[n]], newpage = FALSE)
-      
-      # insert legend  
-    } else {
-      vp_legend <- viewport(x = .725, y = .795, width = .3, height = .2, 
-                            angle = 90)
-      pushViewport(vp_legend)
-      grid.draw(legend)
-    }
-    
+    vp_tmp <- viewport(x = x, y = y, width = .475, height = .3, 
+                       just = c("left", "bottom"))
+    pushViewport(vp_tmp)
+    print(ls_p[[n]], newpage = FALSE)
+
     upViewport()
   }
 }
 
+vp_legend <- viewport(x = .95, y = .5, width = .1, height = .5, angle = 90)
+pushViewport(vp_legend)
+grid.draw(legend)
+
 # y axis title
+upViewport(0)
 vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)

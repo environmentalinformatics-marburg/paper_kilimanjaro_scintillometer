@@ -26,7 +26,7 @@ df_et <- summarizeVar(df_fls$mrg_rf_agg01h,
 
 
 ## plot coordinates
-spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/coords/", 
+spt_plot <- readOGR("/media/permanent/kilimanjaro/coordinates/", 
                     "PlotPoles_ARC1960_mod_20140807_final", 
                     p4s = "+init=epsg:21037")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
@@ -45,17 +45,17 @@ names(cols) <- c("sav", "mai", "cof", "gra", "fed", "hel", "fer")
 df_lai_ele$focal <- "yes"
 df_lai_ele$focal[df_lai_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
-## statistics
-mod_lai <- lm(lai_modis ~ lai_licor, data = df_lai_ele)
-summary(mod_lai)
-
-df_lai_et <- merge(df_lai, df_et, by.x = "plot", by.y = "PlotID")
-mod_licor_et <- lm(lai_licor ~ waterETfun, data = df_lai_et)
-summary(mod_licor_et)
-
-mod_modis_et <- lm(lai_modis ~ waterETfun, data = df_lai_et)
-summary(mod_modis_et)
-
+# ## statistics
+# mod_lai <- lm(lai_modis ~ lai_licor, data = df_lai_ele)
+# summary(mod_lai)
+# 
+# df_lai_et <- merge(df_lai, df_et, by.x = "plot", by.y = "PlotID")
+# mod_licor_et <- lm(lai_licor ~ waterETfun, data = df_lai_et)
+# summary(mod_licor_et)
+# 
+# mod_modis_et <- lm(lai_modis ~ waterETfun, data = df_lai_et)
+# summary(mod_modis_et)
+# 
 # loe_lai <- loess(lai ~ Z_DEM_HMP, data = df_lai_ele, span = .99)
 # hat <- predict(loe_lai)
 # cor(df_lai_ele$lai, hat)^2
@@ -76,19 +76,17 @@ summary(mod_modis_et)
 
 ## LiCOR-LAI-elevation relationship
 p_licor_ele <- ggplot(data = df_lai_ele) + 
-  #   stat_smooth(aes(y = lai_licor, x = Z_DEM_HMP), se = FALSE, 
-  #               method = "loess", span = .99, colour = "grey60", 
-  #               linetype = "longdash", lwd = 2) + 
   geom_point(aes(y = lai_licor, x = Z_DEM_HMP, fill = habitat, shape = focal), 
              colour = "black", size = 6) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   scale_y_continuous(limits = c(0, 5.5), breaks = seq(1, 5, 2)) + 
-  labs(y = expression(atop("LAI"[LI-COR], "")), x = "") + 
+  labs(y = "LAI", x = "") + 
   theme_bw() + 
-  theme(axis.title.x = element_text(angle = 180, size = 14), 
-        axis.title.y = element_text(angle = 90, size = 14), 
+  theme(text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
         axis.text.y = element_text(angle = 90, hjust = 0.5), 
         axis.text.x = element_text(angle = 90, vjust = .5), 
         legend.position = "none")
