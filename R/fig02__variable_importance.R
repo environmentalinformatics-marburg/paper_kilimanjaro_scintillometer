@@ -45,23 +45,53 @@ var_stats$variable <- factor(var_stats$variable,
 
 clr <- colorRampPalette(brewer.pal(9, "YlOrRd"))
 
-var_stats[, 1] <- factor(var_stats[, 1], levels = slsPlots())
+var_stats[, 1] <- factor(var_stats[, 1], levels = slsPlots(style = "elevation"))
 
 hmap <- levelplot(df_varimp_mlt ~ variable * plot, data = var_stats,
                   col.regions = clr(101), at = seq(0, 100, 1),
                   asp = 1, as.table = TRUE,
-                  ylab = list(label = "Research site", cex = 1.5), , xlab = "",
-                  scales = list(x = list(rot = 45, cex = 1.25), 
-                                y = list(cex = 1.25)),
-                  main = list(label = "Mean variable importance", cex = 1.6),
-                  colorkey = list(space = "top",
-                                  width = 1, height = 0.75),
+                  ylab = list(label = "Sampling plot", cex = .75), , xlab = "",
+                  scales = list(x = list(cex = .7, 
+                                         labels = c(expression("R"[dwn]), 
+                                                    "p", "VPD", "S", "hr", 
+                                                    expression("T"["a-20"]), 
+                                                    expression("R"[up]), 
+                                                    "rH", 
+                                                    expression("T"["a-200"]))), 
+                                y = list(cex = .7), tck = .6),
+                  colorkey = FALSE,
                   panel=function(...) {
                     grid.rect(gp=gpar(col=NA, fill="grey60"))
                     panel.levelplot(...)
                   })
 
-png(paste0(ch_dir_out, "fig/fig02__varimp.png"), units = "cm", 
-    width = 20, height = 25, pointsize = 21, res = 300)
+## in-text png version
+png(paste0(ch_dir_out, "fig/figure03.png"), units = "cm", 
+    width = 10, height = 12, res = 500)
 print(hmap)
+
+downViewport(trellis.vpname("figure"))
+vp_key <- viewport(x = .5, y = 1.11)
+pushViewport(vp_key)
+draw.colorkey(key = list(col = clr(101), width = .6, height = .6, at = 0:100,
+                         labels = list(at = seq(0, 100, 20), cex = .7), 
+                         space = "top", tck = .6), draw = TRUE)
+grid.text("Mean variable importance", x = .5, y = .6, 
+          gp = gpar(cex = .8, fontface = "bold"))
+dev.off()
+
+## standalone eps version
+setEPS()
+postscript(paste0(ch_dir_out, "fig/figure03.eps"), width = 10*.3937, 
+           height = 12*.3937)
+print(hmap)
+
+downViewport(trellis.vpname("figure"))
+vp_key <- viewport(x = .5, y = 1.11)
+pushViewport(vp_key)
+draw.colorkey(key = list(col = clr(101), width = .6, height = .6, at = 0:100,
+                         labels = list(at = seq(0, 100, 20), cex = .7), 
+                         space = "top", tck = .6), draw = TRUE)
+grid.text("Mean variable importance", x = .5, y = .6, 
+          gp = gpar(cex = .8, fontface = "bold"))
 dev.off()
