@@ -1,5 +1,20 @@
 % Encoding: ISO-8859-1
 
+@Article{Agam2012,
+  author =    {Agam, Nurit and Evett, Steven R. and Tolk, Judy A. and Kustas, William P. and Colaizzi, Paul D.},
+  title =     {{Evaporative loss from irrigated interrows in a highly advective semi-arid agricultural area}},
+  journal =   {Advances in Water Sources},
+  year =      {2012},
+  volume =    {50},
+  pages =     {20--30},
+  doi =       {10.1016/j.advwatres.2012.07.010},
+  file =      {:Agam et al. - 2012.pdf:PDF},
+  keywords =  {Soil evaporation, transpiration, irrigated row-crop, row orientation},
+  owner =     {fdetsch},
+  timestamp = {2015.06.11},
+  url =       {http://www.sciencedirect.com/science/article/pii/S0309170812001984}
+}
+
 @Article{Appelhans2015,
   author =    {Appelhans, Tim and Mwangomo, Ephraim and Otte, Insa and Detsch, Florian and Nauss, Thomas and Hemp, Andreas},
   title =     {{Eco-meteorological characteristics of the southern slopes of Kilimanjaro, Tanzania}},
@@ -73,6 +88,22 @@
   url =       {http://link.springer.com/article/10.1023/A:1010933404324}
 }
 
+@Article{Bruijnzeel2011e,
+  author =    {Bruijnzeel, L. A. and Mulligan, Mark and Scatena, Frederick N.},
+  title =     {Hydrometeorology of tropical montane cloud forests: emerging patterns},
+  journal =   {Hydrological Processes},
+  year =      {2011},
+  volume =    {25},
+  number =    {3},
+  pages =     {465--498},
+  doi =       {10.1002/hyp.7974},
+  file =      {:Bruijnzeel, Mulligan, Scatena - 2011.pdf:PDF},
+  keywords =  {cloud forest; cloud-water interception; fog; evaporation; rainfall interception; stemflow; throughfall; transpiration; wind-driven rain},
+  owner =     {fdetsch},
+  timestamp = {2015.07.16},
+  url =       {http://onlinelibrary.wiley.com/doi/10.1002/hyp.7974/abstract;jsessionid=B11232DA120A0A863EF5FED0E2E7154B.f01t04}
+}
+
 @Article{Buytaert2011,
   Title                    = {{Potential impacts of climate change on the environmental services of humid tropical alpine regions}},
   Author                   = {Buytaert, Wouter and Cuesta-Camacho, Francisco and Tob\'{o}n, Conrado},
@@ -89,6 +120,21 @@
   Owner                    = {tnauss},
   Tags                     = {Kilimanjaro project},
   URL                      = {http://doi.wiley.com/10.1111/j.1466-8238.2010.00585.x}
+}
+
+@Article{Camberlin2014,
+  author =    {Camberlin, Pierre and Boyard-Micheau, Joseph and Philippon, Nathalie and Baron, Christian and Leclerc, Christian and Mwongera, Caroline},
+  title =     {{Climatic gradients along the windward slopes of Mount Kenya and their implication for crop risks. Part 1: climate variability}},
+  journal =   {International Journal of Climatology},
+  year =      {2014},
+  volume =    {34},
+  pages =     {2136--2152},
+  doi =       {10.1002/joc.3427},
+  file =      {:Camberlin et al. - 2014.pdf:PDF},
+  keywords =  {precipitation; evapotranspiration; mountain climates; elevation gradients; rainy season; onset of the rains; interannual variability; Kenya},
+  owner =     {fdetsch},
+  timestamp = {2015.07.22},
+  url =       {http://onlinelibrary.wiley.com/doi/10.1002/joc.3427/abstract}
 }
 
 @Article{Cook2014,
@@ -317,6 +363,24 @@
   url =       {http://www.springerlink.com/index/10.1007/s11258-005-9049-4}
 }
 
+@Article{Hemp2009,
+  author =    {Hemp, Andreas},
+  title =     {{Climate change and its impact on the forests of Kilimanjaro}},
+  journal =   {African Journal of Ecology},
+  year =      {2009},
+  volume =    {47},
+  number =    {Supplement S1},
+  pages =     {3--10},
+  doi =       {10.1111/j.1365-2028.2008.01043.x},
+  file =      {:/Hemp - 2009.pdf:PDF},
+  issn =      {01416707},
+  keywords =  {1999, Kilimanjaro, are also of a, assumption that their causes, cloud forest, forest fires, glaciers in modem, global change, global scale, kaser, partly referred to a, recent, synchronous fluctuations of mountain, times lead to the},
+  owner =     {tnauss},
+  tags =      {Kilimanjaro project},
+  timestamp = {2016.01.28},
+  url =       {http://doi.wiley.com/10.1111/j.1365-2028.2008.01043.x}
+}
+
 @Article{Hill1992,
   author =    {Hill, Reginald J.},
   title =     {{Review of optical scintillation methods of measuring the refractive-index spectrum, inner scale and surface fluxes}},
@@ -477,6 +541,20 @@
   url =       {http://onlinelibrary.wiley.com/doi/10.1111/j.1467-9493.1994.tb00242.x/abstract}
 }
 
+@Article{Nyman2014,
+  author =    {Nyman, Petter and Sherwin, Christopher B. and Langhans, Christoph and Lane, Patrick N. J. and Sheridan, Gary J.},
+  title =     {Downscaling regional climate data to calculate the radiative index of dryness in complex terrain},
+  journal =   {Australian Meteorological and Oceanographic Journal},
+  year =      {2014},
+  volume =    {64},
+  number =    {2},
+  pages =     {109--122},
+  file =      {:Nyman et al. - 2014.pdf:PDF},
+  owner =     {fdetsch},
+  timestamp = {2015.06.24},
+  url =       {http://www.researchgate.net/publication/269634878_Downscaling_regional_climate_data_to_calculate_the_radiative_index_of_dryness_in_complex_terrain}
+}
+
 @InProceedings{Odhiambo2011,
   author =    {Odhiambo, George O. and Ain, Al},
   title =     {{Comparison of Surface Layer Scintillometer and Eddy Covariance Footprint and Sensible Heat Flux Estimates for Different Wind Directions}},
@@ -531,6 +609,21 @@
   owner =        {fdetsch},
   timestamp =    {2015.07.08},
   url =          {http://www.r-project.org/}
+}
+
+@Article{Rosado2012,
+  author =    {Rosado, Bruno H. P. and Oliveira, Rafael S. and Joly, Carlos A. and Aidar, Marcos P. M. and Burgess, Stephen S. O.},
+  title =     {{Diversity in nighttime transpiration behavior of woody species of the Atlantic Rain Forest, Brazil}},
+  journal =   {Agricultural and Forest Meteorology},
+  year =      {2012},
+  volume =    {158-159},
+  pages =     {13--20},
+  doi =       {10.1016/j.agrformet.2012.02.002},
+  file =      {:Rosado et al. - 2012.pdf:PDF},
+  keywords =  {Cooling effect; Xylem refilling; Sensible heat flux; Latent heat flux; Sap flow; Micrometeorology},
+  owner =     {fdetsch},
+  timestamp = {2015.06.16},
+  url =       {http://www.sciencedirect.com/science/article/pii/S0168192312000536}
 }
 
 @Article{Rutten2015,
@@ -604,6 +697,21 @@
   institution =  {Scinteg AG},
   owner =        {fdetsch},
   timestamp =    {2015.03.19}
+}
+
+@Article{Simic2014,
+  author =    {Simic, A. and Fernandes, R. and Wang, S.},
+  title =     {{Assessing the Impact of Leaf Area Index on Evapotranspiration and Groundwater Recharge across a Shallow Water Region for Diverse Land Cover and Soil Properties}},
+  journal =   {Journal of Water Resource and Hydraulic Engineering},
+  year =      {2014},
+  volume =    {3},
+  number =    {4},
+  pages =     {60--73},
+  file =      {:Simic et al. - 2014.pdf:PDF},
+  keywords =  {Evapotranspiration; Recharge; Leaf Area Index; Remote Sensing; Sensitivity Analysis},
+  owner =     {fdetsch},
+  timestamp = {2015.06.16},
+  url =       {http://www.academicpub.org/jwrhe/paperInfo.aspx?paperid=16378}
 }
 
 @Article{Tagesson2015,
