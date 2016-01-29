@@ -11,8 +11,7 @@
   file =      {:Agam et al. - 2012.pdf:PDF},
   keywords =  {Soil evaporation, transpiration, irrigated row-crop, row orientation},
   owner =     {fdetsch},
-  timestamp = {2015.06.11},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0309170812001984}
+  timestamp = {2015.06.11}
 }
 
 @Article{Appelhans2015,
@@ -23,8 +22,7 @@
   doi =       {10.1002/joc.4552},
   file =      {:Appelhans et al. - 2015b.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2016.01.08},
-  url =       {http://onlinelibrary.wiley.com/wol1/doi/10.1002/joc.4552/full}
+  timestamp = {2016.01.08}
 }
 
 @Article{Barron2003,
@@ -39,8 +37,7 @@
   file =      {:Barron et al. - 2003.pdf:PDF},
   keywords =  {Dry spell analysis; Rainfall distribution; East Africa; Semi-arid; Maize; Water balance},
   owner =     {fdetsch},
-  timestamp = {2015.06.16},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192303000376}
+  timestamp = {2015.06.16}
 }
 
 @Article{Bergh2013,
@@ -54,8 +51,7 @@
   file =      {:van den Bergh et al. - 2013.pdf:PDF},
   keywords =  {Atmometer; Grassland; Hydrology; Lysimeter; Mountain; Penman-Monteith equation},
   owner =     {fdetsch},
-  timestamp = {2015.06.24},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0022169413005301#}
+  timestamp = {2015.06.24}
 }
 
 @Article{Biudes2015,
@@ -69,8 +65,7 @@
   file =      {:Biudes et al. - 2015.pdf:PDF},
   keywords =  {Amazon Basin; Climate change; Deforestation; Ecosystem function; Evapotranspiration; Sensible heat flux},
   owner =     {fdetsch},
-  timestamp = {2015.06.24},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192314003189}
+  timestamp = {2015.06.24}
 }
 
 @Article{Breiman2001,
@@ -84,8 +79,7 @@
   file =      {:Breiman - 2001.pdf:PDF},
   keywords =  {classification, regression, ensemble},
   owner =     {fdetsch},
-  timestamp = {2016.01.20},
-  url =       {http://link.springer.com/article/10.1023/A:1010933404324}
+  timestamp = {2016.01.20}
 }
 
 @Article{Bruijnzeel2011e,
@@ -100,8 +94,7 @@
   file =      {:Bruijnzeel, Mulligan, Scatena - 2011.pdf:PDF},
   keywords =  {cloud forest; cloud-water interception; fog; evaporation; rainfall interception; stemflow; throughfall; transpiration; wind-driven rain},
   owner =     {fdetsch},
-  timestamp = {2015.07.16},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1002/hyp.7974/abstract;jsessionid=B11232DA120A0A863EF5FED0E2E7154B.f01t04}
+  timestamp = {2015.07.16}
 }
 
 @Article{Buytaert2011,
@@ -118,8 +111,7 @@
   ISSN                     = {1466822X},
   Keywords                 = {Biodiversity, Ecosystem Services, Kilimanjaro, biodiversity, civil and, climate change, correspondence, ecosystem services, hydrology, soil properties, tropical alpine regions, wouter buytaert},
   Owner                    = {tnauss},
-  Tags                     = {Kilimanjaro project},
-  URL                      = {http://doi.wiley.com/10.1111/j.1466-8238.2010.00585.x}
+  Tags                     = {Kilimanjaro project}
 }
 
 @Article{Camberlin2014,
@@ -133,8 +125,7 @@
   file =      {:Camberlin et al. - 2014.pdf:PDF},
   keywords =  {precipitation; evapotranspiration; mountain climates; elevation gradients; rainy season; onset of the rains; interannual variability; Kenya},
   owner =     {fdetsch},
-  timestamp = {2015.07.22},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1002/joc.3427/abstract}
+  timestamp = {2015.07.22}
 }
 
 @Article{Cook2014,
@@ -149,8 +140,7 @@
   file =      {:Cook et al. - 2014.pdf:PDF},
   keywords =  {Drought, CMIP5, Global warming, PDSI, SPEI},
   owner =     {fdetsch},
-  timestamp = {2015.06.16},
-  url =       {http://link.springer.com/article/10.1007%2Fs00382-014-2075-y}
+  timestamp = {2015.06.16}
 }
 
 @Article{Dawson1998,
@@ -165,8 +155,7 @@
   file =      {:Dawson - 1998.pdf:PDF},
   keywords =  {Fog; Stable isotopes; Redwood forests; Hydrology; Plant water relations},
   owner =     {fdetsch},
-  timestamp = {2015.03.19},
-  url =       {http://link.springer.com/article/10.1007/s004420050683}
+  timestamp = {2015.03.19}
 }
 
 @Article{DeFries2004,
@@ -179,8 +168,7 @@
   doi =       {10.1002/hyp.5584},
   file =      {:DeFries, Eshleman - 2004.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.03.25},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1002/hyp.5584/abstract}
+  timestamp = {2015.03.25}
 }
 
 @Article{Duane2008,
@@ -210,8 +198,7 @@
   file =      {:Ennslin et al. - 2015.pdf:PDF},
   keywords =  {carbon stock, elevation gradient, land-use change, tropical mountain, vegetation strata},
   owner =     {fdetsch},
-  timestamp = {2015.06.05},
-  url =       {http://www.esajournals.org/doi/10.1890/ES14-00492.1}
+  timestamp = {2015.06.05}
 }
 
 @Article{Foken2008,
@@ -226,8 +213,7 @@
   file =      {:Foken - 2008.pdf:PDF},
   keywords =  {Bowen ratio; carbon dioxide flux; energy balance closure; energy storage; latent heat flux; net radiation; scalar similarity; sensible heat flux; soil heat flux; turbulent flux},
   owner =     {fdetsch},
-  timestamp = {2015.07.21},
-  url =       {http://www.jstor.org/stable/40062260}
+  timestamp = {2015.07.21}
 }
 
 @Article{Foley2005,
@@ -245,8 +231,7 @@
   Keywords                 = {Agriculture, Air Pollution, Animals, Biodiversity, Climate, Communicable Diseases, Communicable Diseases: epidemiology, Communicable Diseases: transmission, Conservation of Natural Resources, Ecosystem, Ecosystem Services, Environment, Fresh Water, Human Activities, Humans, Policy Making, Trees, Wild},
   Owner                    = {tnauss},
   Pmid                     = {16040698},
-  Tags                     = {Ecosystem Services},
-  URL                      = {http://www.ncbi.nlm.nih.gov/pubmed/16040698}
+  Tags                     = {Ecosystem Services}
 }
 
 @Article{Glenn2010,
@@ -260,8 +245,7 @@
   file =      {:Glenn, Nagler, Huete - 2010.pdf:PDF},
   keywords =  {NDVI; Enhanced Vegetation Index; Fluxnet; MODIS; Remote sensing},
   owner =     {fdetsch},
-  timestamp = {2015.07.22},
-  url =       {http://link.springer.com/article/10.1007%2Fs10712-010-9102-2}
+  timestamp = {2015.07.22}
 }
 
 @Article{Goulden2012,
@@ -275,8 +259,7 @@
   doi =       {10.1029/2012JG002027},
   file =      {:Goulden et al. - 2012.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.06.24},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1029/2012JG002027/full}
+  timestamp = {2015.06.24}
 }
 
 @Article{Green1997,
@@ -290,8 +273,7 @@
   file =      {:Green et al. - 1997.pdf:PDF},
   keywords =  {Sensible heat; Momentum flux; Inner scale meter},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://www.sciencedirect.com/science/article/pii/S016819239602388X}
+  timestamp = {2015.03.03}
 }
 
 @Article{Hardwick2015,
@@ -305,8 +287,7 @@
   file =      {:Hardwick et al. - 2015.pdf:PDF},
   keywords =  {Microclimate; Leaf area index; Land use change; Tropical forest; Disturbance; Oil palm},
   owner =     {fdetsch},
-  timestamp = {2015.06.16},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192314002780#}
+  timestamp = {2015.06.16}
 }
 
 @Article{Hemp2005,
@@ -323,8 +304,7 @@
   issn =     {1354-1013},
   keywords = {28 january 2005, Kilimanjaro, alpine vegetation, climate change, cloud forest, east africa, erica, forest fires, january 2005 and accepted, montane and subalpine, received 10 may 2004, revised version received 7, vegetation change, vegetation zones},
   owner =    {tnauss},
-  tags =     {Kilimanjaro project},
-  url =      {http://www.blackwell-synergy.com/doi/abs/10.1111/j.1365-2486.2005.00968.x}
+  tags =     {Kilimanjaro project}
 }
 
 @Article{Hemp2006,
@@ -340,8 +320,7 @@
   keywords =  {Kilimanjaro, east african mountains, forest disturbance by herbivores, sinarundinaria alpina, tropical montane forest},
   owner =     {tnauss, fdetsch},
   tags =      {Kilimanjaro project},
-  timestamp = {2015.05.14},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1111/j.1365-2028.2006.00679.x/full}
+  timestamp = {2015.05.14}
 }
 
 @Article{Hemp2006c,
@@ -359,8 +338,7 @@
   keywords =  {Kilimanjaro, biodiversity, cloud forest, east africa, epiphytes, tropical montane forest, vegetation},
   owner =     {tnauss, fdetsch},
   tags =      {Kilimanjaro project},
-  timestamp = {2015.03.19},
-  url =       {http://www.springerlink.com/index/10.1007/s11258-005-9049-4}
+  timestamp = {2015.03.19}
 }
 
 @Article{Hemp2009,
@@ -377,8 +355,7 @@
   keywords =  {1999, Kilimanjaro, are also of a, assumption that their causes, cloud forest, forest fires, glaciers in modem, global change, global scale, kaser, partly referred to a, recent, synchronous fluctuations of mountain, times lead to the},
   owner =     {tnauss},
   tags =      {Kilimanjaro project},
-  timestamp = {2016.01.28},
-  url =       {http://doi.wiley.com/10.1111/j.1365-2028.2008.01043.x}
+  timestamp = {2016.01.28}
 }
 
 @Article{Hill1992,
@@ -391,8 +368,7 @@
   doi =       {10.1088/0959-7174/2/3/001},
   file =      {:Hill - 1992.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.03.02},
-  url =       {http://www.tandfonline.com/doi/abs/10.1088/0959-7174/2/3/001}
+  timestamp = {2015.03.02}
 }
 
 @Article{Jung2010,
@@ -409,8 +385,7 @@
   issn =     {1476-4687},
   keywords = {20th Century, 21st Century, Artificial Intelligence, Atmosphere, Atmosphere: chemistry, Ecosystem Services, Fresh Water, Fresh Water: analysis, Global Warming, Global Warming: statistics \& numerical data, History, Humidity, Plant Transpiration, Plant Transpiration: physiology, Reproducibility of Results, Seasons, Soil, Soil: analysis, Uncertainty, Volatilization, Water Cycle},
   owner =    {tnauss},
-  pmid =     {20935626},
-  url =      {http://www.ncbi.nlm.nih.gov/pubmed/20935626}
+  pmid =     {20935626}
 }
 
 @Article{Kite2000,
@@ -424,8 +399,7 @@
   file =      {:Kite, Droogers - 2000.pdf:PDF},
   keywords =  {Evaporation; Transpiration; Remote sensing; Models},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://www.sciencedirect.com/science/article/pii/S002216949900195X#}
+  timestamp = {2015.03.03}
 }
 
 @TechReport{Lambrechts2002a,
@@ -451,8 +425,7 @@
   file =      {:Lhermitte et al. - 2011.pdf:PDF},
   keywords =  {Time series analysis, Ecosystem dynamics, Classification, Change detection},
   owner =     {fdetsch},
-  timestamp = {2015.06.02},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0034425711002446#}
+  timestamp = {2015.06.02}
 }
 
 @Article{Meijninger2000,
@@ -466,8 +439,7 @@
   file =      {:Meijninger, de Bruin - 2000.pdf:PDF},
   keywords =  {Scintillation; Irrigated crops; Sensible heat flux},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0022169499001973#}
+  timestamp = {2015.03.03}
 }
 
 @Article{Misana2012,
@@ -484,8 +456,21 @@
   issn =     {20701845},
   keywords = {Kilimanjaro, agricultural intensification, conversion, cover change, diversification, kilimanjaro, land-use},
   owner =    {tnauss},
-  tags =     {Kilimanjaro project},
-  url =      {http://www.academicjournals.org/journal/JGRP/article-abstract/4C51A4A41111}
+  tags =     {Kilimanjaro project}
+}
+
+@Manual{Mu2013,
+  title =       {MODIS Global Terrestrial Evapotranspiration (ET) Product (NASA MOD16A2/A3)},
+  author =      {Mu, Qiaozhen and Zhao, Maosheng and Running, Steven W.},
+  address =     {Missoula, MT 59812},
+  month =       {November},
+  year =        {2013},
+  file =        {:Mu, Zhao, Running - 2013.pdf:PDF},
+  institution = {Numerical Terradynamic Simulation Group, College of Forestry and Conservation, The University of Montana},
+  number =      {Collection 5},
+  owner =       {fdetsch},
+  timestamp =   {2015.06.16},
+  type =        {Algorithm Theoretical Basis Document}
 }
 
 @Article{Murray1967,
@@ -498,8 +483,7 @@
   doi =       {http://dx.doi.org/10.1175/1520-0450(1967)006<0203:OTCOSV>2.0.CO;2},
   file =      {:Murray - 1967.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.06.09},
-  url =       {http://journals.ametsoc.org/doi/abs/10.1175/1520-0450%281967%29006%3C0203:OTCOSV%3E2.0.CO;2}
+  timestamp = {2015.06.09}
 }
 
 @Article{Nakaya2007,
@@ -513,8 +497,7 @@
   file =      {:Nakaya et al. - 2007.pdf:PDF},
   keywords =  {Scintillometer; Dissipation rates; Source area; Energy imbalance; Forest canopy},
   owner =     {fdetsch},
-  timestamp = {2015.03.02},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192307001050#}
+  timestamp = {2015.03.02}
 }
 
 @Misc{NaturalEarth2016,
@@ -537,8 +520,7 @@
   doi =       {10.1111/j.1467-9493.1994.tb00242.x},
   file =      {:Nullet, Juvik - 1994.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.06.18},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1111/j.1467-9493.1994.tb00242.x/abstract}
+  timestamp = {2015.06.18}
 }
 
 @Article{Nyman2014,
@@ -551,8 +533,7 @@
   pages =     {109--122},
   file =      {:Nyman et al. - 2014.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.06.24},
-  url =       {http://www.researchgate.net/publication/269634878_Downscaling_regional_climate_data_to_calculate_the_radiative_index_of_dryness_in_complex_terrain}
+  timestamp = {2015.06.24}
 }
 
 @InProceedings{Odhiambo2011,
@@ -565,8 +546,7 @@
   file =      {:Odhiambo, Ain - 2011.pdf:PDF},
   keywords =  {Surface layer scintillometer, Eddy covariance, Sensible heat flux, footprint, wind direction},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://www.ipcbee.com/vol6/no1/79-F10026.pdf}
+  timestamp = {2015.03.03}
 }
 
 @Article{Odhiambo2009,
@@ -579,8 +559,7 @@
   file =      {:Odhiambo, Savage - 2009.pdf:PDF},
   keywords =  {evaporation, scintillometer, eddy covariance, MOST, atmospheric turbulence},
   owner =     {fdetsch},
-  timestamp = {2015.03.02},
-  url =       {http://www.scielo.org.za/scielo.php?pid=S0038-23532009000300014&script=sci_arttext}
+  timestamp = {2015.03.02}
 }
 
 @Misc{OpenStreetMap2016,
@@ -607,8 +586,7 @@
   address =      {Vienna, Austria},
   year =         {2015},
   owner =        {fdetsch},
-  timestamp =    {2015.07.08},
-  url =          {http://www.r-project.org/}
+  timestamp =    {2015.07.08}
 }
 
 @Article{Rosado2012,
@@ -622,8 +600,7 @@
   file =      {:Rosado et al. - 2012.pdf:PDF},
   keywords =  {Cooling effect; Xylem refilling; Sensible heat flux; Latent heat flux; Sap flow; Micrometeorology},
   owner =     {fdetsch},
-  timestamp = {2015.06.16},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192312000536}
+  timestamp = {2015.06.16}
 }
 
 @Article{Rutten2015,
@@ -637,8 +614,7 @@
   file =      {:Rutten et al. - 2015.pdf:PDF},
   keywords =  {Afro-montane rainforest; East Africa; Tree inventory; Ocotea usambarensis; Historical logging; Forest regeneration},
   owner =     {fdetsch},
-  timestamp = {2015.09.21},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0378112714006185}
+  timestamp = {2015.09.21}
 }
 
 @Article{Savage2009,
@@ -653,8 +629,7 @@
   file =      {:Savage - 2009.pdf:PDF},
   keywords =  {Surface layer scintillometry; Evaporation estimation; Dual-beam scintillometer; Surface energy balance; Bowen ratio; Eddy covariance; MOST; Closure},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192308002608}
+  timestamp = {2015.03.03}
 }
 
 @Manual{Scintec2013,
@@ -710,8 +685,7 @@
   file =      {:Simic et al. - 2014.pdf:PDF},
   keywords =  {Evapotranspiration; Recharge; Leaf Area Index; Remote Sensing; Sensitivity Analysis},
   owner =     {fdetsch},
-  timestamp = {2015.06.16},
-  url =       {http://www.academicpub.org/jwrhe/paperInfo.aspx?paperid=16378}
+  timestamp = {2015.06.16}
 }
 
 @Article{Tagesson2015,
@@ -725,8 +699,7 @@
   file =      {:Tagesson et al. - 2015.pdf:PDF},
   keywords =  {dryland, eddy covariance, evapotranspiration, latent heat flux, net ecosystem exchange, Sahel, savanna, sensible heat flux},
   owner =     {fdetsch},
-  timestamp = {2015.07.21},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1111/gcb.12734/abstract;jsessionid=0DB108C66E8C7C22318D19A7C3C98162.f04t01}
+  timestamp = {2015.07.21}
 }
 
 @Article{Tallec2013,
@@ -740,8 +713,7 @@
   file =      {:Tallec et al. - 2013.pdf:PDF},
   keywords =  {Crop; Water use efficiency; Evapotranspiration; Transpiration; Eddy covariance},
   owner =     {fdetsch},
-  timestamp = {2015.07.16},
-  url =       {http://www.sciencedirect.com/science/article/pii/S0168192312002420}
+  timestamp = {2015.07.16}
 }
 
 @Article{Tang2014,
@@ -756,8 +728,7 @@
   file =      {:Tang et al. - 2014.pdf:PDF},
   keywords =  {Plant ecology, Ecosystem ecology, Hydrology},
   owner =     {fdetsch},
-  timestamp = {2015.03.30},
-  url =       {http://www.nature.com/srep/2014/141215/srep07483/full/srep07483.html}
+  timestamp = {2015.03.30}
 }
 
 @Article{Thiermann1992,
@@ -770,8 +741,7 @@
   doi =       {10.1007/BF00120238},
   file =      {:Thiermann, Grassl - 1992.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.03.02},
-  url =       {http://link.springer.com/article/10.1007/BF00120238}
+  timestamp = {2015.03.02}
 }
 
 @Article{Wang2012a,
@@ -785,8 +755,7 @@
   doi =       {10.1029/2011RG000373},
   file =      {:Wang, Dickinson - 2012.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.03.03},
-  url =       {http://onlinelibrary.wiley.com/doi/10.1029/2011RG000373/full}
+  timestamp = {2015.03.03}
 }
 
 @Article{Watson1947,
@@ -799,7 +768,6 @@
   pages =     {41--76},
   file =      {:Watson - 1947.pdf:PDF},
   owner =     {fdetsch},
-  timestamp = {2015.07.20},
-  url =       {http://www.jstor.org/stable/42907002}
+  timestamp = {2015.07.20}
 }
 
