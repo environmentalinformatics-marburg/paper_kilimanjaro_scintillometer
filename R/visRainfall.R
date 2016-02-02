@@ -24,24 +24,60 @@ visRainfall <- function(process_level = "mrg_rf_agg01h",
   df_rain <- do.call("rbind", ls_rain)
   
   ## reorder factor levels
-  df_rain$plot <- factor(df_rain$plot, levels = slsPlots(style = "ggplot"))
+  df_rain$plot <- factor(df_rain$plot, 
+                         levels = slsPlots(style = "ggplot", empty = 2L))
   
   ## visualization
   if (visualize) {
-    p <- ggplot(aes(x = datetime, y = variable), data = df_rain) + 
-      geom_hline(aes(yintercept = 0), colour = "grey75") + 
-      geom_histogram(stat = "identity") + 
-      facet_wrap(~ plot, ncol = 2, scales = "free", drop = FALSE) + 
-      labs(x = "\nTime (hours)", y = col) + 
-      scale_x_datetime(breaks = date_breaks("1 day"), labels = date_format("%d.%m.")) + 
-      theme_bw() + 
-      theme(text = element_text(size = 14), axis.text = element_text(size = 12))
+
+    df_rain$hour <- factor(hour(df_rain$datetime), levels = 0:23)
     
-    ch_fls_out <- paste(col, process_level, sep = "_")
-    ch_fls_out <- paste0(path_out, "/", ch_fls_out, ".png")
-    png(ch_fls_out, width = 30, height = 30, units = "cm", res = 300, 
-        pointsize = 18)
-    print(p)
+    box_settings <- list(box.umbrella = list(lty = 1, col = "black"), 
+                         box.rectangle = list(col = "black", fill = "grey75"), 
+                         strip.background = list(col = "grey90"), 
+                         add.text = list(font = 2, cex = .85))
+    
+    lbl <- c(rbind(seq(0, 22, 2), rep("", 12)))
+    
+    p <- bwplot(variable ~ hour | plot, data = df_rain, pch = "|", 
+                par.settings = box_settings, as.table = TRUE, layout = c(2, 6),
+                panel = function(...) {
+                  panel.bwplot(..., coef = 0)
+                }, drop.unused.levels = FALSE, ylim = c(-1, 20.75),
+                scales = list(draw = TRUE, y = list(cex = .7),
+                              x = list(at = 1:24, labels = lbl, cex = .7)), 
+                xlab = list("Hour of day", cex = .85), 
+                ylab = list("Rainfall (mm)", cex = .85))
+    
+    ## in-text png version
+    # ch_fls_out <- paste(col, process_level, sep = "_")
+    ch_fls_out <- "figure-a01"
+    ch_fls_png <- paste0(path_out, "/", ch_fls_out, ".png")
+    png(ch_fls_png, width = 20, height = 22, units = "cm", res = 500)
+    grid.newpage()
+    print(p, newpage = FALSE)
+    
+    downViewport(trellis.vpname("figure"))
+    vp_mask <- viewport(x = .5 + .00075, y = 5/6 + .00075, width = .51, 
+                        height = .17, just = c("left", "bottom"))
+    pushViewport(vp_mask)
+    grid.rect(gp = gpar(col = "transparent"))
+    
+    dev.off()
+    
+    ## stand-alone eps version
+    ch_fls_eps <- paste0(path_out, "/", ch_fls_out, ".eps")
+    setEPS()
+    postscript(ch_fls_eps, width = 20*.3937, height = 22*.3937)
+    grid.newpage()
+    print(p, newpage = FALSE)
+    
+    downViewport(trellis.vpname("figure"))
+    vp_mask <- viewport(x = .5 + .00075, y = 5/6 + .00075, width = .51, 
+                        height = .17, just = c("left", "bottom"))
+    pushViewport(vp_mask)
+    grid.rect(gp = gpar(col = "transparent"))
+    
     dev.off()
   }
   
