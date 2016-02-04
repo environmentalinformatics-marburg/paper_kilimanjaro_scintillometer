@@ -26,7 +26,7 @@ ls_rf_scores_dryssn_vis <- lapply(seq(ls_rf_scores_dryssn_vis), function(i) {
 })
 
 ## in-text png version
-png(paste0(ch_dir_fig, "figure02.png"), width = 20, height = 12, 
+png(paste0(ch_dir_fig, "figure03.png"), width = 20, height = 12, 
     units = "cm", res = 500)
 plot.new()
 trellis.par.set("clip", list(panel = "off", strip = "off"))
@@ -36,8 +36,9 @@ do.call(function(...) grid.arrange(..., ncol = 4, as.table = TRUE,
 dev.off()
 
 ## stand-alone tiff version
-tiff(paste0(ch_dir_fig, "figure02.tiff"), width = 20, height = 12, 
-     units = "cm", res = 500, compression = "lzw")
+setEPS()
+postscript(paste0(ch_dir_fig, "figure03.eps"), 
+           width = 20*.3937, height = 12*.3937)
 plot.new()
 trellis.par.set("clip", list(panel = "off", strip = "off"))
 do.call(function(...) grid.arrange(..., ncol = 4, as.table = TRUE, 
