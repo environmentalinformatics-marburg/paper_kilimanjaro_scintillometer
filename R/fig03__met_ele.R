@@ -63,20 +63,20 @@ names(cols) <- c("sav", "mai", "cof", "gra", "fed", "hel", "fer")
 df_var_ele$focal <- "yes"
 df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
-## statistics (trend profiles)
-lm_ta <- lm(tempUpfun ~ Z_DEM_HMP, data = df_var_ele)
-summary(lm_ta)
-
-lm_vpd <- lm(vpdfun ~ Z_DEM_HMP, data = df_var_ele)
-summary(lm_vpd)
-
-loe_rad <- loess(dwnRadfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-summary(loe_rad)
-
-loe_et <- loess(waterETfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-hat <- predict(loe_et)
-cor(df_var_ele$waterETfun, hat)^2
-summary(loe_et)
+# ## statistics (trend profiles)
+# lm_ta <- lm(tempUpfun ~ Z_DEM_HMP, data = df_var_ele)
+# summary(lm_ta)
+# 
+# lm_vpd <- lm(vpdfun ~ Z_DEM_HMP, data = df_var_ele)
+# summary(lm_vpd)
+# 
+# loe_rad <- loess(dwnRadfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+# summary(loe_rad)
+# 
+# loe_et <- loess(waterETfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
+# hat <- predict(loe_et)
+# cor(df_var_ele$waterETfun, hat)^2
+# summary(loe_et)
 
 ## ta
 p_ta_ele <- ggplot(data = df_var_ele) + 
@@ -85,7 +85,7 @@ p_ta_ele <- ggplot(data = df_var_ele) +
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
-  labs(y = expression("a) T"[a] ~ "(" * degree * C * ")"), x = "") + 
+  labs(y = expression("a) T"["a-150"] ~ "(" * degree * C * ")"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
@@ -100,7 +100,8 @@ p_rh_ele <- ggplot(data = df_var_ele) +
              colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500), 
+                     labels = NULL) + 
   labs(y = expression("b) rH (%)"), x = "") + 
   theme_bw() + 
   theme(text = element_text(size = 10), 
@@ -132,7 +133,8 @@ p_et_ele <- ggplot(data = df_var_ele) +
              colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500), 
+                     labels = NULL) + 
   ylim(1.5, 5) + 
   labs(y = expression("e) ET (mm)"), x = "") + 
   theme_bw() + 
@@ -149,7 +151,8 @@ p_vpd_ele <- ggplot(data = df_var_ele) +
              colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500), 
+                     labels = NULL) + 
   ylim(50, 720) + 
   labs(y = expression("c) VPD (Pa)"), x = "") + 
   theme_bw() + 
@@ -194,17 +197,18 @@ source("R/fig05__lai_ele.R")
 legend <- ggExtractLegend(p_key_ele) 
 ls_p <- list(p_ta_ele, p_rh_ele, p_vpd_ele, p_rad_ele, p_et_ele, p_licor_ele)
 
-png(paste0(ch_dir_pub, "fig/figure05.png"), width = 15, height = 20, 
+png(paste0(ch_dir_pub, "fig/figure05.png"), width = 17, height = 20, 
     units = "cm", res = 500)
 
 grid.newpage()
 n <- 0
 for (x in c(0, 0.45)) {
-  for (y in seq(0.05, 0.65, 0.3)) {
+  for (y in seq(0.02, 0.66, 0.32)) {
     n <- n + 1
     
     # insert plots
-    vp_tmp <- viewport(x = x, y = y, width = .475, height = .3, 
+    vp_tmp <- viewport(x = x, y = ifelse(y == .02, y, y + .02), width = .455, 
+                       height = ifelse(y == .02, .34, .31), 
                        just = c("left", "bottom"))
     pushViewport(vp_tmp)
     print(ls_p[[n]], newpage = FALSE)
@@ -219,7 +223,7 @@ grid.draw(legend)
 
 # y axis title
 upViewport(0)
-vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+vp_yaxis <- viewport(x = 0, y = -.02, width = 1, height = .1, 
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)
 grid.text("Elevation (m a.s.l.)", rot = 180, gp = gpar(cex = .8))
@@ -228,21 +232,22 @@ dev.off()
 
 ## standalone tiff version
 setEPS()
-postscript(paste0(ch_dir_pub, "fig/figure05.eps"), width = 15*.3937, 
+postscript(paste0(ch_dir_pub, "fig/figure05.eps"), width = 17*.3937, 
            height = 20*.3937)
 
 grid.newpage()
 n <- 0
 for (x in c(0, 0.45)) {
-  for (y in seq(0.05, 0.65, 0.3)) {
+  for (y in seq(0.02, 0.66, 0.32)) {
     n <- n + 1
     
     # insert plots
-    vp_tmp <- viewport(x = x, y = y, width = .475, height = .3, 
+    vp_tmp <- viewport(x = x, y = ifelse(y == .02, y, y + .02), width = .455, 
+                       height = ifelse(y == .02, .34, .31), 
                        just = c("left", "bottom"))
     pushViewport(vp_tmp)
     print(ls_p[[n]], newpage = FALSE)
-
+    
     upViewport()
   }
 }
@@ -253,7 +258,7 @@ grid.draw(legend)
 
 # y axis title
 upViewport(0)
-vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+vp_yaxis <- viewport(x = 0, y = -.02, width = 1, height = .1, 
                      just = c("left", "bottom"))
 pushViewport(vp_yaxis)
 grid.text("Elevation (m a.s.l.)", rot = 180, gp = gpar(cex = .8))

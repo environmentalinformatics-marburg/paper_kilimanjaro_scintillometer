@@ -80,7 +80,8 @@ p_licor_ele <- ggplot(data = df_lai_ele) +
              colour = "black", size = 4) +   
   scale_fill_manual(values = cols) + 
   scale_shape_manual(values = c("yes" = 23, "no" = 22)) + 
-  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
+  scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500), 
+                     labels = NULL) + 
   scale_y_continuous(limits = c(0, 5.5), breaks = seq(1, 5, 2)) + 
   labs(y = "f) LAI", x = "") + 
   theme_bw() + 
