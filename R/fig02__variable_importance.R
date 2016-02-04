@@ -57,7 +57,7 @@ hmap <- levelplot(df_varimp_mlt ~ variable * plot, data = var_stats,
                                                     expression("T"["a-20"]), 
                                                     expression("R"[up]), 
                                                     "rH", 
-                                                    expression("T"["a-200"]))), 
+                                                    expression("T"["a-150"]))), 
                                 y = list(cex = .7), tck = .6),
                   colorkey = FALSE,
                   panel=function(...) {
