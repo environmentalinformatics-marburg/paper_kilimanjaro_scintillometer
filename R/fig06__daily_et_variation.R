@@ -76,7 +76,7 @@ df_all$Time <- factor(format(df_all$Time, format = "%H"))
 ## reorder factor levels
 df_all$PlotID <- factor(df_all$PlotID, 
                         levels = rev(c("mai0", "mai4", "sav0", "sav5", 
-                                       "gra1", "gra2", "cof2", "cof3", 
+                                       "gra2", "gra1", "cof2", "cof3", 
                                        "", "fer0", "hel1", "fed1")))
 
 ## ylim adjustment
@@ -96,9 +96,10 @@ ch_lbl[int_lvl_hr_odd] <- ch_lvl[int_lvl_hr_odd]
 names(ch_lbl) <- ch_lvl
 
 ## visualization
+detach("package:Rsenal", unload = TRUE)
 detach("package:OpenStreetMap", unload = TRUE)
 detach("package:caret", unload = TRUE)
-detach("package:ggplot2", unload=TRUE)
+detach("package:ggplot2", unload = TRUE)
 install.packages("inst/packages/ggplot2_1.0.1.tar.gz", repos = NULL)
 library(ggplot2)
 
