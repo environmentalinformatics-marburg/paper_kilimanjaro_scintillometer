@@ -125,28 +125,28 @@ p_licor_ele <- ggplot(data = df_lai_ele) +
 #   theme_bw() + 
 #   theme(legend.position = "none")
 
-## save arranged plots incl. customized legend
-png(paste0(ch_dir_pub, "fig/fig05__lai_ele.png"), width = 11.25*1.1, 
-    # height = 12*1.5, 
-    height = 6 * 1.5, units = "cm", pointsize = 12, res = 300)
-grid.newpage()
-
-vp_figure <- viewport(x = 0, y = .05, width = 1, height = .95, 
-                      just = c("left", "bottom"))
-pushViewport(vp_figure)
-# grid.arrange(p_modis_ele, p_licor_ele, as.table = TRUE, newpage = FALSE)
-print(p_licor_ele, newpage = FALSE)
-
+# ## save arranged plots incl. customized legend
+# png(paste0(ch_dir_pub, "fig/fig05__lai_ele.png"), width = 11.25*1.1, 
+#     # height = 12*1.5, 
+#     height = 6 * 1.5, units = "cm", pointsize = 12, res = 300)
+# grid.newpage()
+# 
+# vp_figure <- viewport(x = 0, y = .05, width = 1, height = .95, 
+#                       just = c("left", "bottom"))
+# pushViewport(vp_figure)
+# # grid.arrange(p_modis_ele, p_licor_ele, as.table = TRUE, newpage = FALSE)
+# print(p_licor_ele, newpage = FALSE)
+# 
+# # upViewport()
+# # vp_scatter <- viewport(x = 1, y = 0, width = .75, height = .6, 
+# #                        just = c("left", "bottom"), angle = 90)
+# # pushViewport(vp_scatter)
+# # print(p_scatter, newpage = FALSE)
+#  
 # upViewport()
-# vp_scatter <- viewport(x = 1, y = 0, width = .75, height = .6, 
-#                        just = c("left", "bottom"), angle = 90)
-# pushViewport(vp_scatter)
-# print(p_scatter, newpage = FALSE)
- 
-upViewport()
-vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
-                     just = c("left", "bottom"))
-pushViewport(vp_yaxis)
-grid.text("Elevation (m a.s.l.)", rot = 180)
-
-dev.off()
+# vp_yaxis <- viewport(x = 0, y = 0, width = 1, height = .1, 
+#                      just = c("left", "bottom"))
+# pushViewport(vp_yaxis)
+# grid.text("Elevation (m a.s.l.)", rot = 180)
+# 
+# dev.off()
