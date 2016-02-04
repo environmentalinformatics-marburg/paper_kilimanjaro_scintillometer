@@ -175,8 +175,8 @@ p_key_ele <- ggplot(data = df_var_ele) +
                                "gra1" = cols_key[4], "gra2" = cols_key[4], 
                                "fer0" = cols_key[7], "fed1" = cols_key[5], 
                                "hel1" = cols_key[6]), 
-                    breaks = c("sav0", "sav5", "mai0", "mai4",   
-                               "cof2", "cof3", "gra2", "gra1", 
+                    breaks = c("sav5", "sav0", "mai4", "mai0",   
+                               "cof3", "cof2", "gra1", "gra2", 
                                "fed1", "hel1", "fer0")) + 
   scale_shape_manual("Sampling plots", values = c("sav0" = 23, "sav5" = 22, 
                                 "mai0" = 23, "mai4" = 22, 
@@ -184,8 +184,8 @@ p_key_ele <- ggplot(data = df_var_ele) +
                                 "gra1" = 23, "gra2" = 22, 
                                 "fer0" = 23, "fed1" = 23, 
                                 "hel1" = 23), 
-                     breaks = c("sav0", "sav5", "mai0", "mai4",   
-                                "cof2", "cof3", "gra2", "gra1", 
+                     breaks = c("sav5", "sav0", "mai4", "mai0",   
+                                "cof3", "cof2", "gra1", "gra2", 
                                 "fed1", "hel1", "fer0")) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   theme_bw() + 
