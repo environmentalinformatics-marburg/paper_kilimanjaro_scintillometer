@@ -5,13 +5,15 @@ source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
 # path for output storage
-ch_dir_ppr <- "/media/permanent/publications/paper/detsch_et_al__spotty_evapotranspiration/"
+ch_dir_prm <- switch(Sys.info()[["sysname"]], 
+                     "Windows" = "C:/Permanent/", "Linux" = "/media/permanent/")
+ch_dir_ppr <- paste0(ch_dir_prm, "publications/paper/detsch_et_al__spotty_evapotranspiration/")
 
 # path and file with research plot coordinates
-ch_dir_crd <- "/media/permanent/kilimanjaro/coordinates/"
+ch_dir_crd <- paste0(ch_dir_prm, "kilimanjaro/coordinates")
 ch_fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
-ch_dir_np <- "../../kilimanjaro/kinapa/"
+ch_dir_np <- paste0(ch_dir_prm, "kilimanjaro/kinapa")
 spy_np <- readOGR(ch_dir_np, "fdetsch-kilimanjaro-1420532792846", 
                   p4s = "+init=epsg:4326")
 
@@ -19,8 +21,8 @@ spy_np <- readOGR(ch_dir_np, "fdetsch-kilimanjaro-1420532792846",
 ## data
 
 # bing aerial image
-rst_kili <- kiliAerial(minNumTiles = 20, projection = "+init=epsg:4326")
-spl_kili <- rgb2spLayout(rst_kili, alpha = .8, quantiles = c(.005, .979))
+rst_kili <- kiliAerial(minNumTiles = 20L, projection = "+init=epsg:4326")
+spl_kili <- rgb2spLayout(rst_kili, alpha = .8, quantiles = c(0, 1))
 
 # research plots
 spp_plt <- readOGR(dsn = ch_dir_crd, layer = ch_fls_crd, 
