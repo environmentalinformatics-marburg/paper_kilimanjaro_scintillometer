@@ -1,4 +1,4 @@
-slsAvlFls <- function(ch_path = "/media/permanent/phd/scintillometer/data", 
+slsAvlFls <- function(ch_path = "/media/fdetsch/permanent/phd/scintillometer/data", 
                       ch_pattern = c("mrg.csv$", "mrg_rf.csv$", "mrg_rf_agg10m.csv$", 
                                      "mrg_rf_agg01h.csv$"), 
                       ssn = NULL, disturbed = NULL, ...) {
