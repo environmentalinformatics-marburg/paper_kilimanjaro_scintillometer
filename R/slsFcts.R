@@ -8,7 +8,7 @@ fun <- c("R/slsPlots.R", "R/slsAvlFls.R", "R/slsDiurnalVariation.R",
 jnk <- sapply(fun, source)
 
 ## c++ functions
-library("Rcpp")
+library(Rcpp)
 sourceCpp("src/SlsCppFun.cpp")
 
 ## strip labeller (required in visMetData)

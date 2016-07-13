@@ -13,8 +13,7 @@ df_et0 <- subset(df_et0, Season == "r")
 
 df_et0 %>%
   group_by(Plot) %>%
-  mutate(B = (B1 + B2) / 2) %>%
-  mutate(DIFF = c(0, diff(B))) %>%
+  mutate(B = (B1 + B2) / 2, DIFF = c(0, diff(B))) %>%
   filter(DIFF != 0) %>%
   data.frame() -> df_et0
 
