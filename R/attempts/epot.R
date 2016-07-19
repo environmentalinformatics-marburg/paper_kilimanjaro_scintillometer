@@ -24,12 +24,12 @@ dat_epot <- foreach(i = fls, j = ssn, .combine = "rbind") %do% {
            soilHeatFluxMJ = reset:::toJoules(soilHeatFlux), 
            delta = vaporPressureSat(tempUp, slope = TRUE), 
            gamma = psychrometricConstant(pressure * .1)) %>%
-    # summarise(waterET = sum(waterET),
-    #           netRadMJ = sum(netRadMJ),
-    #           soilHeatFluxMJ = sum(soilHeatFluxMJ),
-    #           delta = mean(delta),
-    #           gamma = mean(gamma),
-    #           precipRate = sum(precipRate)) %>%
+    summarise(waterET = sum(waterET),
+              netRadMJ = sum(netRadMJ),
+              soilHeatFluxMJ = sum(soilHeatFluxMJ),
+              delta = mean(delta),
+              gamma = mean(gamma),
+              precipRate = sum(precipRate)) %>%
     mutate(Epot = potentialEvaporation(netRadMJ, soilHeatFluxMJ, delta, gamma)) 
   
   data.frame(PlotID = paste(substr(basename(i), 1, 4), j, sep = ", "),
