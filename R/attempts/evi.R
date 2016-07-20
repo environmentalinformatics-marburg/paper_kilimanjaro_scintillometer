@@ -1,4 +1,4 @@
-### environmental stuff
+### environmental stuff -----
 
 # workspace clearance
 rm(list = ls(all = TRUE))
@@ -100,7 +100,7 @@ lst_prd <- lapply(c("MOD13Q1.006", "MYD13Q1.006"), function(product) {
   }
   
   
-  ### quality control, step #1: --------------------------------------------------
+  ### quality control, step #1: -----
   ### discard clouds, snow/ice and filled pixels using 'pixel_reliability'
   
   dir_qc1 <- paste0(dir_prd, "/qc1")
@@ -124,7 +124,7 @@ lst_prd <- lapply(c("MOD13Q1.006", "MYD13Q1.006"), function(product) {
   rst_qc1 <- stack(lst_qc1)
   
   
-  ### quality control, step #2: --------------------------------------------------
+  ### quality control, step #2: -----
   ### discard cloudy pixels based on 'state_250m' flags
   
   dir_qc2 <- paste0(dir_prd, "/qc2")
@@ -169,7 +169,7 @@ lst_prd <- lapply(c("MOD13Q1.006", "MYD13Q1.006"), function(product) {
 })
 
 
-### whittaker smoother ---------------------------------------------------------
+### whittaker smoother -----
 
 ## target folders and files
 dir_prd <- "data/MCD13Q1.006"
@@ -221,3 +221,6 @@ rst_wht <- stack(lst_wht)
 fls_old <- list.files(dir_wht, pattern = "NDVI_YearlyLambda", 
                       full.names = TRUE)
 file.remove(fls_old)
+
+## deregister parallel backend
+stopCluster(cl)
