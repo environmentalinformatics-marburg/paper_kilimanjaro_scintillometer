@@ -49,17 +49,7 @@ MODISoptions(localArcPath = paste0(getwd(), "/data/MODIS_ARC/"),
 ## reference extent
 ext_crp <- uniformExtent()
 
-## plots
-spt_plots <- suppressWarnings(
-  readOGR(dsn = "data/shp", layer = "PlotPoles_ARC1960_mod_20140807_final", 
-          p4s = "+init=epsg:21037")
-)
-
-spt_plots <- subset(spt_plots, PoleType == "AMP")
-
-# ## DEM
-# rst_dem <- raster("data/dem/DEM_ARC1960_30m_Hemp.tif")
-
+## loop over products
 lst_prd <- lapply(c("MOD13Q1.006", "MYD13Q1.006"), function(product) {
   
   dir_prd <- paste0("data/", product)
