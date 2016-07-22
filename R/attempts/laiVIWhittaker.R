@@ -135,23 +135,31 @@ rst_wdrvi <- wdrvi(ndvi = rst_ndvi, cores = 3L, filename = fls_wdrvi,
 mat_wdrvi <- as.matrix(rst_wdrvi)
 
 ## cell numbers
-mat_lai250 <- foreach(i = 1:ncell(rst_int), .combine = "rbind", 
-                      .packages = c("raster", "foreach")) %do% {
+mat_lai250 <- matrix(nrow = nrow(mat_wdrvi), ncol = ncol(mat_wdrvi))
+
+for (i in 1:ncell(rst_int)) {
   
+  ## status message
+  if (i %% 50 == 0)
+    cat("Now processing cell #", i, "...\n", sep = "")
+  
+  ## slope and intercept
   int <- rst_int[i]; slp <- rst_slp[i]
   if (is.na(int) | is.na(slp))
-    return(rep(NA, ncol(mat_wdrvi)))
+    next
   
+  ## 250-m cells within current 500-m cell
   rst <- rst_int[[1]]
   rst[][-i] <- NA
   shp <- rasterToPolygons(rst)
   cls <- unlist(cellFromPolygon(rst_wdrvi, shp))
-
+  
+  ## apply regression coefficients
   val <- mat_wdrvi[cls, ]
   if (!is.matrix(val)) {
-    val * slp + int
+    mat_lai250[cls, ] <- val * slp + int
   } else {
-    foreach(j = 1:nrow(val), .combine = "rbind") %do% {
+    mat_lai250[cls, ] <- foreach(j = 1:nrow(val), .combine = "rbind") %do% {
       if (all(is.na(val[j, ])))
         return(rep(NA, ncol(mat_wdrvi)))
       
@@ -160,6 +168,13 @@ mat_lai250 <- foreach(i = 1:ncell(rst_int), .combine = "rbind",
   }
 }
 
+rst_lai250 <- setValues(rst_wdrvi, mat_lai250)
+
+## write to disk
+fls_lai250 <- paste0(dir_wdrvi, "/", gsub("WDRVI", "LAI", names(rst_wdrvi)), ".tif")
+lst_lai250 <- foreach(i = 1:nlayers(rst_lai250), .packages = "raster") %dopar%
+  writeRaster(rst_lai250[[i]], fls_lai250[i], format = "GTiff", overwrite = TRUE)
+rst_lai250 <- stack(lst_lai250)
 
 ## deregister parallel backend
 stopCluster(cl)
