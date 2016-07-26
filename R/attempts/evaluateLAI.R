@@ -5,7 +5,7 @@ rm(list = ls(all = TRUE))
 
 ## packages
 library(Orcs)
-lib <- c("rgdal", "MODIS", "doParallel", "Rsenal", "latticeExtra")
+lib <- c("rgdal", "MODIS", "doParallel", "Rsenal", "latticeExtra", "grid")
 loadPkgs(lib)
 
 ## functions
@@ -63,7 +63,7 @@ dat <- dat[complete.cases(dat), ]
 m1 <- lm(wdrvi ~ log(lai), data = dat)
 m2 <- lm(ndvi ~ log(lai), data = dat)
 
-x <- seq(.01, 6, .01)
+x <- seq(0, 6, .01)
 y1 <- predict(m1, newdata = data.frame(lai = x))
 y2 <- predict(m2, newdata = data.frame(lai = x))
 
@@ -74,36 +74,79 @@ z2 <- x[which((slope(x, y2) < 0.06))[1]]
 m3 <- lm(wdrvi ~ lai, data = subset(dat, lai < 4))
 m4 <- lm(ndvi ~ lai, data = subset(dat, lai < 4))
 
+## lai at which linear correlation is best
+Rsq3 <- do.call("rbind", lapply(seq(2, 8, .01), function(i) {
+  rsq <- summary(lm(wdrvi ~ lai, data = subset(dat, lai <= i)))$r.squared
+  data.frame(LAI = i, Rsq = rsq)
+}))
+max3 <- Rsq3[which.max(Rsq3$Rsq), 1]
+
+Rsq4 <- do.call("rbind", lapply(seq(2, 8, .01), function(i) {
+  rsq <- summary(lm(ndvi ~ lai, data = subset(dat, lai <= i)))$r.squared
+  data.frame(LAI = i, Rsq = rsq)
+}))
+max4 <- Rsq4[which.max(Rsq4$Rsq), 1]
+
 ## visualize
+cols <- colorRampPalette(c("white", brewer.pal(5, "YlOrRd")))
+cols <- colorRampPalette(c("white", envinmrPalette(7)))
+
 p1 <- xyplot(wdrvi ~ lai, data = dat, panel = function(x, y, ...) {
-  panel.xyplot(x, y, col = "grey", ...)
+  panel.smoothScatter(x, y, colramp = cols, nbin = 250, nrpoints = 0)
   
   m1 <- lm(y ~ log(x))
-  panel.lines(x, predict(m1), col = "red", lwd = 1.5)
+  panel.lines(x, predict(m1), col = "black", lwd = 2)
   
-  panel.abline(v = z1, lty = 2, lwd = 1.5)
-  panel.text(x = z1, y = min(y) + .2, labels = paste("Threshold saturation:", z1), 
-             srt = 90, adj = c(.4, 1.5), font = 2)
+  panel.abline(v = z1, lty = 3, lwd = 1.5, col = "grey35")
+  panel.text(x = z1 + .3, y = min(y) + .15, labels = paste("T.s. =", z1), 
+             srt = 90, font = 2, cex = .8, col = "grey35")
   
-  panel.ablineq(lm(wdrvi ~ lai, data = subset(dat, lai < 4)), 
-                rotate = TRUE, r.squared = TRUE, col.line = "red", lty = 2, 
-                col.text = "transparent")
-})
+  panel.ablineq(lm(wdrvi ~ lai, data = subset(dat, lai <= max3)),
+                rotate = TRUE, r.squared = TRUE, col.line = "black", lty = 2,
+                col.text = "transparent", lwd = 2)
+}, xlab = list("LAI", cex = .9), ylab = list("WDRVI", cex = .9), 
+scales = list(cex = .85))
 
 p2 <- xyplot(ndvi ~ lai, data = dat, panel = function(x, y, ...) {
-  panel.xyplot(x, y, col = "grey", ...)
+  panel.smoothScatter(x, y, colramp = cols, nbin = 250, nrpoints = 0)
   
   m2 <- lm(y ~ log(x))
-  panel.lines(x, predict(m2), col = "red", lwd = 1.5)
+  panel.lines(x, predict(m2), col = "black", lwd = 2)
   
-  panel.abline(v = z2, lty = 2, lwd = 1.5)
-  panel.text(x = z2, y = min(y) + .2, labels = paste("Threshold saturation:", z2), 
-             srt = 90, adj = c(.525, 1.5), font = 2)
+  panel.abline(v = z2, lty = 3, lwd = 1.5, col = "grey35")
+  panel.text(x = z2 + .3, y = min(y) + .10875, labels = paste("T.s. =", z2), 
+             srt = 90, font = 2, cex = .8, col = "grey35")
   
-  panel.ablineq(lm(ndvi ~ lai, data = subset(dat, lai < 4)), 
-                rotate = TRUE, r.squared = TRUE, col.line = "red", lty = 2, 
-                col.text = "transparent")
-})
+  panel.ablineq(lm(ndvi ~ lai, data = subset(dat, lai <= max4)),
+                rotate = TRUE, r.squared = TRUE, col.line = "black", lty = 2,
+                col.text = "transparent", lwd = 2)
+}, xlab = list("LAI", cex = .9), ylab = list("NDVI", cex = .9), 
+scales = list(cex = .85))
+
+## write to file
+setEPS()
+postscript("out/figure_0x.eps", width = 19*.3937, height = 9*.3937, 
+           fonts = c("serif", "Palatino"))
+grid.newpage()
+
+vp0 <- viewport(x = 0, y = 0, width = .5, height = 1, 
+                just = c("left", "bottom"))
+pushViewport(vp0)
+print(p2, newpage = FALSE)
+downViewport(trellis.vpname("figure"))
+grid.text("a)", x = .05, y = .915, just = c("left", "bottom"), 
+          gp = gpar(cex = .8, fontface = "bold"))
+
+upViewport(0)
+vp1 <- viewport(x = .5, y = 0, width = .5, height = 1, 
+                just = c("left", "bottom"))
+pushViewport(vp1)
+print(p1, newpage = FALSE)
+downViewport(trellis.vpname("figure"))
+grid.text("b)", x = .05, y = .915, just = c("left", "bottom"), 
+          gp = gpar(cex = .8, fontface = "bold"))
+
+dev.off()
 
 
 ### performance of modeled lai -----
@@ -151,7 +194,22 @@ dat_eval <- foreach(i = 1:length(spt_plt), .combine = "rbind") %do% {
   
   stats <- regressionStats(val_lai250, val_lai)
   
-  data.frame(PlotID = plt@data$PlotID, LAI = ltm_lai, WDRVI = ltm_wdrvi, 
+  data.frame(PlotID = plt@data$PlotID, LAI500 = ltm_lai, LAI250 = mean(val_lai250), 
              Rsq = stats$Rsq, p = p, IOA = ioa(val_lai250, val_lai),
              RMSE = stats$RMSE, RMSE.se = stats$RMSE.se)
 }
+
+tbl <- dat_eval
+tbl[, c(2:4, 7)] <- round(tbl[, c(2:4, 7)], 2)
+
+id3 <- tbl$p < .001; tbl$Rsq[id3] <- paste0(tbl$Rsq[id3], "***")
+id2 <- tbl$p >= .001 & tbl$p < .01; tbl$Rsq[id2] <- paste0(tbl$Rsq[id2], "**")
+id1 <- tbl$p >= .01 & tbl$p < .05; tbl$Rsq[id1] <- paste0(tbl$Rsq[id1], "*")
+tbl <- tbl[, -(5:6)]
+
+tbl$RMSE.se <- round(tbl$RMSE.se, 3)
+tbl$RMSE <- paste(tbl$RMSE, tbl$RMSE.se, sep = " \u00b1 ")
+tbl <- tbl[, -6]
+
+library(stargazer)
+stargazer(tbl, summary = FALSE, rownames = FALSE)
