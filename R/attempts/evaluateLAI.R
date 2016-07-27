@@ -195,21 +195,25 @@ dat_eval <- foreach(i = 1:length(spt_plt), .combine = "rbind") %do% {
   stats <- regressionStats(val_lai250, val_lai)
   
   data.frame(PlotID = plt@data$PlotID, LAI500 = ltm_lai, LAI250 = mean(val_lai250), 
-             Rsq = stats$Rsq, p = p, IOA = ioa(val_lai250, val_lai),
-             RMSE = stats$RMSE, RMSE.se = stats$RMSE.se)
+             Rsq = stats$Rsq, p = p, RMSE = stats$RMSE, RMSE.se = stats$RMSE.se, 
+             IOA = ioa(val_lai250, val_lai))
 }
 
 tbl <- dat_eval
-tbl[, c(2:4, 7)] <- round(tbl[, c(2:4, 7)], 2)
+tbl[, c(2:4, 6, 8)] <- round(tbl[, c(2:4, 6, 8)], 2)
 
 id3 <- tbl$p < .001; tbl$Rsq[id3] <- paste0(tbl$Rsq[id3], "***")
 id2 <- tbl$p >= .001 & tbl$p < .01; tbl$Rsq[id2] <- paste0(tbl$Rsq[id2], "**")
 id1 <- tbl$p >= .01 & tbl$p < .05; tbl$Rsq[id1] <- paste0(tbl$Rsq[id1], "*")
-tbl <- tbl[, -(5:6)]
+tbl <- tbl[, -5]
 
 tbl$RMSE.se <- round(tbl$RMSE.se, 3)
 tbl$RMSE <- paste(tbl$RMSE, tbl$RMSE.se, sep = " \u00b1 ")
 tbl <- tbl[, -6]
 
+plt <- rev(slsPlots("elevation"))
+tbl <- tbl[match(plt, tbl$PlotID), ]
+
 library(stargazer)
-stargazer(tbl, summary = FALSE, rownames = FALSE)
+stargazer(tbl, summary = FALSE, rownames = FALSE, digits = NA, 
+          decimal.mark = ".")
