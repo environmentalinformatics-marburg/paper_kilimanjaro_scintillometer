@@ -5,8 +5,8 @@ rm(list = ls(all = TRUE))
 
 ## packages
 library(Orcs)
-lib <- c("rgdal", "MODIS", "doParallel", "Rsenal", "latticeExtra", "grid")
-loadPkgs(lib)
+lib <- c("rgdal", "MODIS", "foreach", "Rsenal", "latticeExtra", "grid")
+Orcs::loadPkgs(lib)
 
 ## functions
 source("R/slsPlots.R")
@@ -19,10 +19,6 @@ slope <- function(x, y) {
 dir_old <- getwd()
 setwdOS(path_lin = "/media/fdetsch/Permanent", path_win = "E:/", 
         path_ext = "phd/scintillometer")
-
-## parallelization
-cl <- makeCluster(detectCores() - 1)
-registerDoParallel(cl)
 
 
 ### data import -----
@@ -50,7 +46,7 @@ mat_ndvi <- as.matrix(rst_ndvi)
 rst_ndvi_ltm <- setValues(rst_ndvi[[1]], apply(mat_ndvi, 1, mean))
 
 
-### performance of lai vs. wdrvi / ndvi
+### performance of lai vs. wdrvi / ndvi -----
 
 ## data
 lai <- rst_lai_ltm[]; ndvi <- rst_ndvi_ltm[]; wdrvi <- rst_wdrvi_ltm[]
@@ -150,7 +146,8 @@ dev.off()
 
 
 ### performance of modeled lai -----
-## modeled 250-m lai
+
+## import modeled 250-m lai
 fls_lai250 <- list.files("data/MCD13Q1.006/whittaker", 
                       pattern = "^MCD13Q1.*LAI.tif$", full.names = TRUE)
 dts_lai250 <- as.Date(extractDate(fls_lai250)$inputLayerDates, "%Y%j")
@@ -162,9 +159,6 @@ spt_plt <- readOGR("../../kilimanjaro/coordinates",
                    "PlotPoles_ARC1960_mod_20140807_final", 
                    p4s = "+init=epsg:21037")
 spt_plt <- subset(spt_plt, PoleType == "AMP" & PlotID %in% slsPlots())
-
-
-### value extraction -----
 
 ## extract values per plot
 dat_eval <- foreach(i = 1:length(spt_plt), .combine = "rbind") %do% {
@@ -194,26 +188,31 @@ dat_eval <- foreach(i = 1:length(spt_plt), .combine = "rbind") %do% {
   
   stats <- regressionStats(val_lai250, val_lai)
   
-  data.frame(PlotID = plt@data$PlotID, LAI500 = ltm_lai, LAI250 = mean(val_lai250), 
-             Rsq = stats$Rsq, p = p, RMSE = stats$RMSE, RMSE.se = stats$RMSE.se, 
+  data.frame(PlotID = plt@data$PlotID, LAI500 = ltm_lai, SD = sd(val_lai), 
+             LAI250 = mean(val_lai250), Rsq = stats$Rsq, p = p, 
+             RMSE = stats$RMSE, RMSE.se = stats$RMSE.se, 
              IOA = ioa(val_lai250, val_lai))
 }
 
+## round values
 tbl <- dat_eval
-tbl[, c(2:4, 6, 8)] <- round(tbl[, c(2:4, 6, 8)], 2)
+tbl[, c(2:5, 7, 9)] <- round(tbl[, c(2:5, 7, 9)], 2)
 
+## merge r-squared with significance
 id3 <- tbl$p < .001; tbl$Rsq[id3] <- paste0(tbl$Rsq[id3], "***")
 id2 <- tbl$p >= .001 & tbl$p < .01; tbl$Rsq[id2] <- paste0(tbl$Rsq[id2], "**")
 id1 <- tbl$p >= .01 & tbl$p < .05; tbl$Rsq[id1] <- paste0(tbl$Rsq[id1], "*")
-tbl <- tbl[, -5]
-
-tbl$RMSE.se <- round(tbl$RMSE.se, 3)
-tbl$RMSE <- paste(tbl$RMSE, tbl$RMSE.se, sep = " \u00b1 ")
 tbl <- tbl[, -6]
 
+## merge rmse with standard errors
+tbl$RMSE.se <- round(tbl$RMSE.se, 3)
+tbl$RMSE <- paste(tbl$RMSE, tbl$RMSE.se, sep = " \u00b1 ")
+tbl <- tbl[, -7]
+
+## reorder data
 plt <- rev(slsPlots("elevation"))
 tbl <- tbl[match(plt, tbl$PlotID), ]
 
-library(stargazer)
-stargazer(tbl, summary = FALSE, rownames = FALSE, digits = NA, 
-          decimal.mark = ".")
+## create output table
+out <- stargazer(tbl, summary = FALSE, rownames = FALSE, digits = NA, 
+                 decimal.mark = ".")
