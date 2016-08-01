@@ -1,5 +1,6 @@
 gfPostprocess <- function(wsp, dsn_regstats = "data/regstats_", 
-                          dsn_varimp = "data/varimp_", left = TRUE) {
+                          dsn_varimp = "data/varimp_", left = TRUE, 
+                          add = FALSE) {
   
   tmp_ls_plt <- strsplit(basename(wsp), "_")
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -15,7 +16,7 @@ gfPostprocess <- function(wsp, dsn_regstats = "data/regstats_",
   
   # plot prediction stats
   num_reg_stats <- colMeans(tmp_df_rf_eval[, 6:ncol(tmp_df_rf_eval)])
-  p_reg_stats <- plotPredictionStats(num_reg_stats, digits = 2, 
+  p_reg_stats <- plotPredictionStats(num_reg_stats, digits = 2, add = add,
                                      rng = c(-0.012, 0.07), left = left)
 
   # modal mtry and mean training and prediction scores

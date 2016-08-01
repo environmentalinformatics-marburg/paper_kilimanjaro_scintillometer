@@ -1,4 +1,5 @@
-plotPredictionStats <- function(reg_stats, rng = NULL, left = TRUE, ...) {
+plotPredictionStats <- function(reg_stats, rng = NULL, left = TRUE, 
+                                add = FALSE, ...) {
   
   # packages
   stopifnot(require(Rsenal))
@@ -27,7 +28,7 @@ plotPredictionStats <- function(reg_stats, rng = NULL, left = TRUE, ...) {
                  labels = TRUE, half = FALSE, text.cex = .7, 
                  tck = .5)
       panel.axis(side = "left", at = 1, outside = TRUE, tck = .5,
-                 labels = ifelse(left, expression("r"["T"]^2), FALSE), text.cex = .7)
+                 labels = ifelse(left, expression("R"["T"]^2), FALSE), text.cex = .7)
       panel.dotplot(lwd = .5, ...)
       panel.abline(v = 1, lty = 3, lwd = 1, col = "red")
     }
@@ -52,7 +53,9 @@ plotPredictionStats <- function(reg_stats, rng = NULL, left = TRUE, ...) {
                   y = y_se[c(3, 7)], lwd = 4)
       panel.dotplot(..., lwd = 0.5)
       panel.dotplot(x = df_plt$fit, y = df_plt$nms,
-                    cex = 1, col = "grey20", lwd = 0.5, col.line = "transparent")
+                    cex = 1, col = "grey20", lwd = 0.5, 
+                    col.line = "transparent", pch = ifelse(add, 21, 16), 
+                    fill = ifelse(add, "white", "black"))
     }
   }
   
@@ -62,9 +65,9 @@ plotPredictionStats <- function(reg_stats, rng = NULL, left = TRUE, ...) {
   df_rsq <- data.frame(nms = c("Rsq", "", ""), Rsq = c(df_reg_stats$Rsq, NA, NA))
   df_rsq$nms <- factor(df_rsq$nms, levels = c("Rsq", "", "NULL"))
   
-  rsq_plt <- dotplot(nms ~ Rsq, data = df_rsq, 
+  rsq_plt <- dotplot(nms ~ Rsq, data = df_rsq, pch = ifelse(add, 21, 16),
                      xlab = "", ylab = "", col.line = c("grey70", "transparent"),
-                     col = "grey20", xlim = c(0.75, 1.05),
+                     col = "grey20", xlim = c(0.675, 1.05),
                      scales = list(draw = FALSE),
                      cex = 1, as.table = TRUE, 
                      par.settings = list(
