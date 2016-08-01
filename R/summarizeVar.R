@@ -1,15 +1,14 @@
-summarizeVar <- function(files, param = "waterET", 
+summarizeVar <- function(files, param = "waterET", ssn,
                          FUN_hr = function(...) mean(..., na.rm = TRUE), 
                          FUN_dy = function(...) sum(..., na.rm = TRUE),
                          file_out = NULL) {
   
   ## required packages
-  stopifnot(require(lubridate))
-  stopifnot(require(plotrix))
-  stopifnot(require(dplyr))
-  
+  lib <- c("lubridate", "plotrix", "dplyr", "foreach")
+  jnk <- sapply(lib, function(x) library(x, character.only = TRUE))
+
   ## loop over files
-  ls_var <- lapply(files, function(i) {
+  df_var <- foreach(i = files, j = seq(files), .combine = "rbind") %do% {
     
     # current plot
     ch_plot <- substr(basename(i), 1, 4)
@@ -34,29 +33,28 @@ summarizeVar <- function(files, param = "waterET",
                     FUN = function(...) std.error(..., na.rm = TRUE))
     
     ## merge and return data
-    data.frame(PlotID = ch_plot, time = df_var_mrg$time, 
+    data.frame(PlotID = ch_plot, season = ssn[j], time = df_var_mrg$time, 
                varfun = num_fun, varse = num_se)
-  })
-  df_var <- do.call("rbind", ls_var)
-  
+  }
+
   ## maximum hourly and mean daily values
   df_var %>%
-    dplyr::select(PlotID, time, varfun) %>%
-    group_by(PlotID) %>% 
+    dplyr::select(PlotID, season, time, varfun) %>%
+    group_by(PlotID, season) %>% 
     filter(varfun == max(varfun)) %>%
     mutate(varmax = round(varfun, 2)) %>%
-    dplyr::select(PlotID, varmax, time) %>%
+    dplyr::select(PlotID, season, varmax, time) %>%
     data.frame() %>%
     arrange(desc(varmax)) -> df_max_hr
   
   df_var %>%
-    dplyr::select(PlotID, time, varfun) %>%
-    group_by(PlotID) %>% 
+    dplyr::select(PlotID, season, time, varfun) %>%
+    group_by(PlotID, season) %>% 
     summarise(varfun = FUN_dy(varfun)) %>%
     data.frame() %>%
     arrange(desc(varfun)) -> df_max_dy
   
-  df_all <- merge(df_max_dy, df_max_hr, by = "PlotID", sort = FALSE)
+  df_all <- merge(df_max_dy, df_max_hr, by = c("PlotID", "season"), sort = FALSE)
   names(df_all) <- gsub("var", param, names(df_all))
   
   if (!is.null(file_out))
