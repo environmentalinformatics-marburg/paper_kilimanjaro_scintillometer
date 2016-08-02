@@ -9,6 +9,7 @@ Orcs::loadPkgs(lib)
 
 ## functions
 source("R/slsAvlFls.R")
+source("R/slsPlots.R")
 
 
 ### import data -----
@@ -87,13 +88,13 @@ vp_left <- viewport(x = 0, y = 0, width = .5, height = .8,
                     just = c("left", "bottom"))
 pushViewport(vp_left)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
-plotCI(dat_mrg$lai, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
-       scol = "grey50", pch = pts, cex = 1.75, xlab = "LAI", ylab = "ET (mm/d)", 
-       xlim = c(0, 6.25), ylim = c(0, 5.25))
-points(dat_mrg$lai, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
-lines(seq(.05, 6, .01), val_lai, lty = 2, lwd = 1.75, col = "red")
-text(.25, 5, "a)", font = 2)
-text(5.25, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_lai)$r.squared, 2))))
+plotCI(dat_mrg$ndvi, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
+       scol = "grey50", pch = pts, cex = 1.75, xlab = "NDVI", ylab = "ET (mm/d)", 
+       xlim = c(.3, .9), ylim = c(0, 5.25))
+points(dat_mrg$ndvi, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
+lines(seq(.3, .9, .01), val_ndvi, lty = 2, lwd = 1.75, col = "red")
+text(.325, 5, "a)", font = 2)
+text(.8, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_ndvi)$r.squared, 2))))
 
 ## ndvi
 upViewport()
@@ -101,12 +102,12 @@ vp_right <- viewport(x = .5, y = 0, width = .5, height = .8,
                     just = c("left", "bottom"))
 pushViewport(vp_right)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
-plotCI(dat_mrg$ndvi, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
-       scol = "grey50", pch = pts, cex = 1.75, xlab = "NDVI", ylab = "ET (mm/d)", 
-       xlim = c(.3, .9), ylim = c(0, 5.25))
-points(dat_mrg$ndvi, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
-lines(seq(.3, .9, .01), val_ndvi, lty = 2, lwd = 1.75, col = "red")
-text(.325, 5, "b)", font = 2)
-text(.8, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_ndvi)$r.squared, 2))))
+plotCI(dat_mrg$lai, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
+       scol = "grey50", pch = pts, cex = 1.75, xlab = "LAI", ylab = "ET (mm/d)", 
+       xlim = c(0, 6.25), ylim = c(0, 5.25))
+points(dat_mrg$lai, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
+lines(seq(.05, 6, .01), val_lai, lty = 2, lwd = 1.75, col = "red")
+text(.25, 5, "b)", font = 2)
+text(5.25, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_lai)$r.squared, 2))))
 
 dev.off()
