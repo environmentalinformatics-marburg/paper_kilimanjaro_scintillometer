@@ -5,7 +5,7 @@ rm(list = ls(all = TRUE))
 
 ## packages
 library(Orcs)
-lib <- c("rgdal", "MODIS", "doParallel")
+lib <- c("rgdal", "MODIS", "doParallel", "reset")
 loadPkgs(lib)
 
 ## set working directory
@@ -28,11 +28,11 @@ rst_lai <- stack(fls_lai)
 mat_lai <- as.matrix(rst_lai)
 
 ## whittaker-smoothed ndvi
-# fls_ndvi <- list.files("data/MCD13A1.006/whittaker", 
-#                       pattern = "^MCD13A1.*.tif$", full.names = TRUE)
-# dts_ndvi <- as.Date(extractDate(fls_ndvi)$inputLayerDates, "%Y%j")
-# rst_ndvi <- stack(fls_ndvi)
-# mat_ndvi <- as.matrix(rst_ndvi)
+fls_ndvi <- list.files("data/MCD13A1.006/whittaker",
+                      pattern = "^MCD13A1.*.tif$", full.names = TRUE)
+dts_ndvi <- as.Date(extractDate(fls_ndvi)$inputLayerDates, "%Y%j")
+rst_ndvi <- stack(fls_ndvi)
+mat_ndvi <- as.matrix(rst_ndvi)
 
 ## whittaker-smoothed wdrvi
 fls_wdrvi <- list.files("data/MCD13A1.006/whittaker/wdrvi", 
@@ -45,58 +45,63 @@ mat_wdrvi <- as.matrix(rst_wdrvi)
 ### linear regression -----
 
 ## correlation coefficient
-# fls_r <- paste0("data/results/", c("corLaiNdvi", "corLaiWdrvi"), "Whittaker.tif")
-# lst_r <- foreach(i = list(mat_ndvi, mat_wdrvi), 
-#                  filename = fls_r, .packages = "Orcs") %dopar% {
+dir_r <- "data/results"
+# if (!dir.exists(dir_r)) dir.create(dir_r)
+# 
+# fls_r <- paste0(dir_r, c("/corLaiNdvi", "/corLaiWdrvi"), "Whittaker.tif")
+# 
+# lst_r <- foreach(i = list(mat_ndvi, mat_wdrvi),
+#                  filename = fls_r, .packages = c("foreach", "Orcs")) %dopar% {
 #   val <- foreach(j = 1:nrow(mat_lai), .combine = "c") %do% {
 #     r <- cor(i[j, ], mat_lai[j, ])
 #     if (is.na(r)) {
 #       return(NA)
 #     }
-#     
+# 
 #     mod <- lm(mat_lai[j, ] ~ i[j, ])
 #     p <- pvalue(mod)
-#     
+# 
 #     if (p < 0.001) {
 #       return(r)
 #     } else {
 #       return(NA)
 #     }
 #   }
-#   
+# 
 #   rst <- setValues(rst_lai[[1]], val)
 #   writeRaster(rst, filename = filename, format = "GTiff", overwrite = TRUE)
 # }
 
-fls_r <- list.files("data/results", pattern = "cor.*Whittaker.tif$", 
+fls_r <- list.files(dir_r, pattern = "cor.*Whittaker.tif$", 
                     full.names = TRUE)
 lst_r <- lapply(fls_r, raster)
 
 ## coefficient of determination
-# fls_rsq <- paste0("data/results/", c("rsqLaiNdvi", "rsqLaiWdrvi"), "Whittaker.tif")
-# lst_rsq <- foreach(i = list(mat_ndvi, mat_wdrvi), 
-#                  filename = fls_rsq, .packages = "Orcs") %dopar% {
+# fls_rsq <- paste0(dir_r, c("/rsqLaiNdvi", "/rsqLaiWdrvi"), "Whittaker.tif")
+# 
+# lst_rsq <- foreach(i = list(mat_ndvi, mat_wdrvi),
+#                  filename = fls_rsq, .packages = c("foreach", "Orcs")) %dopar% {
 #   val <- foreach(j = 1:nrow(mat_lai), .combine = "c") %do% {
 #     if (all(is.na(mat_lai[j, ])) | all(is.na(i[j, ]))) {
 #       return(NA)
 #     }
-#     
+# 
 #     mod <- lm(mat_lai[j, ] ~ i[j, ])
 #     rsq <- summary(mod)$r.squared
 #     p <- pvalue(mod)
-#     
+# 
 #     if (p < 0.001) {
 #       return(rsq)
 #     } else {
 #       return(NA)
 #     }
 #   }
-#   
+# 
 #   rst <- setValues(rst_lai[[1]], val)
 #   writeRaster(rst, filename = filename, format = "GTiff", overwrite = TRUE)
 # }
 
-fls_rsq <- list.files("data/results", pattern = "rsq.*Whittaker.tif$", 
+fls_rsq <- list.files(dir_r, pattern = "rsq.*Whittaker.tif$", 
                       full.names = TRUE)
 lst_rsq <- lapply(fls_r, raster)
 
@@ -104,24 +109,28 @@ lst_rsq <- lapply(fls_r, raster)
 ### downscaling -----
 
 ## slope and intercept
-dat_cfs <- foreach(j = 1:nrow(mat_lai), .combine = "rbind") %do% {
-  x <- mat_wdrvi[j, ]; y <- mat_lai[j, ]; 
-  if (all(is.na(x)) | all(is.na(y))) 
-    return(NA)
+# dat_cfs <- foreach(j = 1:nrow(mat_lai), .combine = "rbind") %do% {
+#   x <- mat_wdrvi[j, ]; y <- mat_lai[j, ]; 
+#   if (all(is.na(x)) | all(is.na(y))) 
+#     return(NA)
+# 
+#   mod <- lm(y ~ x)
+#   int <- coef(mod)[1]; slp <- coef(mod)[2]
+#   
+#   data.frame(cell = j, intercept = int, slope = slp)
+# }
+# 
+# rst_int <- setValues(rst_lai[[1]], dat_cfs$intercept)
+# rst_int <- writeRaster(rst_int, paste0(dir_r, "/intLaiWdrviWhittaker.tif"), 
+#                        format = "GTiff", overwrite = TRUE)
 
-  mod <- lm(y ~ x)
-  int <- coef(mod)[1]; slp <- coef(mod)[2]
-  
-  data.frame(cell = j, intercept = int, slope = slp)
-}
+rst_int <- raster(paste0(dir_r, "intLaiWdrviWhittaker.tif"))
 
-rst_int <- setValues(rst_lai[[1]], dat_cfs$intercept)
-rst_int <- writeRaster(rst_int, "data/results/intLaiWdrviWhittaker.tif", 
-                       format = "GTiff", overwrite = TRUE)
+# rst_slp <- setValues(rst_lai[[1]], dat_cfs$slope)
+# rst_slp <- writeRaster(rst_slp, paste0(dir_r, "/slpLaiWdrviWhittaker.tif"), 
+#                        format = "GTiff", overwrite = TRUE)
 
-rst_slp <- setValues(rst_lai[[1]], dat_cfs$slope)
-rst_slp <- writeRaster(rst_slp, "data/results/slpLaiWdrviWhittaker.tif", 
-                       format = "GTiff", overwrite = TRUE)
+rst_slp <- raster(paste0(dir_r, "/slpLaiWdrviWhittaker.tif"))
 
 ## 250-m wdrvi
 fls_ndvi <- list.files("data/MCD13Q1.006/whittaker", pattern = "NDVI.tif$", 
