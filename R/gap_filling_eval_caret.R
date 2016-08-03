@@ -25,10 +25,13 @@ fit_control <- trainControl(method = "cv", number = 10, repeats = 10,
                             verboseIter = TRUE)
 
 # variables relevant for rf procedure
-var_rf <- c("tempUp", "tempLw", "dwnRad", "upwRad", "humidity",
-               "soilHeatFlux", "pressure", "waterET")
+var_rf <- c("tempUp", "netRad", "humidity", "soilHeatFlux", "pressure", 
+            "precipRate", "waterET")
 
 ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
+  
+  ## status message
+  cat("Commencing with the processing of", i, "\n")
   
   tmp_ls_plt <- strsplit(basename(i), "_")
   tmp_plt <- sapply(tmp_ls_plt, "[[", 3)
@@ -83,7 +86,6 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   #   ###
   
   tmp_df_sub <- tmp_df[, var_rf]
-  tmp_df_sub$hour <- hour(tmp_df$datetime)
   tmp_df_sub <- tmp_df_sub[complete.cases(tmp_df_sub), ]
   
   ## vapor pressure deficit
@@ -91,68 +93,68 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
     mutate(vpd = vpd(tempUp, humidity)) %>%
     data.frame() -> tmp_df_sub
   
-  # tmp_ls_rf_stats <- lapply(1:10, function(seed) {
-  # 
-  #   # data partitioning                          
-  #   set.seed(seed)
-  #   tmp_int_train <- createDataPartition(tmp_df_sub$waterET, p = .75, 
-  #                                        list = FALSE)
-  #   
-  #   # random forest
-  #   tmp_rf <- train(waterET ~ ., data = tmp_df_sub, method = "rf", 
-  #                   subset = tmp_int_train, trControl = fit_control, 
-  #                   importance = TRUE)
-  #   
-  #   # variable importance
-  #   tmp_df_varimp <- varImp(tmp_rf, scale = TRUE)$importance
-  #   tmp_mat_varimp <- t(tmp_df_varimp)
-  #   tmp_df_varimp <- data.frame(tmp_mat_varimp)
-  #   names(tmp_df_varimp) <- colnames(tmp_mat_varimp)
-  #   
-  #   # optimized training parameters and scores
-  #   int_mtry <- tmp_rf$bestTune
-  #   int_id_mtry <- grep(int_mtry, tmp_rf$results$mtry)
-  #   
-  #   num_rmse_trn <- tmp_rf$results[int_id_mtry, "RMSE"]
-  #   num_rmse_trn_se <- tmp_rf$results[int_id_mtry, "RMSESD"]
-  #   num_rsq_trn <- tmp_rf$results[int_id_mtry, "Rsquared"]
-  #   
-  #   # prediction
-  #   tmp_prd <- predict(tmp_rf, newdata = tmp_df_sub[-tmp_int_train, ])
-  #   
-  #   # prediction parameters
-  #   df_reg_stats <- regressionStats(prd = tmp_prd, 
-  #                                   obs = tmp_df_sub[-tmp_int_train, "waterET"], 
-  #                                   adj.rsq = FALSE)
-  #   
-  #   # return output
-  #   list(reg_stats = data.frame(plot = tmp_plt, mtry = int_mtry, 
-  #                               rmse_trn = num_rmse_trn, rmse_trns_se = num_rmse_trn_se, 
-  #                               rsq_trn = num_rsq_trn, df_reg_stats), 
-  #        var_imp = tmp_df_varimp)
-  # })
-  # 
-  # # cv/prediction statistics
-  # tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
-  # tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
-  # write.csv(tmp_df_rf_eval, row.names = FALSE, quote = FALSE, 
-  #           paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
+  tmp_ls_rf_stats <- lapply(1:10, function(seed) {
+
+    # data partitioning
+    set.seed(seed)
+    tmp_int_train <- createDataPartition(tmp_df_sub$waterET, p = .75,
+                                         list = FALSE)
+
+    # random forest
+    tmp_rf <- train(waterET ~ ., data = tmp_df_sub, method = "rf",
+                    subset = tmp_int_train, trControl = fit_control,
+                    importance = TRUE)
+
+    # variable importance
+    tmp_df_varimp <- varImp(tmp_rf, scale = TRUE)$importance
+    tmp_mat_varimp <- t(tmp_df_varimp)
+    tmp_df_varimp <- data.frame(tmp_mat_varimp)
+    names(tmp_df_varimp) <- colnames(tmp_mat_varimp)
+
+    # optimized training parameters and scores
+    int_mtry <- tmp_rf$bestTune
+    int_id_mtry <- grep(int_mtry, tmp_rf$results$mtry)
+
+    num_rmse_trn <- tmp_rf$results[int_id_mtry, "RMSE"]
+    num_rmse_trn_se <- tmp_rf$results[int_id_mtry, "RMSESD"]
+    num_rsq_trn <- tmp_rf$results[int_id_mtry, "Rsquared"]
+
+    # prediction
+    tmp_prd <- predict(tmp_rf, newdata = tmp_df_sub[-tmp_int_train, ])
+
+    # prediction parameters
+    df_reg_stats <- regressionStats(prd = tmp_prd,
+                                    obs = tmp_df_sub[-tmp_int_train, "waterET"],
+                                    adj.rsq = FALSE)
+
+    # return output
+    list(reg_stats = data.frame(plot = tmp_plt, mtry = int_mtry,
+                                rmse_trn = num_rmse_trn, rmse_trns_se = num_rmse_trn_se,
+                                rsq_trn = num_rsq_trn, df_reg_stats),
+         var_imp = tmp_df_varimp)
+  })
+
+  # cv/prediction statistics
+  tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
+  tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
+  write.csv(tmp_df_rf_eval, row.names = FALSE, quote = FALSE,
+            paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
   
-  fls_eval <- paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv")
-  tmp_df_rf_eval <- read.csv(fls_eval)
+  # fls_eval <- paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv")
+  # tmp_df_rf_eval <- read.csv(fls_eval)
   
   # variable importances
-  # tmp_ls_rf_varimp <- lapply(tmp_ls_rf_stats, function(i) i[[2]])
-  # tmp_df_rf_varimp <- do.call("rbind", tmp_ls_rf_varimp)
-  # tmp_num_rf_varimp <- colMeans(tmp_df_rf_varimp, na.rm = TRUE)
-  # tmp_mat_rf_varimp <- matrix(tmp_num_rf_varimp, 1, byrow = TRUE)
-  # tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
-  # names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
-  # write.csv(tmp_df_rf_varimp, row.names = FALSE, quote = FALSE,
-  #           paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
+  tmp_ls_rf_varimp <- lapply(tmp_ls_rf_stats, function(i) i[[2]])
+  tmp_df_rf_varimp <- do.call("rbind", tmp_ls_rf_varimp)
+  tmp_num_rf_varimp <- colMeans(tmp_df_rf_varimp, na.rm = TRUE)
+  tmp_mat_rf_varimp <- matrix(tmp_num_rf_varimp, 1, byrow = TRUE)
+  tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
+  names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
+  write.csv(tmp_df_rf_varimp, row.names = FALSE, quote = FALSE,
+            paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
   
-  fls_varimp <- paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv")
-  tmp_df_rf_varimp <- read.csv(fls_varimp)
+  # fls_varimp <- paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv")
+  # tmp_df_rf_varimp <- read.csv(fls_varimp)
   
   # plot prediction stats
   num_reg_stats <- colMeans(tmp_df_rf_eval[, 6:ncol(tmp_df_rf_eval)])
