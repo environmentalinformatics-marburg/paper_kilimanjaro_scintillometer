@@ -1,9 +1,8 @@
-fls_srun <- list.files("data/SRun", recursive = TRUE, pattern = "mrg_rf_agg01h", 
-                       full.names = TRUE)
+fls <- slsAvlFls(ch_pattern = "mrg_rf_agg01h.csv$")
 
-plots <- substr(basename(fls_srun), 1, 4)
+plots <- substr(basename(fls$mrg_rf_agg01h), 1, 4)
 
-dat_srun <- foreach(i = fls_srun, j = plots, .combine = "rbind") %do% {
+dat_srun <- foreach(i = fls$mrg_rf_agg01h, j = plots, .combine = "rbind") %do% {
   dat <- read.csv(i)
   dat$PlotID <- j
   return(dat)
@@ -18,15 +17,16 @@ dat_srun$PlotID <- as.factor(dat_srun$PlotID)
 ### ET ~ downward radiation
 library(lattice)
 xyplot(waterET ~ dwnRad | luc, data = subset(dat_srun, dwnRad > 500))
+xyplot(waterET ~ dwnRad | luc, data = dat_srun)
 
 
 ### lm -----
 
-mod <- lm(waterET ~ dwnRad, data = subset(dat_srun, dwnRad > 500))
+mod <- lm(waterET ~ dwnRad, data = dat_srun)
 summary(mod)
 
-# mod0 <- lm(waterET ~ dwnRad * as.factor(luc), data = subset(dat_srun, dwnRad > 500))
-# summary(mod0)
+mod1 <- lm(waterET ~ netRad, data = dat_srun)
+summary(mod1)
 
 
 ### ctree -----

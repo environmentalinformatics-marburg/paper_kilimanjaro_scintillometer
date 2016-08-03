@@ -75,11 +75,11 @@ postscript("../../phd/scintillometer/out/figure_07.eps", width = 10,
 
 ## legend
 plot.new()
-vp_top <- viewport(x = .5, y = .725, width = .6, height = .25)
+vp_top <- viewport(x = .5, y = .825, width = .6, height = .25)
 pushViewport(vp_top)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
 legend(x = 0, y = 0, plt, pch = pts, pt.cex = 1.5, pt.bg = clr, pt.lwd = 1.25,
-       ncol = 7, box.col = "transparent", x.intersp = 1.25, y.intersp = .5, 
+       ncol = 7, box.col = "transparent", x.intersp = 1.25, y.intersp = -.5, 
        cex = .8)
 
 ## lai

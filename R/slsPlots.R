@@ -1,4 +1,4 @@
-slsPlots <- function(style = NULL, empty = 2L, nc = 2L) {
+slsPlots <- function(style = NULL, empty = 2L, nc = 2L, dry = FALSE) {
   
   if (!is.null(style)) {
     if (style == "ggplot") {
@@ -21,9 +21,17 @@ slsPlots <- function(style = NULL, empty = 2L, nc = 2L) {
       
       return(plots)
     } else if (style == "elevation") {
-      return(c("sav5", "sav0", "mai4", "mai0", 
-               "cof3", "cof2", "gra1", "gra2", 
-               "fed1", "hel1", "fer0"))
+      plots <- c("sav5", "sav0", "mai4", "mai0", 
+                 "cof3", "cof2", "gra1", "gra2", 
+                 "fed1", "hel1", "fer0")
+      
+      if (dry) {
+        plots <- c(plots[1], paste(plots[1], "(d)"), 
+                   plots[2], paste(plots[2], "(d)"), 
+                   plots[3:length(plots)])
+      }
+      
+      return(plots)
     }
   } else {
     return(c("sav0", "sav5", "mai0", "mai4", 

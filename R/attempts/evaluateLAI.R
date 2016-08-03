@@ -5,7 +5,8 @@ rm(list = ls(all = TRUE))
 
 ## packages
 library(Orcs)
-lib <- c("rgdal", "MODIS", "foreach", "Rsenal", "latticeExtra", "grid")
+lib <- c("rgdal", "MODIS", "foreach", "Rsenal", "latticeExtra", "grid", 
+         "stargazer")
 Orcs::loadPkgs(lib)
 
 ## functions
@@ -186,7 +187,7 @@ dat_eval <- foreach(i = 1:length(spt_plt), .combine = "rbind") %do% {
   mod <- lm(val_lai250 ~ val_lai)
   p <- pvalue(mod)
   
-  stats <- regressionStats(val_lai250, val_lai)
+  stats <- regressionStats(val_lai250, val_lai, adj.rsq = FALSE)
   
   data.frame(PlotID = plt@data$PlotID, LAI500 = ltm_lai, SD = sd(val_lai), 
              LAI250 = mean(val_lai250), Rsq = stats$Rsq, p = p, 
@@ -214,5 +215,5 @@ plt <- rev(slsPlots("elevation"))
 tbl <- tbl[match(plt, tbl$PlotID), ]
 
 ## create output table
-out <- stargazer(tbl, summary = FALSE, rownames = FALSE, digits = NA, 
-                 decimal.mark = ".")
+stargazer(tbl, summary = FALSE, rownames = FALSE, digits = NA, 
+          decimal.mark = ".")
