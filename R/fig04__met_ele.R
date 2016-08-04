@@ -13,29 +13,29 @@ ch_dir_tbl <- "../../phd/scintillometer/data/tbl/"
 ## input data
 df_fls <- slsAvlFls()
 
-## ta
-df_ta <- summarizeVar(df_fls$mrg_rf_agg01h, param = "tempUp", ssn = df_fls$season,
-                      FUN_dy = function(...) mean(..., na.rm = TRUE),
-                      file_out = paste0(ch_dir_tbl, "table_ta.csv"))
-
-## rh
-df_rh <- summarizeVar(df_fls$mrg_rf_agg01h, param = "humidity", ssn = df_fls$season,
-                      FUN_dy = function(...) mean(..., na.rm = TRUE),
-                      file_out = paste0(ch_dir_tbl, "table_rh.csv"))
-
 ## radiation
-df_rad <- summarizeVar(df_fls$mrg_rf_agg01h, param = "dwnRad", ssn = df_fls$season,
+df_rad <- summarizeVar(df_fls$mrg_rf_agg01h, param = "netRad", ssn = df_fls$season,
                        FUN_dy = function(...) mean(..., na.rm = TRUE),
                        file_out = paste0(ch_dir_tbl, "table_rad.csv"))
 
-## et
-df_et <- summarizeVar(df_fls$mrg_rf_agg01h, ssn = df_fls$season,
-                      file_out = paste0(ch_dir_tbl, "table_et.csv"))
+## p
+df_p <- summarizeVar(df_fls$mrg_rf_agg01h, param = "pressure", ssn = df_fls$season,
+                     FUN_dy = function(...) mean(..., na.rm = TRUE),
+                     file_out = paste0(ch_dir_tbl, "table_p.csv"))
+
+## S
+df_s <- summarizeVar(df_fls$mrg_rf_agg01h, param = "soilHeatFlux", ssn = df_fls$season,
+                     FUN_dy = function(...) mean(..., na.rm = TRUE),
+                     file_out = paste0(ch_dir_tbl, "table_S.csv"))
 
 ## vpd
 df_vpd <- summarizeVar(df_fls$mrg_rf_agg01h, param = "vpd", ssn = df_fls$season,
                        FUN_dy = function(...) mean(..., na.rm = TRUE),
                        file_out = paste0(ch_dir_tbl, "table_vpd.csv"))
+
+## et
+df_et <- summarizeVar(df_fls$mrg_rf_agg01h, ssn = df_fls$season,
+                      file_out = paste0(ch_dir_tbl, "table_et.csv"))
 
 ## plot coordinates
 spt_plot <- readOGR("/media/fdetsch/Permanent/kilimanjaro/coordinates/", 
@@ -45,7 +45,7 @@ spt_plot <- subset(spt_plot, PoleType == "AMP")
 
 ## merge data
 df_var <- Reduce(function(...) merge(..., by = c("PlotID", "season")), 
-                 list(df_ta, df_rh, df_vpd, df_rad, df_et))
+                 list(df_rad, df_p, df_s, df_vpd, df_et))
 df_var_ele <- merge(df_var, spt_plot@data, by = "PlotID")
 df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
 
@@ -87,11 +87,10 @@ clr <- c(rep("grey50", 2), rep("white", 2), rep(c("grey50", "white"), 3),
 # cor(df_var_ele$waterETfun, hat)^2
 # summary(loe_et)
 
-p_ta <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = tempUpfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+p_rad <- ggplot(data = df_var_ele) + 
+  geom_point(aes(x = netRadfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
-  labs(title = expression("a) T"["a-150"] ~ "(" * degree * C * ")"), 
-       x = "", y = "") + 
+  labs(title = expression("a) R"[net] ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
   theme_bw() + 
   theme(title = element_text(size = 8), 
         text = element_text(size = 10), 
@@ -99,11 +98,11 @@ p_ta <- ggplot(data = df_var_ele) +
         axis.title.y = element_text(angle = 90), 
         legend.position = "none")
 
-p_rh <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = humidityfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+p_p <- ggplot(data = df_var_ele) + 
+  geom_point(aes(x = pressurefun, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   scale_y_continuous(labels = NULL) + 
-  labs(title = expression("b) rH (%)"), x = "", y = "") + 
+  labs(title = "b) p (hPa)", x = "", y = "") + 
   theme_bw() + 
   theme(title = element_text(size = 8), 
         text = element_text(size = 10), 
@@ -111,10 +110,22 @@ p_rh <- ggplot(data = df_var_ele) +
         axis.title.y = element_text(angle = 90), 
         legend.position = "none")
 
-p_rad <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = dwnRadfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+p_s <- ggplot(data = df_var_ele) + 
+  geom_point(aes(x = soilHeatFluxfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
-  labs(title = expression("d) R"[dwn] ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
+  scale_y_continuous(labels = NULL) + 
+  labs(title = expression("c) S" ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
+  theme_bw() + 
+  theme(title = element_text(size = 8), 
+        text = element_text(size = 10), 
+        axis.title.x = element_text(angle = 180), 
+        axis.title.y = element_text(angle = 90), 
+        legend.position = "none")
+
+p_vpd <- ggplot(data = df_var_ele) + 
+  geom_point(aes(x = vpdfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+             size = 4) +   
+  labs(title = expression("d) VPD (Pa)"), x = "", y = "") + 
   theme_bw() + 
   theme(title = element_text(size = 8), 
         text = element_text(size = 10), 
@@ -127,18 +138,6 @@ p_et <- ggplot(data = df_var_ele) +
              size = 4) +   
   scale_y_continuous(labels = NULL) + 
   labs(title = expression("e) ET (mm)"), x = "", y = "") + 
-  theme_bw() + 
-  theme(title = element_text(size = 8), 
-        text = element_text(size = 10), 
-        axis.title.x = element_text(angle = 180), 
-        axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
-
-p_vpd <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = vpdfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
-             size = 4) +   
-  scale_y_continuous(labels = NULL) + 
-  labs(title = expression("c) VPD (Pa)"), x = "", y = "") + 
   theme_bw() + 
   theme(title = element_text(size = 8), 
         text = element_text(size = 10), 
@@ -185,7 +184,7 @@ p_key_ele <- ggplot(data = df_var_ele) +
 
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
-ls_p <- list(p_ta, p_rh, p_vpd, p_rad, p_et)
+ls_p <- list(p_rad, p_p, p_s, p_vpd, p_et)
 
 
 ## standalone tiff version
@@ -203,9 +202,15 @@ for (y in c(0.55, .1)) {
       break
     
     # insert plots
+    height <- if (n == 2) {
+      .44
+    } else {
+      .45
+    }
+    
     vp_tmp <- viewport(x = ifelse(x == .34, x + .02, x), y = y, 
                        width = ifelse(x == .02, .33, .3),
-                       height = ifelse(n == 5, .445, .45), just = c("left", "bottom"))
+                       height = height, just = c("left", "bottom"))
     pushViewport(vp_tmp)
     print(ls_p[[n]], newpage = FALSE)
     
