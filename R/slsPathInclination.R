@@ -1,4 +1,4 @@
-slsPathInclination <- function(...) {
+slsPathInclination <- function(digits = 1L, ...) {
   
   ## environmental stuff
   
@@ -24,15 +24,8 @@ slsPathInclination <- function(...) {
 
   ## data
   
-  # plots included in sls field campaign
-  ch_plt_sls <- rev(slsPlots(style = "elevation"))
-  
   # gps data with scintillometer locations
-  df_gps <- mergeGPX()
-  df_gps <- subset(df_gps, season == "W")
-  sp_gps <- df_gps
-  coordinates(sp_gps) <-  ~ lon + lat
-  projection(sp_gps) <- "+init=epsg:4326"
+  sp_gps <- readRDS("data/sensors.rds")
   sp_gps_clrk <- spTransform(sp_gps, CRS("+init=epsg:21037"))
   
   # dem
@@ -40,18 +33,21 @@ slsPathInclination <- function(...) {
   rst_slp <- terrain(rst_dem, unit = "degrees")
   
   
-  ## terrain slopes
+  ## terrain slopes, i.e. average slope between transmitter and 
+  ## receiver unit, calculated from dem
+  ch_plt <- unique(sp_gps_clrk$PlotID)
+  unq <- unique(sp_gps_clrk@data[c("PlotID", "season")])
   
-  ch_plt <- unique(sp_gps_clrk$plot)
-  
-  ls_slp <- lapply(ch_plt, function(i) {
-    sp_gps_clrk_sub <- subset(sp_gps_clrk, plot == i)
+  ls_slp <- lapply(1:nrow(unq), function(i) {
+    plt <- unq$PlotID[i]; ssn <- unq$season[i]
+    sp_gps_clrk_sub <- subset(sp_gps_clrk, PlotID == plt & season == ssn)
     # plot(sp_gps_clrk_sub, cex = 2)
     sl_gps_clrk_sub <- spatialPointsToLines(sp_gps_clrk_sub)
     # lines(sl_gps_clrk_sub, lty = 2, col = "grey50")
     
     tmp_num_slp <- extract(rst_slp, sl_gps_clrk_sub, fun = mean)
-    tmp_df_slp <- data.frame(plot = i, terrain_slope = tmp_num_slp)
+    tmp_df_slp <- data.frame(PlotID = plt, season = ssn, 
+                             slope = round(tmp_num_slp, digits))
     
     return(tmp_df_slp)
   })
@@ -61,29 +57,34 @@ slsPathInclination <- function(...) {
   
   ## beam path inclination
   
-  df_slp_bp <- slsPathSlope(df_gps, sp_gps_clrk, rst_dem)
-  df_slp_bp$beam_slope <- round(df_slp_bp$beam_slope, 1)
-  df_slp_bp$dem_slope <- round(df_slp_bp$dem_slope, 1)
+  df_slp_bp <- slsPathSlope(sp_gps_clrk, rst_dem)
+  df_slp_bp$inc_gps <- round(df_slp_bp$inc_gps, digits)
+  df_slp_bp$inc_dem <- round(df_slp_bp$inc_dem, digits)
   
   # correction of false inclinations
-  int_id_sav0 <- grep("SAV0", df_slp_bp$plot)
-  df_slp_bp$beam_slope[int_id_sav0[2]] <- df_slp_bp$beam_slope[int_id_sav0[1]]
+  int_id_sav0 <- grep("sav0", df_slp_bp$PlotID)
+  df_slp_bp$inc_gps[int_id_sav0[2]] <- df_slp_bp$inc_gps[int_id_sav0[1]]
   
-  int_id_sav5 <- grep("SAV5", df_slp_bp$plot)
-  df_slp_bp$beam_slope[int_id_sav5[2]] <- df_slp_bp$beam_slope[int_id_sav5[1]]
+  int_id_sav5 <- grep("sav5", df_slp_bp$PlotID)
+  df_slp_bp$inc_gps[int_id_sav5[2]] <- df_slp_bp$inc_gps[int_id_sav5[1]]
   
-  int_id_mai4 <- grep("MAI4", df_slp_bp$plot)
-  df_slp_bp$beam_slope[int_id_mai4] <- df_slp_bp$dem_slope[int_id_mai4]
+  int_id_mai4 <- grep("mai4", df_slp_bp$PlotID)
+  df_slp_bp$inc_gps[int_id_mai4] <- df_slp_bp$inc_dem[int_id_mai4]
+
+  int_id_mai0 <- grep("mai0", df_slp_bp$PlotID)
+  df_slp_bp$inc_gps[int_id_mai0] <- df_slp_bp$inc_dem[int_id_mai0]
   
-  int_id_gra2 <- grep("GRA2", df_slp_bp$plot)
-  df_slp_bp$beam_slope[int_id_gra2] <- df_slp_bp$dem_slope[int_id_gra2]
+  int_id_gra2 <- grep("gra2", df_slp_bp$PlotID)
+  df_slp_bp$inc_gps[int_id_gra2] <- df_slp_bp$inc_dem[int_id_gra2]
   
+  df_slp_bp <- df_slp_bp[, 1:3]
+  names(df_slp_bp)[3] <- "inclination"
   
   ## merge data
   
   ls_slp_terr_bp <- list(df_slp, df_slp_bp)
-  df_slp_terr_bp <- do.call(function(...) merge(..., by = "plot", all = TRUE), 
-                            ls_slp_terr_bp)
+  df_slp_terr_bp <- do.call(function(...) merge(..., by = c("PlotID", "season"), 
+                                                all = TRUE), ls_slp_terr_bp)
   
   return(df_slp_terr_bp)
 }

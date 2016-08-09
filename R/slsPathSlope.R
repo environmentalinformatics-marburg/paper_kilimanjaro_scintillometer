@@ -1,16 +1,14 @@
-slsPathSlope <- function(dat, sp_dat, dem, ...) {
+slsPathSlope <- function(x, dem, ...) {
   
   stopifnot(require(gmt))
   
-  mat_gps_plt_ssn <- cbind(dat$plot, dat$season)
-  mat_gps_plt_ssn <- unique(mat_gps_plt_ssn)
+  mat_gps_plt_ssn <- data.frame(x)[, c("PlotID", "season", "unit", "lon", "lat", "ele")]
+  mat_unq <- unique(mat_gps_plt_ssn[, c("PlotID", "season")])
  
-  ls_slp <- lapply(1:nrow(mat_gps_plt_ssn), function(i) {
+  ls_slp <- lapply(1:nrow(mat_unq), function(i) {
     
-    tmp_ch_plt <- mat_gps_plt_ssn[i, 1]
-    tmp_ch_ssn <- mat_gps_plt_ssn[i, 2]
-    
-    tmp_df_gps <- subset(dat, (plot == tmp_ch_plt) & (season == tmp_ch_ssn))
+    plt <- mat_unq[i, 1]; ssn <- mat_unq[i, 2]
+    tmp_df_gps <- subset(mat_gps_plt_ssn, PlotID == plt & season == ssn)
     
     int_id_t <- which(tmp_df_gps$unit == "T")
     int_id_r <- which(tmp_df_gps$unit == "R")
@@ -23,9 +21,11 @@ slsPathSlope <- function(dat, sp_dat, dem, ...) {
     Efrom <- tmp_df_gps$lon[int_id_t]
     Nto <- tmp_df_gps$lat[int_id_r]
     Eto <- tmp_df_gps$lon[int_id_r]
-    num_x <- geodist(Nfrom, Efrom, Nto, Eto)
-    num_x <- num_x * 1000
     
+    asq <- (Eto - Efrom)^2
+    bsq <- (Nto - Nfrom)^2
+    num_x <- sqrt(asq + bsq)
+
     # h (level difference)
     num_h <- tmp_df_gps$ele[int_id_r] - tmp_df_gps$ele[int_id_t]
     
@@ -34,7 +34,7 @@ slsPathSlope <- function(dat, sp_dat, dem, ...) {
     num_slp <- num_slp * 180 / pi
     
     # slope angle from dem
-    tmp_sp_gps <- subset(sp_dat, plot == tmp_ch_plt)
+    tmp_sp_gps <- subset(x, PlotID == plt)
     int_id_t <- which(tmp_sp_gps$unit == "T")
     int_id_r <- which(tmp_sp_gps$unit == "R")
     tmp_num_sp_gps <- extract(dem, tmp_sp_gps)
@@ -43,8 +43,8 @@ slsPathSlope <- function(dat, sp_dat, dem, ...) {
     num_slp_dem <- atan(num_h_dem/num_x)
     num_slp_dem <- num_slp_dem * 180 / pi
     
-    tmp_df_slp <- data.frame(plot = tmp_ch_plt, beam_slope = num_slp, 
-                             dem_slope = num_slp_dem)
+    tmp_df_slp <- data.frame(PlotID = plt, season = ssn, inc_gps = num_slp, 
+                             inc_dem = num_slp_dem)
     return(tmp_df_slp)
   })
  
