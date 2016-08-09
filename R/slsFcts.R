@@ -1,10 +1,11 @@
 ## r functions
-fun <- c("R/slsPlots.R", "R/slsAvlFls.R", "R/slsDiurnalVariation.R", 
-         "R/slsAggregate.R", "R/slsMergeDailyData.R", "R/slsFoggy.R", 
-         "R/plotPredictionStats.R", "R/mergeGPX.R", "R/panel.smoothconts.R", 
-         "R/vpd.R", "R/qcMyd17.R", "R/qcxMyd15.R", "R/slsTemporalRange.R", 
-         "R/slsGppIndex.R", "R/madjacent.R", "R/summarizeVar.R", 
-         "R/gfPostprocess.R", "R/visKili.R")
+fun <- paste0("R/", c("slsPlots", "slsAvlFls", "slsDiurnalVariation", 
+                 "slsAggregate", "slsMergeDailyData", "slsFoggy", 
+                 "plotPredictionStats", "mergeGPX", "panel.smoothconts", 
+                 "vpd", "qcMyd17", "qcxMyd15", "slsTemporalRange", 
+                 "slsGppIndex", "madjacent", "summarizeVar", 
+                 "gfPostprocess", "visKili", "slsPathLength", 
+                 "slsPathSlope", "slsPathHeight", "slsPathInclination"), ".R")
 jnk <- sapply(fun, source)
 
 ## c++ functions

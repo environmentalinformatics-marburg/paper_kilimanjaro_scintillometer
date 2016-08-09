@@ -6,8 +6,8 @@ mergeGPX <- function(df2sp = FALSE, CRS = NULL) {
   
   # os-dependent path to 'permanent' partition
   ch_dir_os <- switch(Sys.info()[["sysname"]], 
-                      "Linux" = "/media/permanent/", 
-                      "Windows" = "C:/Permanent/")
+                      "Linux" = "/media/fdetsch/Permanent/", 
+                      "Windows" = "E:/")
   
   ## file #1
   ch_dir1 <- paste0(ch_dir_os, "kilimanjaro/coordinates/")
@@ -110,7 +110,6 @@ mergeGPX <- function(df2sp = FALSE, CRS = NULL) {
   
   df_gps3_tr$plot <- ch_plt
   df_gps3_tr$unit <- ch_tr
-  
   
   ## merge gpx data
   df_gps <- rbind.fill(df_gps1_tr, df_gps2_tr, df_gps3_tr)
