@@ -101,8 +101,8 @@ p1 <- xyplot(wdrvi ~ lai, data = dat, panel = function(x, y, ...) {
   panel.ablineq(lm(wdrvi ~ lai, data = subset(dat, lai <= max3)),
                 rotate = TRUE, r.squared = TRUE, col.line = "black", lty = 2,
                 col.text = "transparent", lwd = 2)
-}, xlab = list("LAI", cex = .9), ylab = list("WDRVI", cex = .9), 
-scales = list(cex = .85))
+}, xlab = list(expression("LAI"[500]), cex = .9), 
+ylab = list("WDRVI", cex = .9), scales = list(cex = .85))
 
 p2 <- xyplot(ndvi ~ lai, data = dat, panel = function(x, y, ...) {
   panel.smoothScatter(x, y, colramp = cols, nbin = 250, nrpoints = 0)
@@ -117,7 +117,7 @@ p2 <- xyplot(ndvi ~ lai, data = dat, panel = function(x, y, ...) {
   panel.ablineq(lm(ndvi ~ lai, data = subset(dat, lai <= max4)),
                 rotate = TRUE, r.squared = TRUE, col.line = "black", lty = 2,
                 col.text = "transparent", lwd = 2)
-}, xlab = list("LAI", cex = .9), ylab = list("NDVI", cex = .9), 
+}, xlab = list(expression("LAI"[500]), cex = .9), ylab = list("NDVI", cex = .9), 
 scales = list(cex = .85))
 
 ## write to file

@@ -103,8 +103,8 @@ vp_right <- viewport(x = .5, y = 0, width = .5, height = .8,
 pushViewport(vp_right)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
 plotCI(dat_mrg$lai, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
-       scol = "grey50", pch = pts, cex = 1.75, xlab = "LAI", ylab = "ET (mm/d)", 
-       xlim = c(0, 6.25), ylim = c(0, 6.25))
+       scol = "grey50", pch = pts, cex = 1.75, xlab = expression("LAI"[250]), 
+       ylab = "ET (mm/d)", xlim = c(0, 6.25), ylim = c(0, 6.25))
 points(dat_mrg$lai, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
 lines(seq(.05, 6, .01), val_lai, lty = 2, lwd = 1.75, col = "red")
 text(.25, 6, "b)", font = 2)

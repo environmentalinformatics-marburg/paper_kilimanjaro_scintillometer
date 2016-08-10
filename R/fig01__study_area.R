@@ -87,23 +87,32 @@ p2 <- spplot(img2[[1]], col.regions = "transparent", colorkey = FALSE,
              sp.layout = rgb2spLayout(img2))
 
 # output filename
-fls_out <- paste0(dir_ppr, "fig/figure01.png")
+fls_out <- paste0(dir_ppr, "fig/figure01.tiff")
+
 
 ### visualization -----
 
 ## in-text .png 
-png(fls_out, width = 15, height = 12, units = "cm", res = 600)
+tiff(fls_out, width = 19, height = 12, units = "cm", res = 600, 
+     compression = "lzw")
 
 # bing image incl point locations
 grid.newpage()
+vp0 <- viewport(x = 0, y = 0, width = .6, height = 1, 
+                just = c("left", "bottom"))
+pushViewport(vp0)
 print(p_bing, newpage = FALSE)
 
 # insertion of shadow text
 downViewport(trellis.vpname(name = "figure"))
-
 offsetGridText(x = mat_crd, labels = spp_plt_amp_sls$PlotID, stext = TRUE,
                xlim = num_xlim, ylim = num_ylim, offset = .02,
                gp = gpar(fontsize = 12, fontfamily = "Helvetica", fill = "grey50"))
+
+# explicitly name current viewport
+vp1 <- viewport(x = 0, y = 0, width = 1, height = 1, just = c("left", "bottom"), 
+                name = "vp1")
+pushViewport(vp1)
 
 # add topographic map
 vp_cont <- viewport(x = .675, y = .625, just = c("left", "bottom"),
@@ -116,6 +125,18 @@ downViewport(trellis.vpname("figure"))
 grid.text(x = .05, y = .38, just = c("left", "bottom"), label = "Eq.",
           gp = gpar(cex = .5))
 
+# 
+seekViewport("vp1")
+vp2 <- viewport(x = 1.1, y = .5, width = .6, height = .6, 
+                just = c("left", "bottom"))
+pushViewport(vp2)
+print(p1, newpage = FALSE)
+
+seekViewport("vp1")
+vp3 <- viewport(x = 1.1, y = 0, width = .6, height = .6, 
+                just = c("left", "bottom"))
+pushViewport(vp3)
+print(p2, newpage = FALSE)
 dev.off()
 
 # ## standalone .tif version (not required for `rsec' since .png is available)
