@@ -1,5 +1,8 @@
 ### environmental stuff -----
 
+## clear workspace
+rm(list = ls(all = TRUE))
+
 ## packages and function
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
@@ -14,15 +17,15 @@ dir_crd <- paste0(dir_prm, "kilimanjaro/coordinates")
 fls_crd <- "PlotPoles_ARC1960_mod_20140807_final"
 
 dir_np <- paste0(dir_prm, "kilimanjaro/kinapa")
-spy_np <- readOGR(dir_np, "fdetsch-kilimanjaro-1420532792846", 
-                  p4s = "+init=epsg:4326")
+spy_np <- readOGR(dir_np, "fdetsch-kilimanjaro-1420532792846")
 
 
-### data import -----
+### data processing -----
 
 ## bing aerial image
-rst_kili <- kiliAerial(minNumTiles = 40L, projection = "+init=epsg:4326", 
-                       type = "google")
+# rst_kili <- kiliAerial(type = "google", projection = "+init=epsg:4326")
+# rst_kili <- writeRaster(rst_kili, "data/gmap.tif", format = "GTiff")
+rst_kili <- stack("data/gmap.tif")
 spl_kili <- rgb2spLayout(rst_kili, alpha = .8, quantiles = c(0, 1))
 
 # research plots
@@ -34,10 +37,7 @@ spp_plt_amp <- spTransform(spp_plt_amp, CRS = CRS("+init=epsg:4326"))
 int_plt_sls <- spp_plt_amp$PlotID %in% slsPlots()
 spp_plt_amp_sls <- spp_plt_amp[int_plt_sls, ]
 
-
-## visualization
-
-# extent expansion
+## extent expansion
 ext_plt_amp_sls <- extent(spp_plt_amp_sls)
 
 num_xmin <- xmin(ext_plt_amp_sls) - .1
@@ -48,10 +48,10 @@ num_ymin <- ymin(ext_plt_amp_sls) - .05
 num_ymax <- ymax(ext_plt_amp_sls) + .1
 num_ylim <- c(num_ymin, num_ymax)
 
-# point coordinates
+## point coordinates
 mat_crd <- coordinates(spp_plt_amp_sls)
 
-# bing aerial including point locations
+## bing aerial including point locations
 scale <- list("SpatialPolygonsRescale", layout.scale.bar(), scale = 0.08998809, 
               offset = c(37.175, -3.405), fill = c("transparent", "black"))
 text1 = list("sp.text", c(37.175, -3.3925), "0", cex = .6, font = 2)
@@ -72,9 +72,10 @@ p_bing <- spplot(spp_plt_amp_sls, zcol = "PlotID",
                                   scale, text1, text2, 
                                   list("sp.lines", as(spy_np, "SpatialLines"), 
                                        col = "grey50"))) + 
+  layer(sp.points(spp_plt_amp_sls, cex = 1.2, pch = 20, col = "white")) + 
   layer(sp.points(spp_plt_amp_sls, cex = .8, pch = 20, col = "black"))
 
-# geographic context
+## geographic context
 p_cont <- visKili(cex = .75, lwd = .05, ext = rst_kili)
 
 ## photographs
@@ -86,35 +87,27 @@ img2 <- stack("../../phd/scintillometer/IMG_20141201_064715_187.jpg")
 p2 <- spplot(img2[[1]], col.regions = "transparent", colorkey = FALSE,
              sp.layout = rgb2spLayout(img2))
 
-# output filename
-fls_out <- paste0(dir_ppr, "fig/figure01.tiff")
-
 
 ### visualization -----
 
-## in-text .png 
-tiff(fls_out, width = 19, height = 12, units = "cm", res = 600, 
+## standalone .tif version (not required for `rsec' since .png is available)
+fls_tif <- paste0(dir_ppr, "fig/figure01.tiff")
+
+# figure
+tiff(fls_tif, width = 15, height = 12, units = "cm", res = 600,
      compression = "lzw")
 
 # bing image incl point locations
 grid.newpage()
-vp0 <- viewport(x = 0, y = 0, width = .6, height = 1, 
-                just = c("left", "bottom"))
-pushViewport(vp0)
-print(p_bing, newpage = FALSE)
+print(p_bing)
 
 # insertion of shadow text
 downViewport(trellis.vpname(name = "figure"))
+
 offsetGridText(x = mat_crd, labels = spp_plt_amp_sls$PlotID, stext = TRUE,
                xlim = num_xlim, ylim = num_ylim, offset = .02,
                gp = gpar(fontsize = 12, fontfamily = "Helvetica", fill = "grey50"))
 
-# explicitly name current viewport
-vp1 <- viewport(x = 0, y = 0, width = 1, height = 1, just = c("left", "bottom"), 
-                name = "vp1")
-pushViewport(vp1)
-
-# add topographic map
 vp_cont <- viewport(x = .675, y = .625, just = c("left", "bottom"),
                     width = .375, height = .425)
 pushViewport(vp_cont)
@@ -125,46 +118,4 @@ downViewport(trellis.vpname("figure"))
 grid.text(x = .05, y = .38, just = c("left", "bottom"), label = "Eq.",
           gp = gpar(cex = .5))
 
-# 
-seekViewport("vp1")
-vp2 <- viewport(x = 1.1, y = .5, width = .6, height = .6, 
-                just = c("left", "bottom"))
-pushViewport(vp2)
-print(p1, newpage = FALSE)
-
-seekViewport("vp1")
-vp3 <- viewport(x = 1.1, y = 0, width = .6, height = .6, 
-                just = c("left", "bottom"))
-pushViewport(vp3)
-print(p2, newpage = FALSE)
 dev.off()
-
-# ## standalone .tif version (not required for `rsec' since .png is available)
-# fls_tif <- paste0(dir_ppr, "fig/figure01.tiff")
-# 
-# # figure
-# tiff(fls_tif, width = 15, height = 12, units = "cm", res = 600, 
-#      compression = "lzw")
-# 
-# # bing image incl point locations
-# grid.newpage()
-# print(p_bing)
-# 
-# # insertion of shadow text
-# downViewport(trellis.vpname(name = "figure"))
-# 
-# offsetGridText(x = mat_crd, labels = spp_plt_amp_sls$PlotID, stext = TRUE,
-#                xlim = num_xlim, ylim = num_ylim, offset = .02, 
-#                gp = gpar(fontsize = 12, fontfamily = "Helvetica", fill = "grey50"))
-# 
-# vp_cont <- viewport(x = .675, y = .625, just = c("left", "bottom"), 
-#                     width = .375, height = .425)
-# pushViewport(vp_cont)
-# print(p_cont, newpage = FALSE)
-# 
-# # add equator label
-# downViewport(trellis.vpname("figure"))
-# grid.text(x = .05, y = .38, just = c("left", "bottom"), label = "Eq.", 
-#           gp = gpar(cex = .5))
-# 
-# dev.off()
