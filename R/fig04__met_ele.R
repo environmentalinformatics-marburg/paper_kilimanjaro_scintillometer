@@ -156,7 +156,7 @@ df_var_ele$plot_season <- factor(df_var_ele$plot_season, levels = levels)
 p_key_ele <- ggplot(data = df_var_ele) + 
   geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = plot_season, 
              shape = plot_season), size = 4) +   
-  scale_fill_manual("Plot ID", guide = guide_legend(ncol = 2, byrow = TRUE), 
+  scale_fill_manual(expression(bold("PlotID")), guide = guide_legend(ncol = 2, byrow = TRUE), 
                     values = c("sav5" = clr[1], "sav5 (d)" = clr[2],
                                "sav0" = clr[3], "sav0 (d)" = clr[4],
                                "mai0" = clr[6], "mai4" = clr[5], 
@@ -167,13 +167,14 @@ p_key_ele <- ggplot(data = df_var_ele) +
                     breaks = c("sav5", "sav5 (d)", "sav0", "sav0 (d)", 
                                "mai4", "mai0", "cof3", "cof2", "gra1", "gra2", 
                                "fed1", "hel1", "fer0")) + 
-  scale_shape_manual("Plot ID", values = c("sav5" = pch[1], "sav5 (d)" = pch[2], 
-                                           "sav0" = pch[3], "sav0 (d)" = pch[4],
-                                           "mai4" = pch[5], "mai0" = pch[6], 
-                                           "cof3" = pch[7], "cof2" = pch[8], 
-                                           "gra1" = pch[9], "gra2" = pch[10], 
-                                           "fed1" = pch[11], "hel1" = pch[12], 
-                                           "fer0" = pch[13]), 
+  scale_shape_manual(expression(bold("PlotID")), 
+                     values = c("sav5" = pch[1], "sav5 (d)" = pch[2], 
+                                "sav0" = pch[3], "sav0 (d)" = pch[4],
+                                "mai4" = pch[5], "mai0" = pch[6], 
+                                "cof3" = pch[7], "cof2" = pch[8], 
+                                "gra1" = pch[9], "gra2" = pch[10], 
+                                "fed1" = pch[11], "hel1" = pch[12], 
+                                "fer0" = pch[13]), 
                      breaks = c("sav5", "sav5 (d)", "sav0", "sav0 (d)", 
                                 "mai4", "mai0", "cof3", "cof2", "gra1", "gra2", 
                                 "fed1", "hel1", "fer0")) + 
@@ -194,7 +195,7 @@ postscript(paste0(ch_dir_pub, "fig/figure04.eps"), width = 19*.3937,
 
 grid.newpage()
 n <- 0
-for (y in c(0.55, .1)) {
+for (y in c(0.5, 0)) {
   for (x in seq(.02, .66, .32)) {
     n <- n + 1
     
@@ -203,9 +204,9 @@ for (y in c(0.55, .1)) {
     
     # insert plots
     height <- if (n == 2) {
-      .44
+      .49
     } else {
-      .45
+      .5
     }
     
     vp_tmp <- viewport(x = ifelse(x == .34, x + .02, x), y = y, 
@@ -218,7 +219,7 @@ for (y in c(0.55, .1)) {
   }
 }
 
-vp_legend <- viewport(x = .725, y = .2, width = .2, height = .25, 
+vp_legend <- viewport(x = .725, y = .15, width = .2, height = .25, 
                       just = c("left", "bottom"))
 pushViewport(vp_legend)
 grid.draw(legend)
