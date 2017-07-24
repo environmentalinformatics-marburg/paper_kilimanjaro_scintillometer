@@ -35,12 +35,19 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_ch_plt <- sapply(tmp_ls_plt, "[[", 3)
   tmp_ch_dt <- sapply(tmp_ls_plt, "[[", 4)
   
-  tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
-                        pattern = ".mnd$", full.names = TRUE)
+  # tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
+  #                       pattern = ".mnd$", full.names = TRUE)
+  drs <- dir(paste0(i, "/data"), pattern = "^Reprocessed", full.names = TRUE)
+  tmp_fls <- unlist(sapply(drs, function(j) {
+    list.files(j, pattern = ".mnd$", full.names = TRUE)
+  }))
   
   ## merge daily files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
 
+  ## eliminate "N/A" strings introduced during data reprocessing
+  tmp_df$waterET <- suppressWarnings(as.numeric(tmp_df$waterET))
+  
   ## adjust et rates < 0
   num_et <- tmp_df[, "waterET"]
   log_st0 <- which(!is.na(num_et) & num_et < 0)
@@ -50,7 +57,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   ## output storage
   tmp_df2 <- tmp_df[, c("datetime", ch_var_rf, "netRad", "precipRate")]
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
-  write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/", basename(i), 
+  write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/reprocess/", basename(i), 
                             "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
   tmp_df$datetime <- tmp_df2$datetime
   
@@ -112,7 +119,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   int_mtry <- tmp_rf$bestTune
   
   df_out <- data.frame(plot = tmp_ch_plt, mtry = int_mtry, tmp_df_varimp)
-  write.csv(df_out, paste0("data/varimp_final_vpd_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
+  write.csv(df_out, paste0("data/reprocess/varimp_final_vpd_", tmp_ch_plt, "_", tmp_ch_dt, ".csv"))
   
   # random forest-based ET prediction
   tmp_prd <- predict(tmp_rf, tmp_df_sub_tst)
@@ -131,7 +138,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_df_sub_gf <- data.frame(tmp_df_sub_gf, 
                               netRad = tmp_df2$netRad, 
                               precipRate = tmp_df2$precipRate)
-  tmp_ch_dir_out <- paste0("../../phd/scintillometer/data/sls/", basename(i))
+  tmp_ch_dir_out <- paste0("../../phd/scintillometer/data/sls/reprocess/", basename(i))
   tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf.csv")
   write.csv(tmp_df_sub_gf, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
             quote = FALSE, row.names = FALSE)

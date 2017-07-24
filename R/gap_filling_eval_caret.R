@@ -37,12 +37,19 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   tmp_plt <- sapply(tmp_ls_plt, "[[", 3)
   tmp_dt <- sapply(tmp_ls_plt, "[[", 4)
   
-  tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
-                        pattern = ".mnd$", full.names = TRUE)
-  
+  # tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
+  #                       pattern = ".mnd$", full.names = TRUE)
+  drs <- dir(paste0(i, "/data"), pattern = "^Reprocessed", full.names = TRUE)
+  tmp_fls <- do.call("c", lapply(drs, function(j) {
+    list.files(j, pattern = ".mnd$", full.names = TRUE)
+  }))
+
   ## merge daily files
   tmp_df <- slsMergeDailyData(files = tmp_fls)
   tmp_df$datetime <- strptime(tmp_df$datetime, format = "%Y-%m-%d %H:%M:%S")
+  
+  ## eliminate "N/A" strings introduced during data reprocessing
+  tmp_df$waterET <- suppressWarnings(as.numeric(tmp_df$waterET))
   
   ## adjust et rates < 0
   num_et <- tmp_df[, "waterET"]
@@ -138,9 +145,9 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   tmp_ls_rf_eval <- lapply(tmp_ls_rf_stats, function(i) i[[1]])
   tmp_df_rf_eval <- do.call("rbind", tmp_ls_rf_eval)
   write.csv(tmp_df_rf_eval, row.names = FALSE, quote = FALSE,
-            paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
+            paste0("data/reprocess/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
   
-  # fls_eval <- paste0("data/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv")
+  # fls_eval <- paste0("data/reprocess/regstats_vpd_", tmp_plt, "_", tmp_dt, ".csv")
   # tmp_df_rf_eval <- read.csv(fls_eval)
   
   # variable importances
@@ -151,9 +158,9 @@ ls_rf_scores_whr <- lapply(srunWorkspaces, function(i) {
   tmp_df_rf_varimp <- data.frame(tmp_mat_rf_varimp)
   names(tmp_df_rf_varimp) <- names(tmp_num_rf_varimp)
   write.csv(tmp_df_rf_varimp, row.names = FALSE, quote = FALSE,
-            paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
+            paste0("data/reprocess/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv"))
   
-  # fls_varimp <- paste0("data/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv")
+  # fls_varimp <- paste0("data/reprocess/varimp_vpd_", tmp_plt, "_", tmp_dt, ".csv")
   # tmp_df_rf_varimp <- read.csv(fls_varimp)
   
   # plot prediction stats
