@@ -7,8 +7,10 @@ rm(list = ls(all = TRUE))
 source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
-## path: output storage
-dir_out <- "../../pub/papers/detsch_et_al__spotty_evapotranspiration/"
+## path for output storage
+dir_prm <- switch(Sys.info()[["sysname"]], 
+                  "Windows" = "E:/", "Linux" = "/media/permanent/")
+dir_ppr <- paste0(dir_prm, "pub/papers/detsch_et_al__spotty_evapotranspiration/")
 
 
 ### processing
@@ -28,7 +30,7 @@ dir_out <- "../../pub/papers/detsch_et_al__spotty_evapotranspiration/"
 # }
 # df_varimp <- df_varimp[, -1]
 
-load("data/reg_stats_vpd.RData")
+load("data/reprocess/reg_stats_vpd.RData")
 df_rf_scores_dryssn_varimp$plot <- as.character(df_rf_scores_dryssn_varimp$plot)
 df_rf_scores_dryssn_varimp$plot[12] <- paste(df_rf_scores_dryssn_varimp$plot[12], "(d)")
 df_rf_scores_dryssn_varimp$plot[13] <- paste(df_rf_scores_dryssn_varimp$plot[13], "(d)")
@@ -90,10 +92,13 @@ hmap <- levelplot(df_varimp_mlt ~ variable * plot, data = var_stats,
                   })
 
 ## standalone eps version
+dir_ltx <- paste0(dir_ppr, "journals/ema/review/latex")
+fls_out <- paste0(dir_ltx, "/img/Fig02.eps")
+
 setEPS()
-postscript(paste0(dir_out, "fig/figure03.eps"), width = 10*.3937, 
-           height = 14*.3937)
-print(hmap)
+postscript(fls_out, width = 10*.3937, height = 14*.3937)
+grid.newpage()
+print(hmap, newpage = FALSE)
 
 downViewport(trellis.vpname("figure"))
 vp_key <- viewport(x = .5, y = 1.11)

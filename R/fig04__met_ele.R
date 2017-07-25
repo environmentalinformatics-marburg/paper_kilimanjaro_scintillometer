@@ -8,10 +8,10 @@ source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
 ch_dir_pub <- "../../pub/papers/detsch_et_al__spotty_evapotranspiration/"
-ch_dir_tbl <- "../../phd/scintillometer/data/tbl/"
+ch_dir_tbl <- "../../phd/scintillometer/data/tbl/reprocess/"
 
 ## input data
-df_fls <- slsAvlFls()
+df_fls <- slsAvlFls("/media/permanent/phd/scintillometer/data/sls/reprocess")
 
 ## radiation
 df_rad <- summarizeVar(df_fls$mrg_rf_agg01h, param = "netRad", ssn = df_fls$season,
@@ -38,7 +38,7 @@ df_et <- summarizeVar(df_fls$mrg_rf_agg01h, ssn = df_fls$season,
                       file_out = paste0(ch_dir_tbl, "table_et.csv"))
 
 ## plot coordinates
-spt_plot <- readOGR("/media/fdetsch/Permanent/kilimanjaro/coordinates/", 
+spt_plot <- readOGR("/media/permanent/data/kili/coordinates/", 
                     "PlotPoles_ARC1960_mod_20140807_final", 
                     p4s = "+init=epsg:21037")
 spt_plot <- subset(spt_plot, PoleType == "AMP")
@@ -92,7 +92,8 @@ p_rad <- ggplot(data = df_var_ele) +
              size = 4) +   
   labs(title = expression("a) R"[net] ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
   theme_bw() + 
-  theme(title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5), 
+        title = element_text(size = 8), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
@@ -104,7 +105,8 @@ p_p <- ggplot(data = df_var_ele) +
   scale_y_continuous(labels = NULL) + 
   labs(title = "b) p (hPa)", x = "", y = "") + 
   theme_bw() + 
-  theme(title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5), 
+        title = element_text(size = 8), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
@@ -116,7 +118,8 @@ p_s <- ggplot(data = df_var_ele) +
   scale_y_continuous(labels = NULL) + 
   labs(title = expression("c) S" ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
   theme_bw() + 
-  theme(title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5), 
+        title = element_text(size = 8), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
@@ -127,7 +130,8 @@ p_vpd <- ggplot(data = df_var_ele) +
              size = 4) +   
   labs(title = expression("d) VPD (Pa)"), x = "", y = "") + 
   theme_bw() + 
-  theme(title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5), 
+        title = element_text(size = 8, hjust = .5), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
@@ -139,7 +143,8 @@ p_et <- ggplot(data = df_var_ele) +
   scale_y_continuous(labels = NULL) + 
   labs(title = expression("e) ET (mm)"), x = "", y = "") + 
   theme_bw() + 
-  theme(title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5), 
+        title = element_text(size = 8), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
@@ -179,8 +184,9 @@ p_key_ele <- ggplot(data = df_var_ele) +
                                 "fed1", "hel1", "fer0")) + 
   scale_x_continuous(trans = "reverse", breaks = seq(1000, 4000, 500)) + 
   theme_bw() + 
-  theme(text = element_text(size = 10), 
-        legend.key.size = unit(.6, "cm"))
+  theme(text = element_text(size = 9), 
+        legend.key.size = unit(.6, "cm"), 
+        legend.title = element_text(size = 9))
 
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
@@ -188,9 +194,11 @@ ls_p <- list(p_rad, p_p, p_s, p_vpd, p_et)
 
 
 ## standalone tiff version
+dir_ltx <- paste0(ch_dir_pub, "journals/ema/review/latex")
+fls_out <- paste0(dir_ltx, "/img/Fig03.eps")
+
 setEPS()
-postscript(paste0(ch_dir_pub, "fig/figure04.eps"), width = 19*.3937, 
-           height = 16*.3937)
+postscript(fls_out, width = 19*.3937, height = 16*.3937)
 
 grid.newpage()
 n <- 0
@@ -203,9 +211,9 @@ for (y in c(0.55, .1)) {
     
     # insert plots
     height <- if (n == 2) {
-      .44
+      .48
     } else {
-      .45
+      .49
     }
     
     vp_tmp <- viewport(x = ifelse(x == .34, x + .02, x), y = y, 
@@ -218,7 +226,7 @@ for (y in c(0.55, .1)) {
   }
 }
 
-vp_legend <- viewport(x = .725, y = .2, width = .2, height = .25, 
+vp_legend <- viewport(x = .725, y = .225, width = .2, height = .25, 
                       just = c("left", "bottom"))
 pushViewport(vp_legend)
 grid.draw(legend)
