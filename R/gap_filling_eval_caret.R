@@ -187,13 +187,13 @@ id <- sapply(slsPlots(style = "elevation"), function(h) {
 })
 
 ls_rf_scores_whr1 <- lapply(1:length(srunWorkspaces[id]), function(h) {
-  gfPostprocess(srunWorkspaces[id][h], dsn_regstats = "data/regstats_vpd_", 
-                dsn_varimp = "data/varimp_vpd_", left = h %in% c(1, 5, 9))
+  gfPostprocess(srunWorkspaces[id][h], dsn_regstats = "data/reprocess/regstats_vpd_", 
+                dsn_varimp = "data/reprocess/varimp_vpd_", left = h %in% c(1, 5, 9))
 })
 
 ls_rf_scores_whr2 <- lapply(1:length(srunWorkspaces[-id]), function(h) {
-  gfPostprocess(srunWorkspaces[-id][h], dsn_regstats = "data/regstats_vpd_", 
-                dsn_varimp = "data/varimp_vpd_", left = FALSE, add = TRUE)
+  gfPostprocess(srunWorkspaces[-id][h], dsn_regstats = "data/reprocess/regstats_vpd_", 
+                dsn_varimp = "data/reprocess/varimp_vpd_", left = FALSE, add = TRUE)
 })
 
 # split data into cv/prediction statistics...
@@ -215,7 +215,7 @@ ls_rf_scores_dryssn_vis1[[2]] <- ls_rf_scores_dryssn_vis1[[2]] +
   as.layer(ls_rf_scores_dryssn_vis2[[2]], under = TRUE)
 
 save(list = c("df_rf_scores_stats", "df_rf_scores_dryssn_varimp", 
-              "ls_rf_scores_dryssn_vis1"), file = "data/reg_stats_vpd.RData")
+              "ls_rf_scores_dryssn_vis1"), file = "data/reprocess/reg_stats_vpd.RData")
 
 # plotting order
 sls_plt <- slsPlots()

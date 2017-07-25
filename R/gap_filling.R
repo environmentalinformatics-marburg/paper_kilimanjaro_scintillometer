@@ -5,7 +5,7 @@ source("R/slsPkgs.R")
 source("R/slsFcts.R")
 
 # parallelization
-cl <- makeCluster(3)
+cl <- makeCluster(detectCores() - 1L)
 registerDoParallel(cl)
 
 # path: srun
@@ -38,7 +38,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   # tmp_fls <- list.files(paste0(i, "/data/retrieved_SPU-111-230"), 
   #                       pattern = ".mnd$", full.names = TRUE)
   drs <- dir(paste0(i, "/data"), pattern = "^Reprocessed", full.names = TRUE)
-  tmp_fls <- unlist(sapply(drs, function(j) {
+  tmp_fls <- do.call("c", sapply(drs, function(j) {
     list.files(j, pattern = ".mnd$", full.names = TRUE)
   }))
   
@@ -57,6 +57,9 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   ## output storage
   tmp_df2 <- tmp_df[, c("datetime", ch_var_rf, "netRad", "precipRate")]
   tmp_df2$datetime <- strptime(tmp_df2$datetime, format = "%Y-%m-%d %H:%M:%S")
+  
+  drs_df2 <- paste0("../../phd/scintillometer/data/sls/reprocess/", basename(i))
+  if (!dir.exists(drs_df2)) dir.create(drs_df2)
   write.csv(tmp_df2, paste0("../../phd/scintillometer/data/sls/reprocess/", basename(i), 
                             "/", tmp_ch_plt, "_mrg.csv"), row.names = FALSE)
   tmp_df$datetime <- tmp_df2$datetime
@@ -71,12 +74,12 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   if (tmp_ch_plt == "mai4") {
     date1 <- as.POSIXct("2014-05-13 22:00:00")
     date2 <- as.POSIXct("2014-05-14 05:59:00")
-    int <- new_interval(date1, date2)
+    int <- interval(date1, date2)
     tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
     
     date1 <- as.POSIXct("2014-05-15 22:00:00")
     date2 <- as.POSIXct("2014-05-16 05:59:00")
-    int <- new_interval(date1, date2)
+    int <- interval(date1, date2)
     tmp_df[tmp_df$datetime %within% int, "waterET"] <- 0
   }
   
@@ -138,9 +141,8 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   tmp_df_sub_gf <- data.frame(tmp_df_sub_gf, 
                               netRad = tmp_df2$netRad, 
                               precipRate = tmp_df2$precipRate)
-  tmp_ch_dir_out <- paste0("../../phd/scintillometer/data/sls/reprocess/", basename(i))
   tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf.csv")
-  write.csv(tmp_df_sub_gf, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
+  write.csv(tmp_df_sub_gf, paste(drs_df2, tmp_ch_fls_out, sep = "/"), 
             quote = FALSE, row.names = FALSE)
   
   # 1h aggregation  
@@ -153,7 +155,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
                                             format = "%Y-%m-%d %H:%M")
   
   tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf_agg01h.csv")
-  write.csv(tmp_df_sub_gf_agg01h, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
+  write.csv(tmp_df_sub_gf_agg01h, paste(drs_df2, tmp_ch_fls_out, sep = "/"), 
             row.names = FALSE)
 
   # 10m aggregation
@@ -167,7 +169,7 @@ ls_sls_rf <- lapply(srunWorkspaces, function(i) {
   
   tmp_ch_fls_out <- paste0(tmp_ch_plt, "_mrg_rf_agg10m.csv")
 
-  write.csv(tmp_df_sub_gf_agg10m, paste(tmp_ch_dir_out, tmp_ch_fls_out, sep = "/"), 
+  write.csv(tmp_df_sub_gf_agg10m, paste(drs_df2, tmp_ch_fls_out, sep = "/"), 
             row.names = FALSE)
   
   #   ggplot(aes(x = strptime(datetime, format = "%Y-%m-%d %H:%M"), y = waterET), 
