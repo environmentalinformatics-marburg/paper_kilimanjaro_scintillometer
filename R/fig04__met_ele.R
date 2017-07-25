@@ -11,31 +11,33 @@ ch_dir_pub <- "../../pub/papers/detsch_et_al__spotty_evapotranspiration/"
 ch_dir_tbl <- "../../phd/scintillometer/data/tbl/reprocess/"
 
 ## input data
-df_fls <- slsAvlFls("/media/permanent/phd/scintillometer/data/sls/reprocess")
+df_fls <- slsAvlFls("/media/permanent/phd/scintillometer/data/sls/reprocess", 
+                    ch_pattern = "mrg_rf_agg01h.csv$")
 
-## radiation
-df_rad <- summarizeVar(df_fls$mrg_rf_agg01h, param = "netRad", ssn = df_fls$season,
-                       FUN_dy = function(...) mean(..., na.rm = TRUE),
-                       file_out = paste0(ch_dir_tbl, "table_rad.csv"))
+dat <- foreach(i = 1:nrow(df_fls), .combine = "rbind") %do% {
+  dat <- read.csv(df_fls$mrg_rf_agg01h[i])
+  data.frame(PlotID = df_fls$plot[i], habitat = df_fls$habitat[i], 
+             season = df_fls$season[i], dat, 
+             date = strftime(dat$datetime, "%Y-%m-%d"))
+}
 
-## p
-df_p <- summarizeVar(df_fls$mrg_rf_agg01h, param = "pressure", ssn = df_fls$season,
-                     FUN_dy = function(...) mean(..., na.rm = TRUE),
-                     file_out = paste0(ch_dir_tbl, "table_p.csv"))
-
-## S
-df_s <- summarizeVar(df_fls$mrg_rf_agg01h, param = "soilHeatFlux", ssn = df_fls$season,
-                     FUN_dy = function(...) mean(..., na.rm = TRUE),
-                     file_out = paste0(ch_dir_tbl, "table_S.csv"))
-
-## vpd
-df_vpd <- summarizeVar(df_fls$mrg_rf_agg01h, param = "vpd", ssn = df_fls$season,
-                       FUN_dy = function(...) mean(..., na.rm = TRUE),
-                       file_out = paste0(ch_dir_tbl, "table_vpd.csv"))
-
-## et
-df_et <- summarizeVar(df_fls$mrg_rf_agg01h, ssn = df_fls$season,
-                      file_out = paste0(ch_dir_tbl, "table_et.csv"))
+prm <- c("netRad", "pressure", "soilHeatFlux", "vpd", "waterET")
+lst <- lapply(prm, function(i) {
+  tmp <- dat[, c("PlotID", "season", "date", i)]
+  names(tmp)[ncol(tmp)] <- "param"
+  param_fun <- if (i == "waterET") sum else mean
+  
+  tmp %>%
+    group_by(PlotID, season, date) %>%
+    summarise(param = param_fun(param)) %>%
+    group_by(PlotID, season) %>%
+    summarise(param.se = std.error(param, na.rm = TRUE), 
+              param = mean(param, na.rm = TRUE)) %>%
+    data.frame() -> out
+  
+  names(out) <- gsub("param", i, names(out))
+  return(out)
+})
 
 ## plot coordinates
 spt_plot <- readOGR("/media/permanent/data/kili/coordinates/", 
@@ -44,8 +46,7 @@ spt_plot <- readOGR("/media/permanent/data/kili/coordinates/",
 spt_plot <- subset(spt_plot, PoleType == "AMP")
 
 ## merge data
-df_var <- Reduce(function(...) merge(..., by = c("PlotID", "season")), 
-                 list(df_rad, df_p, df_s, df_vpd, df_et))
+df_var <- Reduce(function(...) merge(..., by = c("PlotID", "season")), lst)
 df_var_ele <- merge(df_var, spt_plot@data, by = "PlotID")
 df_var_ele$habitat <- substr(df_var_ele$PlotID, 1, 3)
 
@@ -65,90 +66,70 @@ pch <- c(24, 25, 24, 25, 23, 23, 22, 22, 21, 21, 3, 13, 4)
 ## colors
 clr <- c(rep("grey50", 2), rep("white", 2), rep(c("grey50", "white"), 3), 
          rep("black", 3))
-# cols <- envinmr.theme()$topo.cols(8)[1:7]
-# names(cols) <- c("sav", "mai", "cof", "gra", "fed", "hel", "fer")
-# 
-# ## focal plots
-# df_var_ele$focal <- "yes"
-# df_var_ele$focal[df_var_ele$PlotID %in% c("gra2", "cof2", "mai4", "sav5")] <- "no"
 
-# ## statistics (trend profiles)
-# lm_ta <- lm(tempUpfun ~ Z_DEM_HMP, data = df_var_ele)
-# summary(lm_ta)
-# 
-# lm_vpd <- lm(vpdfun ~ Z_DEM_HMP, data = df_var_ele)
-# summary(lm_vpd)
-# 
-# loe_rad <- loess(dwnRadfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-# summary(loe_rad)
-# 
-# loe_et <- loess(waterETfun ~ Z_DEM_HMP, data = df_var_ele, span = .99)
-# hat <- predict(loe_et)
-# cor(df_var_ele$waterETfun, hat)^2
-# summary(loe_et)
-
+## create plots
 p_rad <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = netRadfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+  geom_point(aes(x = netRad, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   labs(title = expression("a) R"[net] ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
   theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
+        legend.position = "none", 
+        panel.grid.minor = element_blank())
 
 p_p <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = pressurefun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+  geom_point(aes(x = pressure, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   scale_y_continuous(labels = NULL) + 
   labs(title = "b) p (hPa)", x = "", y = "") + 
   theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
+        legend.position = "none", 
+        panel.grid.minor = element_blank())
 
 p_s <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = soilHeatFluxfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+  geom_point(aes(x = soilHeatFlux, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   scale_y_continuous(labels = NULL) + 
   labs(title = expression("c) S" ~ "(W/" * m^{2} * ")"), x = "", y = "") + 
   theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
+        legend.position = "none", 
+        panel.grid.minor = element_blank())
 
 p_vpd <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = vpdfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+  geom_point(aes(x = vpd, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   labs(title = expression("d) VPD (Pa)"), x = "", y = "") + 
   theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        title = element_text(size = 8, hjust = .5), 
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
+        legend.position = "none", 
+        panel.grid.minor = element_blank())
 
 p_et <- ggplot(data = df_var_ele) + 
-  geom_point(aes(x = waterETfun, y = Z_DEM_HMP), fill = clr, shape = pch, 
+  geom_point(aes(x = waterET, y = Z_DEM_HMP), fill = clr, shape = pch, 
              size = 4) +   
   scale_y_continuous(labels = NULL) + 
   labs(title = expression("e) ET (mm)"), x = "", y = "") + 
   theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        title = element_text(size = 8), 
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
         text = element_text(size = 10), 
         axis.title.x = element_text(angle = 180), 
         axis.title.y = element_text(angle = 90), 
-        legend.position = "none")
+        legend.position = "none", 
+        panel.grid.minor = element_blank())
 
 ## legend
 df_var_ele$plot_season <- as.character(df_var_ele$PlotID)
@@ -159,7 +140,7 @@ levels <- c(levels[1], "sav5 (d)", levels[2], "sav0 (d)", levels[3:length(levels
 df_var_ele$plot_season <- factor(df_var_ele$plot_season, levels = levels)
 
 p_key_ele <- ggplot(data = df_var_ele) + 
-  geom_point(aes(y = vpdfun, x = Z_DEM_HMP, fill = plot_season, 
+  geom_point(aes(y = vpd, x = Z_DEM_HMP, fill = plot_season, 
              shape = plot_season), size = 4) +   
   scale_fill_manual("Plot ID", guide = guide_legend(ncol = 2, byrow = TRUE), 
                     values = c("sav5" = clr[1], "sav5 (d)" = clr[2],
@@ -186,7 +167,7 @@ p_key_ele <- ggplot(data = df_var_ele) +
   theme_bw() + 
   theme(text = element_text(size = 9), 
         legend.key.size = unit(.6, "cm"), 
-        legend.title = element_text(size = 9))
+        legend.title = element_text(size = 9, face = "bold"))
 
 ## save arranged plots incl. customized legend
 legend <- ggExtractLegend(p_key_ele) 
@@ -202,7 +183,7 @@ postscript(fls_out, width = 19*.3937, height = 16*.3937)
 
 grid.newpage()
 n <- 0
-for (y in c(0.55, .1)) {
+for (y in c(0.5, .01)) {
   for (x in seq(.02, .66, .32)) {
     n <- n + 1
     
@@ -226,7 +207,7 @@ for (y in c(0.55, .1)) {
   }
 }
 
-vp_legend <- viewport(x = .725, y = .225, width = .2, height = .25, 
+vp_legend <- viewport(x = .725, y = .15, width = .2, height = .25, 
                       just = c("left", "bottom"))
 pushViewport(vp_legend)
 grid.draw(legend)
@@ -235,6 +216,6 @@ grid.draw(legend)
 upViewport(0)
 vp_yaxis <- viewport(x = .02, y = .55, width = .1, height = 1, angle = 90)
 pushViewport(vp_yaxis)
-grid.text("Elevation (m a.s.l.)", gp = gpar(cex = .8))
+grid.text("Elevation (m.a.s.l.)", gp = gpar(cex = .8))
 
 dev.off()
