@@ -38,6 +38,7 @@ lst <- lapply(prm, function(i) {
   names(out) <- gsub("param", i, names(out))
   return(out)
 })
+names(lst) <- prm
 
 ## plot coordinates
 spt_plot <- readOGR("/media/permanent/data/kili/coordinates/", 

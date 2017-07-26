@@ -12,7 +12,7 @@ ch_dir_ppr <- paste0(ch_dir_os,
 
 # sls plots and referring files
 ch_sls_plt <- slsPlots()
-df_sls_fls_rs <- slsAvlFls(ssn = "r")
+df_sls_fls_rs <- slsAvlFls("/media/permanent/phd/scintillometer/data/sls/reprocess", ssn = "r")
 
 ## hourly aggregation
 ls_all <- lapply(df_sls_fls_rs[, "mrg_rf_agg01h"], function(i) {

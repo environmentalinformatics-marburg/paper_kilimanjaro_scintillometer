@@ -19,7 +19,7 @@ names(dat_lai)[5] <- "lai"
 dat_vi_lai <- merge(dat_vi, dat_lai, by = 1:4, sort = FALSE)
 
 ## import sls data
-fls <- slsAvlFls(ch_pattern = "mrg_rf_agg01h.csv$")
+fls <- slsAvlFls("../../phd/scintillometer/data/sls/reprocess", ch_pattern = "mrg_rf_agg01h.csv$")
 
 dat_srun <- foreach(i = fls$mrg_rf_agg01h, j = seq(nrow(fls)), .combine = "rbind") %do% {
   dat <- read.csv(i)
@@ -161,6 +161,5 @@ summary(mod_one)$r.squared
 
 ## with vegetation
 mod_one_vi <- lm(waterET ~ netRad + pressure + soilHeatFlux + 
-                   vpd + precipRate + ndvi + log(lai), 
-                 data = dat_one)
+                   vpd + precipRate + ndvi, data = dat_one)
 summary(mod_one_vi)$r.squared

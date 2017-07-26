@@ -25,7 +25,7 @@ df_plt_ssn <- merge(data.frame(PlotID = rev(slsPlots(style = "elevation"))),
                     df_plt_ssn, by = 1, all.x = TRUE, sort = FALSE)
 
 ## plot coordinates
-spt_plt <- readOGR("../../kilimanjaro/coordinates", 
+spt_plt <- readOGR("../../data/kili/coordinates", 
                    "PlotPoles_ARC1960_mod_20140807_final", 
                    p4s = "+init=epsg:21037")
 spt_plt_sls <- subset(spt_plt, PlotID %in% slsPlots() & PoleType == "AMP")

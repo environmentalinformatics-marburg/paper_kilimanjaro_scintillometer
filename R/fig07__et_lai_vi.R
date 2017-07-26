@@ -25,7 +25,8 @@ names(dat_lai)[5] <- "lai"
 dat_vi_lai <- merge(dat_vi, dat_lai, by = 1:4, sort = FALSE)
 
 ## et
-fls_et <- slsAvlFls(ch_pattern = "mrg_rf_agg01h.csv$")
+fls_et <- slsAvlFls("/media/permanent/phd/scintillometer/data/sls/reprocess", 
+                    ch_pattern = "mrg_rf_agg01h.csv$")
 
 dat_et <- foreach(i = 1:nrow(fls_et), .combine = "rbind") %do% {
   dat <- read.csv(fls_et$mrg_rf_agg01h[i])
@@ -69,45 +70,33 @@ plt <- slsPlots("elevation")
 plt <- c(plt[1], "sav5 (d)", plt[2], "sav0 (d)", plt[3:length(plt)])
 
 ## write to file
+ch_dir_pub <- "../../pub/papers/detsch_et_al__spotty_evapotranspiration/"
+dir_ltx <- paste0(ch_dir_pub, "journals/ema/review/latex")
+fls_out <- paste0(dir_ltx, "/img/Fig04.eps")
+
 setEPS()
-postscript("../../phd/scintillometer/out/figure_07.eps", width = 10, 
-           height = 6, fonts = c("serif", "Palatino"))
+postscript(fls_out, width = 7, height = 6, fonts = c("serif", "Palatino"), pointsize = 13)
 
 ## legend
 plot.new()
-vp_top <- viewport(x = .5, y = .825, width = .6, height = .25)
+vp_top <- viewport(x = .5, y = .9, width = .9, height = .1)
 pushViewport(vp_top)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
-legend(x = 0, y = 0, plt, pch = pts, pt.cex = 1.5, pt.bg = clr, pt.lwd = 1.25,
-       ncol = 7, box.col = "transparent", x.intersp = 1.25, y.intersp = -.5, 
+legend(x = -.05, y = .65, plt, pch = pts, pt.cex = 1.5, pt.bg = clr, pt.lwd = 1.25,
+       ncol = 7, box.col = "transparent", x.intersp = 1.25, y.intersp = -4, 
        cex = .8)
 
-## lai
+## ndvi
 upViewport()
-vp_left <- viewport(x = 0, y = 0, width = .5, height = .8, 
+vp_left <- viewport(x = 0, y = 0, width = 1, height = .95, 
                     just = c("left", "bottom"))
 pushViewport(vp_left)
 par(new = TRUE, fig = gridFIG(), xpd = TRUE)
 plotCI(dat_mrg$ndvi, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
        scol = "grey50", pch = pts, cex = 1.75, xlab = "NDVI", ylab = "ET (mm/d)", 
-       xlim = c(.3, .9), ylim = c(0, 6.25))
+       xlim = c(.3, .9), ylim = c(0, 7))
 points(dat_mrg$ndvi, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
 lines(seq(.3, .9, .01), val_ndvi, lty = 2, lwd = 1.75, col = "red")
-text(.32, 6, "a)", font = 2)
-text(.8, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_ndvi)$r.squared, 2))))
-
-## ndvi
-upViewport()
-vp_right <- viewport(x = .5, y = 0, width = .5, height = .8, 
-                    just = c("left", "bottom"))
-pushViewport(vp_right)
-par(new = TRUE, fig = gridFIG(), xpd = TRUE)
-plotCI(dat_mrg$lai, dat_mrg$waterET, dat_mrg$waterET.se, slty = 1, lwd = 1.2,
-       scol = "grey50", pch = pts, cex = 1.75, xlab = expression("LAI"[250]), 
-       ylab = "ET (mm/d)", xlim = c(0, 6.25), ylim = c(0, 6.25))
-points(dat_mrg$lai, dat_mrg$waterET, pch = pts, bg = clr, cex = 1.75, lwd = 2)
-lines(seq(.05, 6, .01), val_lai, lty = 2, lwd = 1.75, col = "red")
-text(.25, 6, "b)", font = 2)
-text(5.25, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_lai)$r.squared, 2))))
+text(.85, .25, bquote("R"^"2" ~ "=" ~ .(round(summary(mod_ndvi)$r.squared, 2))))
 
 dev.off()

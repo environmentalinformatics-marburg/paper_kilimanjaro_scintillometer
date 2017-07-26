@@ -4,7 +4,7 @@
 rm(list = ls(all = TRUE))
 
 ## load prediction statistics
-load("data/reg_stats_vpd.RData")
+load("data/reprocess/reg_stats_vpd.RData")
 
 ## source requiredfunctions
 source("R/slsPlots.R")
