@@ -118,15 +118,24 @@ tab[, 2:ncol(tab)] <- round(tab[, 2:ncol(tab)], 2)
 stargazer(tab, summary = FALSE, rownames = FALSE, digits = 2, 
           decimal.mark = ".")
 
-## including lai/ndvi 
+## pooled meteorological data
+mod_pld <- lm(waterET ~ netRad + pressure + soilHeatFlux + vpd + precipRate, 
+              data = dat_srun)
+summary(mod_pld)$r.squared
+
+## including ndvi 
 dat_hrs <- merge(dat_srun, dat_vi_lai, by = c("PlotID", "season"))
 
 dat_hrs %>%
   group_by(PlotID, season) %>%
-  do(mod = lm(waterET ~ netRad + pressure + soilHeatFlux + vpd + precipRate + 
-                ndvi + lai, .)) %>%
+  do(mod = lm(waterET ~ netRad + pressure + soilHeatFlux + vpd + precipRate + ndvi, .)) %>%
   summarise(PlotID = unique(PlotID), season = unique(season), 
             Rsq = summary(mod)$r.squared) -> rsq_hrs_vi
+
+## pooled meteorological data
+mod_pld_vi <- lm(waterET ~ netRad + pressure + soilHeatFlux + vpd + precipRate + ndvi, 
+              data = dat_hrs)
+summary(mod_pld_vi)$r.squared
 
 
 ### modeling, daily values -----
