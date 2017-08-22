@@ -407,6 +407,21 @@
   pmid =     {20935626}
 }
 
+@Article{Kimaro2009,
+  author    = {Kimaro, A. A. and Timmer, V. R. and Chamshama, S. A. O. and Ngaga, Y. N. and Kimaro, D. A.},
+  title     = {{Competition between maize and pigeonpea in semi-arid Tanzania: Effect on yields and nutrition of crops}},
+  journal   = {Agriculture, Ecosystems \& Environment},
+  year      = {2009},
+  volume    = {134},
+  number    = {1--2},
+  pages     = {115--125},
+  doi       = {10.1016/j.agee.2009.06.002},
+  file      = {:Kimaro et al. - 2009.pdf:PDF},
+  keywords  = {Fertilizer, Improved fallows, Manure, Soil fertility, Vector analysis},
+  owner     = {fdetsch},
+  timestamp = {2015.01.26},
+}
+
 @Article{Kite2000,
   author    = {Kite, G. W. and Droogers, P.},
   title     = {{Comparing evapotranspiration estimates from satellites, hydrological models and field data}},
@@ -1260,12 +1275,39 @@
 }
 
 @Article{Peters2016,
-  author  = {Marcell K. Peters and Andreas Hemp and Tim Appelhans and Christina Behler and Alice Classen and Florian Detsch and Andreas Ensslin and Stefan W. Ferger and Sara B. Frederiksen and Friederike Gebert and Michael Haas and Maria Helbig-Bonitz and Claudia Hemp and William J. Kindeketa and Ephraim Mwangomo and Christine Ngereza and Insa Otte and Juliane R\"{o}der and Gemma Rutten and David Schellenberger Costa and Joseph Tardanico and Giulia Zancolli and J\"{u}rgen Deckert and Connal D. Eardley and Ralph S. Peters and Mark-Oliver R\"{o}del and Matthias Schleuning and Axel Ssymank and Victor Kakengi and Jie Zhang and Katrin B\"{o}hning-Gaese and Roland Brandl and Elisabeth K.V. Kalko and Michael Kleyer and Thomas Nauss and Marco Tschapka and Markus Fischer and Ingolf Steffan-Dewenter},
-  title   = {Predictors of elevational biodiversity gradients change from single taxa to the multi-taxa community level},
-  journal = {Nature Communications},
-  year    = {2016},
-  volume  = {7},
-  pages   = {13736},
+  author    = {Marcell K. Peters and Andreas Hemp and Tim Appelhans and Christina Behler and Alice Classen and Florian Detsch and Andreas Ensslin and Stefan W. Ferger and Sara B. Frederiksen and Friederike Gebert and Michael Haas and Maria Helbig-Bonitz and Claudia Hemp and William J. Kindeketa and Ephraim Mwangomo and Christine Ngereza and Insa Otte and Juliane R\"{o}der and Gemma Rutten and David Schellenberger Costa and Joseph Tardanico and Giulia Zancolli and J\"{u}rgen Deckert and Connal D. Eardley and Ralph S. Peters and Mark-Oliver R\"{o}del and Matthias Schleuning and Axel Ssymank and Victor Kakengi and Jie Zhang and Katrin B\"{o}hning-Gaese and Roland Brandl and Elisabeth K.V. Kalko and Michael Kleyer and Thomas Nauss and Marco Tschapka and Markus Fischer and Ingolf Steffan-Dewenter},
+  title     = {Predictors of elevational biodiversity gradients change from single taxa to the multi-taxa community level},
+  journal   = {Nature Communications},
+  year      = {2016},
+  volume    = {7},
+  pages     = {13736},
+  doi       = {10.1038/ncomms13736},
+  owner     = {fdetsch},
+  timestamp = {2017-07-26},
+}
+
+@Article{Kakane2004,
+  author    = {Kakane, V. C. K.},
+  title     = {{Soil heat flux-net radiation relations for some surfaces}},
+  journal   = {West African Journal of Applied Ecology},
+  year      = {2004},
+  volume    = {5},
+  number    = {1},
+  pages     = {21--29},
+  doi       = {10.4314/wajae.v5i1.45599},
+  owner     = {fdetsch},
+  timestamp = {2017-07-27},
+}
+
+@Book{Allen1998,
+  title     = {{Crop evapotranspiration -- Guidelines for computing crop water requirements}},
+  publisher = {{Food and Agriculture Organization of the United Nations}},
+  year      = {1998},
+  author    = {Allen, Richard G. and Pereira, Luis S. and Raes, Dirk and Smith, Martin},
+  series    = {FAO Irrigation and drainage paper 56},
+  address   = {Rome},
+  owner     = {fdetsch},
+  timestamp = {2017-07-27},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}
